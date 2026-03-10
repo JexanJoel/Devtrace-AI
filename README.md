@@ -11,7 +11,7 @@
 | 🐛 | **Log errors** with full stack traces and severity levels |
 | ⚡ | **Get AI fixes** instantly via Groq + Llama 3.3 70B |
 | 📚 | **Save what works** to a fix library you'll actually reuse |
-| 📶 | **Works offline** — browse, create, and debug without internet |
+| 📶 | **Works offline** - browse, create, and debug without internet |
 
 </div>
 
@@ -27,19 +27,19 @@
 
 ## ✨ Features
 
-| <div align="center">Feature</div> | <div align="center">Description</div> |
+| Feature | Description |
 |:---|:---|
-| 🐛 **Session Tracking** | Log errors with full stack traces, severity levels and status |
-| ⚡ **AI Fix Suggestions** | Groq + Llama 3.3 70B analyzes errors and returns fixes instantly |
-| 📚 **Fix Library** | Save AI-generated fixes and reuse them across all your projects |
-| 📁 **Project Management** | Organize debug sessions by project and link GitHub repos |
-| 📊 **Error Analytics** | Visualize resolution rates, error trends and severity breakdowns |
-| 🐙 **GitHub Integration** | View stars, forks, open issues and last push date per project |
-| 📶 **Offline-First** | Full offline support via PowerSync — create projects and sessions without internet, auto-syncs on reconnect |
-| 🔄 **Real-Time Sync** | PowerSync streams Supabase changes to a local SQLite database instantly |
-| 📱 **Mobile Responsive** | Collapsible slide-in sidebar that works on all screen sizes |
-| 🔐 **Auth** | GitHub OAuth, Google OAuth and Email + Password via Supabase |
-| 🎨 **Dark Mode** | Full dark theme toggled from settings and saved to your profile |
+| 🐛 Session Tracking | Log errors with full stack traces, severity levels and status |
+| ⚡ AI Fix Suggestions | Groq + Llama 3.3 70B analyzes errors and returns fixes instantly |
+| 📚 Fix Library | Save AI-generated fixes and reuse them across all your projects |
+| 📁 Workspace | Organize debug sessions by project and link GitHub repos |
+| 📊 Error Analytics | Visualize resolution rates, error trends and severity breakdowns |
+| 🐙 Repo Link | View stars, forks, open issues and last push date per project |
+| 📶 Offline First | Offline-first with PowerSync - work offline, sync on reconnect |
+| 🔄 Real-Time Sync | PowerSync streams Supabase changes to a local SQLite database instantly |
+| 📱 Mobile Responsive | Collapsible slide in sidebar that works on all screen sizes |
+| 🔐 Auth | GitHub OAuth, Google OAuth and Email + Password via Supabase |
+| 🎨 Dark Mode | Full dark theme toggled from settings and saved to your profile |
 
 ---
 
@@ -119,20 +119,20 @@ Offline:  Create/browse locally ──► queued in localStorage ──► auto-
 
 | Scenario | Behavior |
 |:---|:---|
-| ✅ Online | Data syncs in real-time from Supabase via PowerSync streams |
-| 🟠 Offline | Orange banner shown — all existing data available from local SQLite |
-| ✏️ Create offline | Projects/sessions saved locally and queued — synced to Supabase on reconnect |
+| ✅ Online | Data syncs in real time from Supabase via PowerSync streams |
+| 🟠 Offline | Orange banner shown - all existing data available from local SQLite |
+| ✏️ Create offline | Projects/sessions saved locally and queued - synced to Supabase on reconnect |
 | 🔄 Reconnect | Pending items automatically uploaded, duplicates safely handled |
 
 ---
 
-## 🏆 Hackathon — PowerSync AI Hackathon 2026
+## 🏆 Hackathon - PowerSync AI Hackathon 2026
 
 DevTrace AI is submitted to the **[PowerSync AI Hackathon 2026](https://www.powersync.com/)** targeting:
 
-- **🥇 Core Prize** — AI-powered developer tool built during the hackathon window
-- **🏅 Best Submission Using Supabase** — Supabase powers auth, database (RLS), and storage throughout
-- **🏅 Best Local-First App** — Full offline-first experience powered by PowerSync with real-time sync, local SQLite reads, and offline write queuing
+- **🥇 Core Prize** - AI-powered developer tool built during the hackathon window
+- **🏅 Best Submission Using Supabase** - Supabase powers auth, database (RLS), and storage throughout
+- **🏅 Best Local-First App** - Full offline-first experience powered by PowerSync with real-time sync, local SQLite reads, and offline write queuing
 
 ---
 
