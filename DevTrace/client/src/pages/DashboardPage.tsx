@@ -16,12 +16,15 @@ const DashboardPage = () => {
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  const name = user?.user_metadata?.full_name?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'Developer';
+  // Use email prefix as name — safe, no user_metadata needed
+  const name = user?.email?.split('@')[0] ?? 'Developer';
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('profiles').select('onboarded').eq('id', user.id).single()
-      .then(({ data }) => { if (data && !data.onboarded) setShowOnboarding(true); });
+    supabase.from('profiles').select('onboarded, name').eq('id', user.id).single()
+      .then(({ data }) => {
+        if (data && !data.onboarded) setShowOnboarding(true);
+      });
   }, [user]);
 
   const timeAgo = (date: string) => {
@@ -49,7 +52,7 @@ const DashboardPage = () => {
           style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)' }}>
           <div>
             <p className="text-indigo-200 text-sm mb-1">{greeting} 👋</p>
-            <h2 className="text-2xl font-bold text-white">{name}</h2>
+            <h2 className="text-2xl font-bold text-white capitalize">{name}</h2>
             <p className="text-indigo-200 text-sm mt-1">
               {loading ? 'Loading...' : stats?.totalSessions === 0 ? 'Log your first session!' : `${stats?.totalSessions} sessions logged`}
             </p>
@@ -84,7 +87,6 @@ const DashboardPage = () => {
 
         {/* Two columns */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
           {/* Recent sessions */}
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
             <div className="flex items-center justify-between mb-5">

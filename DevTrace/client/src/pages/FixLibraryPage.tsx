@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, BookOpen, Copy, Trash2, CheckCircle } from 'lucide-react';
+import { Search, BookOpen } from 'lucide-react';
 import DashboardLayout from '../components/dashboard/DashboardLayout';
 import FixCard from '../components/fixes/FixCard';
 import useFixes from '../hooks/useFixes';
@@ -19,11 +19,6 @@ const FixLibraryPage = () => {
     return matchSearch && matchLang;
   });
 
-  const handleCopy = (content: string) => {
-    navigator.clipboard.writeText(content);
-    toast.success('Copied to clipboard!');
-  };
-
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this fix?')) return;
     await deleteFix(id);
@@ -38,7 +33,6 @@ const FixLibraryPage = () => {
   return (
     <DashboardLayout title="Fix Library">
       <div className="space-y-6">
-
         <div className="flex items-center gap-4 flex-wrap">
           <div className="relative flex-1 max-w-sm">
             <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -89,7 +83,6 @@ const FixLibraryPage = () => {
               <FixCard
                 key={fix.id}
                 fix={fix}
-                onCopy={() => handleCopy(fix.fix_content)}
                 onDelete={() => handleDelete(fix.id)}
                 onUse={() => handleUse(fix.id)}
               />
