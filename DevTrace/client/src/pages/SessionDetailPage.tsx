@@ -8,7 +8,7 @@ import {
 import DashboardLayout from '../components/dashboard/DashboardLayout';
 import { StatusBadge, SeverityBadge } from '../components/sessions/StatusBadge';
 import useSessions from '../hooks/useSessions';
-import type { DebugSession, Status } from '../hooks/useSessions';
+import type { Status } from '../hooks/useSessions';
 import useFixes from '../hooks/useFixes';
 import { getAIFix } from '../lib/groqClient';
 import { exportSessionAsMarkdown } from '../hooks/exportUtils';
@@ -23,42 +23,43 @@ const STATUS_OPTIONS: { value: Status; label: string }[] = [
 const SessionDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getSession, updateSession, deleteSession } = useSessions();
+
+  // ✅ Use reactive sessions list — includes pending from localStorage
+  const { sessions, updateSession, deleteSession } = useSessions();
   const { createFix } = useFixes();
 
-  const [session, setSession] = useState<DebugSession | null>(null);
-  const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState('');
   const [savingNotes, setSavingNotes] = useState(false);
   const [gettingFix, setGettingFix] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [savingToLib, setSavingToLib] = useState(false);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
+  const [localAiFix, setLocalAiFix] = useState<string | null>(null);
+  const [localStatus, setLocalStatus] = useState<Status | null>(null);
+
+  // ✅ Find session from reactive list — works offline + pending
+  const session = sessions.find(s => s.id === id) ?? null;
+  const loading = sessions.length === 0 && !session;
 
   useEffect(() => {
-    if (!id) return;
-    loadSession();
-  }, [id]);
+    if (session) setNotes(session.notes ?? '');
+  }, [session?.id]);
 
-  const loadSession = async () => {
-    setLoading(true);
-    const data = await getSession(id!);
-    if (data) { setSession(data); setNotes(data.notes ?? ''); }
-    setLoading(false);
-  };
+  const effectiveAiFix = localAiFix ?? session?.ai_fix ?? null;
+  const effectiveStatus = localStatus ?? session?.status ?? 'open';
 
   const handleStatusChange = async (status: Status) => {
     if (!session) return;
     setShowStatusMenu(false);
-    const ok = await updateSession(session.id, { status });
-    if (ok) setSession((s) => s ? { ...s, status } : s);
+    setLocalStatus(status);
+    await updateSession(session.id, { status });
   };
 
   const handleSaveNotes = async () => {
     if (!session) return;
     setSavingNotes(true);
-    const ok = await updateSession(session.id, { notes });
-    if (ok) { setSession((s) => s ? { ...s, notes } : s); toast.success('Notes saved!'); }
+    await updateSession(session.id, { notes });
+    toast.success('Notes saved!');
     setSavingNotes(false);
   };
 
@@ -78,28 +79,30 @@ const SessionDetailPage = () => {
     if (!result) { toast.error('Failed to get AI fix. Check your Groq API key.'); setGettingFix(false); return; }
 
     const aiFix = `**Fix (${result.confidence}% confidence)**\n\n${result.fix}\n\n**Why this happens:**\n${result.explanation}`;
-    const ok = await updateSession(session.id, { ai_fix: aiFix });
-    if (ok) { setSession((s) => s ? { ...s, ai_fix: aiFix } : s); toast.success('AI fix generated!'); }
+    setLocalAiFix(aiFix);
+    await updateSession(session.id, { ai_fix: aiFix });
+    toast.success('AI fix generated!');
     setGettingFix(false);
   };
 
   const handleSaveToLibrary = async () => {
-    if (!session?.ai_fix) return;
+    if (!effectiveAiFix || !session) return;
     setSavingToLib(true);
     await createFix({
       title: session.title,
-      fix_content: session.ai_fix,
+      fix_content: effectiveAiFix,
       session_id: session.id,
       project_id: session.project_id ?? undefined,
       error_pattern: session.error_message ?? undefined,
       language: session.project?.language ?? undefined,
     });
     setSavingToLib(false);
+    toast.success('Saved to Fix Library!');
   };
 
   const handleExport = () => {
     if (!session) return;
-    exportSessionAsMarkdown(session);
+    exportSessionAsMarkdown({ ...session, ai_fix: effectiveAiFix ?? undefined, status: effectiveStatus });
     toast.success('Session exported as Markdown!');
   };
 
@@ -112,32 +115,27 @@ const SessionDetailPage = () => {
     setDeleting(false);
   };
 
-  const formatAIFix = (text: string) => {
-    return text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\n/g, '<br/>');
-  };
+  const formatAIFix = (text: string) =>
+    text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>');
 
-  if (loading) {
-    return (
-      <DashboardLayout title="Session">
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="animate-spin text-indigo-500" size={28} />
-        </div>
-      </DashboardLayout>
-    );
-  }
+  if (loading) return (
+    <DashboardLayout title="Session">
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="animate-spin text-indigo-500" size={28} />
+      </div>
+    </DashboardLayout>
+  );
 
-  if (!session) {
-    return (
-      <DashboardLayout title="Session">
-        <div className="flex flex-col items-center justify-center h-64 text-center">
-          <p className="text-gray-500 mb-4">Session not found</p>
-          <button onClick={() => navigate('/sessions')} className="text-indigo-600 font-medium text-sm">Back to Sessions</button>
-        </div>
-      </DashboardLayout>
-    );
-  }
+  if (!session) return (
+    <DashboardLayout title="Session">
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-gray-500 mb-4">Session not found</p>
+        <button onClick={() => navigate('/sessions')} className="text-indigo-600 font-medium text-sm">
+          Back to Sessions
+        </button>
+      </div>
+    </DashboardLayout>
+  );
 
   return (
     <DashboardLayout title={session.title}>
@@ -157,9 +155,16 @@ const SessionDetailPage = () => {
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{session.title}</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                {session.title}
+                {session._pending && (
+                  <span className="ml-2 text-xs font-normal text-orange-400 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-lg">
+                    Pending sync
+                  </span>
+                )}
+              </h2>
               <div className="flex items-center gap-2 flex-wrap">
-                <StatusBadge status={session.status} />
+                <StatusBadge status={effectiveStatus} />
                 <SeverityBadge severity={session.severity} />
                 {session.project && (
                   <div className="flex items-center gap-1 text-xs text-gray-400 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -183,9 +188,9 @@ const SessionDetailPage = () => {
                   {STATUS_OPTIONS.map((opt) => (
                     <button key={opt.value} onClick={() => handleStatusChange(opt.value)}
                       className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition flex items-center gap-2 ${
-                        session.status === opt.value ? 'text-indigo-600 font-medium bg-indigo-50 dark:bg-indigo-950' : 'text-gray-700 dark:text-gray-300'
+                        effectiveStatus === opt.value ? 'text-indigo-600 font-medium bg-indigo-50 dark:bg-indigo-950' : 'text-gray-700 dark:text-gray-300'
                       }`}>
-                      {session.status === opt.value && <CheckCircle size={13} />}
+                      {effectiveStatus === opt.value && <CheckCircle size={13} />}
                       {opt.label}
                     </button>
                   ))}
@@ -226,7 +231,7 @@ const SessionDetailPage = () => {
               <span className="text-xs bg-green-50 text-green-600 border border-green-100 px-2 py-0.5 rounded-full">Groq · Llama 3</span>
             </div>
             <div className="flex items-center gap-2">
-              {session.ai_fix && (
+              {effectiveAiFix && (
                 <button onClick={handleSaveToLibrary} disabled={savingToLib}
                   className="flex items-center gap-1.5 border border-indigo-200 hover:bg-indigo-50 text-indigo-600 text-xs font-medium px-3 py-1.5 rounded-xl transition disabled:opacity-40">
                   {savingToLib ? <Loader2 size={12} className="animate-spin" /> : <BookOpen size={12} />}
@@ -237,17 +242,16 @@ const SessionDetailPage = () => {
                 className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed">
                 {gettingFix
                   ? <><Loader2 size={13} className="animate-spin" /> Analyzing...</>
-                  : session.ai_fix
+                  : effectiveAiFix
                     ? <><RotateCcw size={13} /> Regenerate</>
                     : <><Sparkles size={13} /> Get AI Fix</>
                 }
               </button>
             </div>
           </div>
-
-          {session.ai_fix ? (
+          {effectiveAiFix ? (
             <div className="bg-indigo-50 dark:bg-indigo-950 border border-indigo-100 dark:border-indigo-900 rounded-xl p-4 text-sm text-gray-800 dark:text-gray-200 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: formatAIFix(session.ai_fix) }} />
+              dangerouslySetInnerHTML={{ __html: formatAIFix(effectiveAiFix) }} />
           ) : (
             <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl p-8 text-center">
               <Sparkles size={24} className="text-gray-300 mx-auto mb-2" />
@@ -264,7 +268,7 @@ const SessionDetailPage = () => {
             placeholder="Add your debugging notes, observations, or next steps..."
             rows={4}
             className="w-full border-2 border-gray-100 dark:border-gray-700 focus:border-indigo-400 text-gray-900 dark:text-white dark:bg-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 transition placeholder-gray-300 resize-none" />
-          <button onClick={handleSaveNotes} disabled={savingNotes || notes === session.notes}
+          <button onClick={handleSaveNotes} disabled={savingNotes || notes === (session.notes ?? '')}
             className="mt-3 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition disabled:opacity-40">
             {savingNotes ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
             {savingNotes ? 'Saving...' : 'Save Notes'}

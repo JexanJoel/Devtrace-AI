@@ -34,11 +34,11 @@ type Tab = 'overview' | 'settings';
 const ProjectDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getProject, updateProject, deleteProject } = useProjects();
+
+  // ✅ Get full projects list (includes pending from localStorage)
+  const { projects, updateProject, deleteProject } = useProjects();
   const { sessions, loading: sessionsLoading, createSession } = useSessions(id);
 
-  const [project, setProject] = useState<Project | null>(null);
-  const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('overview');
   const [showModal, setShowModal] = useState(false);
   const [editName, setEditName] = useState('');
@@ -47,29 +47,27 @@ const ProjectDetailPage = () => {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => { if (id) loadProject(); }, [id]);
+  // ✅ Find project directly from reactive list — no async lookup needed
+  const project = projects.find(p => p.id === id) ?? null;
+  const loading = projects.length === 0 && !project;
 
-  const loadProject = async () => {
-    setLoading(true);
-    const data = await getProject(id!);
-    if (data) {
-      setProject(data);
-      setEditName(data.name);
-      setEditDesc(data.description ?? '');
-      setEditGithub(data.github_url ?? '');
+  // Sync edit fields when project loads
+  useEffect(() => {
+    if (project) {
+      setEditName(project.name);
+      setEditDesc(project.description ?? '');
+      setEditGithub(project.github_url ?? '');
     }
-    setLoading(false);
-  };
+  }, [project?.id]);
 
   const handleSave = async () => {
     if (!project) return;
     setSaving(true);
-    const ok = await updateProject(project.id, {
+    await updateProject(project.id, {
       name: editName.trim(),
       description: editDesc.trim() || undefined,
       github_url: editGithub.trim() || undefined,
     });
-    if (ok) setProject((p) => p ? { ...p, name: editName, description: editDesc, github_url: editGithub } : p);
     setSaving(false);
   };
 
@@ -92,6 +90,7 @@ const ProjectDetailPage = () => {
     return 'Just now';
   };
 
+  // Still loading — PowerSync not ready yet
   if (loading) return (
     <DashboardLayout title="Project">
       <div className="flex items-center justify-center h-64">
@@ -100,11 +99,14 @@ const ProjectDetailPage = () => {
     </DashboardLayout>
   );
 
+  // Projects loaded but this ID not found
   if (!project) return (
     <DashboardLayout title="Project">
       <div className="flex flex-col items-center justify-center h-64 text-center">
         <p className="text-gray-500 mb-4">Project not found</p>
-        <button onClick={() => navigate('/projects')} className="text-indigo-600 font-medium text-sm">Back to Projects</button>
+        <button onClick={() => navigate('/projects')} className="text-indigo-600 font-medium text-sm">
+          Back to Projects
+        </button>
       </div>
     </DashboardLayout>
   );
@@ -113,7 +115,8 @@ const ProjectDetailPage = () => {
     <DashboardLayout title={project.name}>
       <div className="space-y-6">
 
-        <button onClick={() => navigate('/projects')} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition">
+        <button onClick={() => navigate('/projects')}
+          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition">
           <ArrowLeft size={14} /> All Projects
         </button>
 
@@ -126,6 +129,11 @@ const ProjectDetailPage = () => {
                 {project.language && (
                   <span className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${LANGUAGE_COLORS[project.language] ?? 'bg-gray-100 text-gray-600 border-gray-200'}`}>
                     {LANGUAGE_LABELS[project.language] ?? project.language}
+                  </span>
+                )}
+                {project._pending && (
+                  <span className="px-2 py-1 rounded-lg text-xs font-medium bg-orange-50 text-orange-500 border border-orange-200">
+                    Pending sync
                   </span>
                 )}
               </div>
@@ -173,11 +181,7 @@ const ProjectDetailPage = () => {
         {/* Overview */}
         {tab === 'overview' && (
           <div className="space-y-5">
-
-            {/* GitHub stats */}
             {project.github_url && <GitHubStatsCard githubUrl={project.github_url} />}
-
-            {/* Sessions */}
             <div className="bg-white rounded-2xl border border-gray-100 p-6">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="font-bold text-gray-900">Debug Sessions</h3>
@@ -186,7 +190,6 @@ const ProjectDetailPage = () => {
                   <Plus size={13} /> New Session
                 </button>
               </div>
-
               {sessionsLoading ? (
                 <div className="space-y-3">
                   {[...Array(3)].map((_, i) => (
@@ -221,7 +224,10 @@ const ProjectDetailPage = () => {
                         session.status === 'in_progress' ? 'bg-yellow-500' : 'bg-green-500'
                       }`} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-800 truncate group-hover:text-indigo-600 transition">{session.title}</p>
+                        <p className="text-sm font-medium text-gray-800 truncate group-hover:text-indigo-600 transition">
+                          {session.title}
+                          {session._pending && <span className="ml-2 text-xs text-orange-400">(pending)</span>}
+                        </p>
                         <div className="flex items-center gap-2 mt-0.5">
                           <SeverityBadge severity={session.severity} />
                           <span className="text-xs text-gray-400 flex items-center gap-1">
@@ -284,7 +290,6 @@ const ProjectDetailPage = () => {
             </div>
           </div>
         )}
-
       </div>
 
       {showModal && (
