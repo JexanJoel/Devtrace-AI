@@ -2,44 +2,19 @@
 
 <img src="https://img.shields.io/badge/DevTrace_AI-Open_Source-6366f1?style=for-the-badge&logo=terminal&logoColor=white" alt="DevTrace AI" />
 
+<br/><br/>
+
 # 🐛 DevTrace AI
 
-### AI-powered debugging assistant for developers
-
-**Track sessions · Get AI fixes · Ship faster**
+> AI-powered debugging assistant · Track sessions · Get AI fixes · Ship faster
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![PowerSync Hackathon](https://img.shields.io/badge/PowerSync_Hackathon-2026-6366f1?style=flat-square)](https://www.powersync.com/)
 
-[Live Demo](https://devtrace-ai.vercel.app) · [Report Bug](https://github.com/yourusername/DevTrace-AI/issues) · [Request Feature](https://github.com/yourusername/DevTrace-AI/issues)
+**[🚀 Live Demo](https://devtrace-ai.vercel.app)** &nbsp;·&nbsp; **[🐛 Report Bug](https://github.com/yourusername/DevTrace-AI/issues)** &nbsp;·&nbsp; **[✨ Request Feature](https://github.com/yourusername/DevTrace-AI/issues)**
 
 </div>
-
----
-
-## 📖 What is DevTrace AI?
-
-DevTrace AI is an **open source AI-powered debugging assistant** built for developers who are tired of copy-pasting errors into ChatGPT. It gives you a structured place to log, analyze, and resolve bugs — with AI doing the heavy lifting.
-
-Built for the **[PowerSync AI Hackathon 2026](https://www.powersync.com/)** using Supabase as the backend — qualifying for the **Best Submission Using Supabase** bonus prize category.
-
----
-
-## ✨ Features
-
-| Feature | Description |
-|---|---|
-| 🐛 **Debug Session Tracking** | Log errors with full stack traces, severity levels, and status |
-| ⚡ **AI Fix Suggestions** | Groq + Llama 3.3 70B analyzes your error and returns a fix with confidence score |
-| 📚 **Fix Library** | Save AI fixes and reuse them across projects — build your personal knowledge base |
-| 📁 **Project Management** | Organize sessions by project, link GitHub repos, track error counts |
-| 📊 **Error Analytics** | Visualize resolution rates, error trends, and severity breakdowns with charts |
-| 🐙 **GitHub Integration** | View repo stats (stars, forks, open issues, last push) linked per project |
-| 🎨 **Dark Mode** | Full dark theme, saved per user in the database |
-| 📱 **Mobile Responsive** | Works on all screen sizes with a slide-in sidebar drawer |
-| 🔐 **Auth** | GitHub OAuth, Google OAuth, Email + Password via Supabase Auth |
-| 🧭 **Onboarding Flow** | 3-step walkthrough for new users |
 
 ---
 
@@ -100,6 +75,59 @@ Built for the **[PowerSync AI Hackathon 2026](https://www.powersync.com/)** usin
     <td align="center" width="130">
       <img src="https://img.shields.io/badge/Llama_3.3_70B-FF0000?style=for-the-badge&logo=meta&logoColor=white" /><br/>
       <sub>AI Model</sub>
+    </td>
+  </tr>
+</table>
+
+</div>
+
+---
+
+## ✨ Features
+
+<div align="center">
+
+<table>
+  <tr>
+    <td width="33%" align="center">
+      <h3>🐛 Session Tracking</h3>
+      <sub>Log errors with stack traces, severity & status</sub>
+    </td>
+    <td width="33%" align="center">
+      <h3>⚡ AI Fix Suggestions</h3>
+      <sub>Groq + Llama 3.3 70B returns fixes with confidence scores</sub>
+    </td>
+    <td width="33%" align="center">
+      <h3>📚 Fix Library</h3>
+      <sub>Save & reuse AI fixes across all your projects</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" align="center">
+      <h3>📁 Project Management</h3>
+      <sub>Organize sessions by project, track error counts</sub>
+    </td>
+    <td width="33%" align="center">
+      <h3>📊 Error Analytics</h3>
+      <sub>Charts for resolution rates, trends & severity</sub>
+    </td>
+    <td width="33%" align="center">
+      <h3>🐙 GitHub Integration</h3>
+      <sub>Stars, forks, open issues & last push per project</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" align="center">
+      <h3>🎨 Dark Mode</h3>
+      <sub>Full dark theme, synced to your profile</sub>
+    </td>
+    <td width="33%" align="center">
+      <h3>📱 Mobile Responsive</h3>
+      <sub>Slide-in sidebar, works on all screen sizes</sub>
+    </td>
+    <td width="33%" align="center">
+      <h3>🔐 Auth</h3>
+      <sub>GitHub OAuth, Google OAuth, Email + Password</sub>
     </td>
   </tr>
 </table>
