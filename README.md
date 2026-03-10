@@ -11,6 +11,7 @@
 | 🐛 | **Log errors** with full stack traces and severity levels |
 | ⚡ | **Get AI fixes** instantly via Groq + Llama 3.3 70B |
 | 📚 | **Save what works** to a fix library you'll actually reuse |
+| 📶 | **Works offline** — browse, create, and debug without internet |
 
 </div>
 
@@ -34,6 +35,8 @@
 | 📁 **Project Management** | Organize debug sessions by project and link GitHub repos |
 | 📊 **Error Analytics** | Visualize resolution rates, error trends and severity breakdowns |
 | 🐙 **GitHub Integration** | View stars, forks, open issues and last push date per project |
+| 📶 **Offline-First** | Full offline support via PowerSync — create projects and sessions without internet, auto-syncs on reconnect |
+| 🔄 **Real-Time Sync** | PowerSync streams Supabase changes to a local SQLite database instantly |
 | 📱 **Mobile Responsive** | Collapsible slide-in sidebar that works on all screen sizes |
 | 🔐 **Auth** | GitHub OAuth, Google OAuth and Email + Password via Supabase |
 | 🎨 **Dark Mode** | Full dark theme toggled from settings and saved to your profile |
@@ -69,12 +72,12 @@
       <sub>Database & Auth</sub>
     </td>
     <td align="center" width="130">
-      <img src="https://img.shields.io/badge/Groq_AI-F55036?style=for-the-badge&logo=lightning&logoColor=white" /><br/>
-      <sub>AI Engine</sub>
+      <img src="https://img.shields.io/badge/PowerSync-6366F1?style=for-the-badge&logo=databricks&logoColor=white" /><br/>
+      <sub>Offline Sync</sub>
     </td>
     <td align="center" width="130">
-      <img src="https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white" /><br/>
-      <sub>Backend</sub>
+      <img src="https://img.shields.io/badge/Groq_AI-F55036?style=for-the-badge&logo=lightning&logoColor=white" /><br/>
+      <sub>AI Engine</sub>
     </td>
     <td align="center" width="130">
       <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" /><br/>
@@ -105,14 +108,31 @@
 
 ---
 
+## 📶 Offline-First Architecture (PowerSync)
+
+DevTrace AI is fully **local-first** powered by [PowerSync](https://www.powersync.com/). Your data is always available — even without internet.
+
+```
+Online:   Supabase ──► PowerSync ──► Local SQLite ──► UI (instant reads)
+Offline:  Create/browse locally ──► queued in localStorage ──► auto-syncs on reconnect
+```
+
+| Scenario | Behavior |
+|:---|:---|
+| ✅ Online | Data syncs in real-time from Supabase via PowerSync streams |
+| 🟠 Offline | Orange banner shown — all existing data available from local SQLite |
+| ✏️ Create offline | Projects/sessions saved locally and queued — synced to Supabase on reconnect |
+| 🔄 Reconnect | Pending items automatically uploaded, duplicates safely handled |
+
+---
+
 ## 🏆 Hackathon — PowerSync AI Hackathon 2026
 
 DevTrace AI is submitted to the **[PowerSync AI Hackathon 2026](https://www.powersync.com/)** targeting:
 
-- **🥇 Core Prize** - AI powered developer tool built during the hackathon window
-- **🏅 Best Submission Using Supabase** - Supabase powers auth, database (RLS), and storage throughout
-
-PowerSync could naturally extend DevTrace into a **local-first experience** - debug sessions available offline and synced when connectivity is restored.
+- **🥇 Core Prize** — AI-powered developer tool built during the hackathon window
+- **🏅 Best Submission Using Supabase** — Supabase powers auth, database (RLS), and storage throughout
+- **🏅 Best Local-First App** — Full offline-first experience powered by PowerSync with real-time sync, local SQLite reads, and offline write queuing
 
 ---
 
@@ -123,6 +143,7 @@ PowerSync could naturally extend DevTrace into a **local-first experience** - de
 - Node.js 18+
 - [Supabase](https://supabase.com) account (free)
 - [Groq](https://groq.com) API key (free)
+- [PowerSync](https://www.powersync.com) account (free)
 
 ### 1. Clone
 
@@ -208,21 +229,15 @@ create policy "Users can create fixes" on fixes for insert with check (auth.uid(
 create policy "Users can update own fixes" on fixes for update using (auth.uid() = user_id);
 create policy "Users can delete own fixes" on fixes for delete using (auth.uid() = user_id);
 
--- Triggers + helpers
+-- Triggers
 create or replace function update_updated_at() returns trigger as $$
 begin new.updated_at = timezone('utc', now()); return new; end;
 $$ language plpgsql;
 create trigger projects_updated_at before update on projects for each row execute procedure update_updated_at();
 create trigger sessions_updated_at before update on debug_sessions for each row execute procedure update_updated_at();
 
-create or replace function increment_session_count(project_id uuid)
-returns void as $$ update projects set session_count = session_count + 1 where id = project_id; $$ language sql;
-
-create or replace function decrement_session_count(project_id uuid)
-returns void as $$ update projects set session_count = greatest(session_count - 1, 0) where id = project_id; $$ language sql;
-
-create or replace function increment_fix_use_count(fix_id uuid)
-returns void as $$ update fixes set use_count = use_count + 1 where id = fix_id; $$ language sql;
+-- PowerSync replication
+create publication powersync for table profiles, projects, debug_sessions, fixes;
 ```
 
 </details>
@@ -231,7 +246,31 @@ returns void as $$ update fixes set use_count = use_count + 1 where id = fix_id;
 4. Enable **GitHub + Google** OAuth providers
 5. Create a storage bucket called `avatars` set to **public**
 
-### 3. Frontend
+### 3. PowerSync Setup
+
+1. Create a free account at [powersync.com](https://www.powersync.com)
+2. Create a new project and connect it to your Supabase instance via the direct Postgres URI
+3. Add the sync rules:
+
+```json
+{
+  "bucket_definitions": {
+    "user_data": {
+      "parameters": "SELECT request.user_id() as user_id",
+      "data": [
+        "SELECT * FROM profiles WHERE id = bucket.user_id",
+        "SELECT * FROM projects WHERE user_id = bucket.user_id",
+        "SELECT * FROM debug_sessions WHERE user_id = bucket.user_id",
+        "SELECT * FROM fixes WHERE user_id = bucket.user_id"
+      ]
+    }
+  }
+}
+```
+
+4. Copy your **PowerSync instance URL**
+
+### 4. Frontend
 
 ```bash
 cd client && npm install
@@ -243,9 +282,10 @@ Create `client/.env`:
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 VITE_GROQ_API_KEY=your_groq_api_key
+VITE_POWERSYNC_URL=your_powersync_instance_url
 ```
 
-### 4. Backend
+### 5. Backend
 
 ```bash
 cd ../server && npm install
@@ -259,7 +299,7 @@ SUPABASE_URL=your_supabase_project_url
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 ```
 
-### 5. Run
+### 6. Run
 
 ```bash
 # Terminal 1 — Frontend
@@ -279,10 +319,10 @@ DevTrace-AI/
     ├── client/                  # React + Vite frontend
     │   └── src/
     │       ├── components/      # auth, dashboard, sessions, fixes, projects
-    │       ├── hooks/           # Custom React hooks (data fetching)
+    │       ├── hooks/           # Custom React hooks (PowerSync + data)
+    │       ├── lib/             # Supabase, Groq, PowerSync clients
     │       ├── pages/           # Route-level page components
     │       ├── store/           # Zustand stores (auth, theme)
-    │       ├── lib/             # Supabase + Groq clients
     │       └── types/           # TypeScript types
     └── server/                  # Express backend
         └── src/
@@ -310,7 +350,7 @@ Contributions, issues, and feature requests are welcome!
 <details>
 <summary><b>Is DevTrace AI free to use?</b></summary>
 <br/>
-Yes — fully open source under MIT. Groq API and Supabase both have generous free tiers, so you can self-host at zero cost.
+Yes — fully open source under MIT. Groq, Supabase, and PowerSync all have generous free tiers, so you can self-host at zero cost.
 </details>
 
 <details>
@@ -320,9 +360,15 @@ Yes. All data is stored in your own Supabase project with Row Level Security (RL
 </details>
 
 <details>
+<summary><b>Does it really work offline?</b></summary>
+<br/>
+Yes. PowerSync syncs your data to a local SQLite database in the browser. You can browse all your projects, sessions, and fixes without internet. New items created offline are saved locally and automatically synced to Supabase when connectivity is restored.
+</details>
+
+<details>
 <summary><b>Which AI model is used?</b></summary>
 <br/>
-Llama 3.3 70B served via Groq's ultra-fast inference API. You can swap the model in <code>client/src/lib/groq.ts</code>.
+Llama 3.3 70B served via Groq's ultra-fast inference API. You can swap the model in <code>client/src/lib/groqClient.ts</code>.
 </details>
 
 <details>
