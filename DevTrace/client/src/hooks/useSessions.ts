@@ -1,6 +1,6 @@
+// src/hooks/useSessions.ts
 import { useQuery } from '@powersync/react';
 import { powerSync } from '../lib/powersync';
-import { supabase } from '../lib/supabaseClient';
 import { useAuthStore } from '../store/authStore';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -63,22 +63,38 @@ const useSessions = (projectId?: string) => {
     if (!user) return null;
     const id = uuidv4();
     const now = new Date().toISOString();
-    const row = { id, user_id: user.id, status: data.status ?? 'open', severity: data.severity ?? 'medium', created_at: now, updated_at: now, ...data };
-    const { data: result, error } = await supabase.from('debug_sessions').insert(row).select().single();
-    if (error) { console.error('Create session error:', error); return null; }
-    return result as DebugSession;
+    const severity = data.severity ?? 'medium';
+    const status = data.status ?? 'open';
+
+    await powerSync.writeTransaction(async (tx) => {
+      await tx.execute(
+        `INSERT INTO debug_sessions (id, user_id, project_id, title, error_message, stack_trace, severity, status, notes, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [id, user.id, data.project_id ?? null, data.title, data.error_message ?? null,
+         data.stack_trace ?? null, severity, status, data.notes ?? null, now, now]
+      );
+    });
+
+    return { id, user_id: user.id, severity, status, created_at: now, updated_at: now, ...data } as DebugSession;
   };
 
   const updateSession = async (id: string, data: Partial<DebugSession>) => {
-    const { error } = await supabase.from('debug_sessions')
-      .update({ ...data, updated_at: new Date().toISOString() }).eq('id', id);
-    if (error) { console.error('Update session error:', error); return false; }
+    const now = new Date().toISOString();
+    const fields = { ...data, updated_at: now };
+    const setClauses = Object.keys(fields).map(k => `${k} = ?`).join(', ');
+    await powerSync.writeTransaction(async (tx) => {
+      await tx.execute(
+        `UPDATE debug_sessions SET ${setClauses} WHERE id = ?`,
+        [...Object.values(fields), id]
+      );
+    });
     return true;
   };
 
   const deleteSession = async (id: string) => {
-    const { error } = await supabase.from('debug_sessions').delete().eq('id', id);
-    if (error) { console.error('Delete session error:', error); return false; }
+    await powerSync.writeTransaction(async (tx) => {
+      await tx.execute('DELETE FROM debug_sessions WHERE id = ?', [id]);
+    });
     return true;
   };
 

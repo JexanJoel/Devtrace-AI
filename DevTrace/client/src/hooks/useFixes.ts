@@ -1,6 +1,6 @@
+// src/hooks/useFixes.ts
 import { useQuery } from '@powersync/react';
 import { powerSync } from '../lib/powersync';
-import { supabase } from '../lib/supabaseClient';
 import { useAuthStore } from '../store/authStore';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -30,22 +30,34 @@ const useFixes = () => {
     if (!user) return null;
     const id = uuidv4();
     const now = new Date().toISOString();
-    const row = { id, user_id: user.id, use_count: 0, created_at: now, ...data };
-    const { data: result, error } = await supabase.from('fixes').insert(row).select().single();
-    if (error) { console.error('Create fix error:', error); return null; }
-    return result as Fix;
+    const tags = Array.isArray(data.tags) ? JSON.stringify(data.tags) : (data.tags ?? null);
+
+    await powerSync.writeTransaction(async (tx) => {
+      await tx.execute(
+        `INSERT INTO fixes (id, user_id, session_id, project_id, title, error_pattern, fix_content, language, tags, use_count, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [id, user.id, data.session_id ?? null, data.project_id ?? null,
+         data.title, data.error_pattern ?? null, data.fix_content,
+         data.language ?? null, tags, 0, now]
+      );
+    });
+
+    return { id, user_id: user.id, use_count: 0, created_at: now, ...data } as Fix;
   };
 
   const deleteFix = async (id: string) => {
-    const { error } = await supabase.from('fixes').delete().eq('id', id);
-    if (error) { console.error('Delete fix error:', error); return false; }
+    await powerSync.writeTransaction(async (tx) => {
+      await tx.execute('DELETE FROM fixes WHERE id = ?', [id]);
+    });
     return true;
   };
 
   const incrementUseCount = async (id: string) => {
     const fix = fixes.find(f => f.id === id);
     if (!fix) return;
-    await supabase.from('fixes').update({ use_count: (fix.use_count ?? 0) + 1 }).eq('id', id);
+    await powerSync.writeTransaction(async (tx) => {
+      await tx.execute('UPDATE fixes SET use_count = ? WHERE id = ?', [(fix.use_count ?? 0) + 1, id]);
+    });
   };
 
   return { fixes, loading: false, createFix, deleteFix, incrementUseCount };
