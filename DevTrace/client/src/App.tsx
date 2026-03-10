@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { supabase } from './lib/supabaseClient';
 import { useAuthStore } from './store/authStore';
 import ProtectedRoute from './components/shared/ProtectedRoute';
+import { PowerSyncProvider } from './components/providers/PowerSyncProvider';
 
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
@@ -36,27 +37,29 @@ const App = () => {
   }, []);
 
   return (
-    <BrowserRouter>
-      <Toaster position="top-right" toastOptions={{
-        duration: 3000,
-        style: { background: '#fff', color: '#111827', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '14px' },
-      }} />
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-        <Route path="/projects" element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>} />
-        <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetailPage /></ProtectedRoute>} />
-        <Route path="/sessions" element={<ProtectedRoute><SessionsPage /></ProtectedRoute>} />
-        <Route path="/sessions/:id" element={<ProtectedRoute><SessionDetailPage /></ProtectedRoute>} />
-        <Route path="/fixes" element={<ProtectedRoute><FixLibraryPage /></ProtectedRoute>} />
-        <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <PowerSyncProvider>
+      <BrowserRouter>
+        <Toaster position="top-right" toastOptions={{
+          duration: 3000,
+          style: { background: '#fff', color: '#111827', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '14px' },
+        }} />
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+          <Route path="/projects" element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>} />
+          <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetailPage /></ProtectedRoute>} />
+          <Route path="/sessions" element={<ProtectedRoute><SessionsPage /></ProtectedRoute>} />
+          <Route path="/sessions/:id" element={<ProtectedRoute><SessionDetailPage /></ProtectedRoute>} />
+          <Route path="/fixes" element={<ProtectedRoute><FixLibraryPage /></ProtectedRoute>} />
+          <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </PowerSyncProvider>
   );
 };
 

@@ -3,6 +3,7 @@ import { Bell, Menu, Moon, Sun, Search } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useThemeStore } from '../../store/themeStore';
 import { supabase } from '../../lib/supabaseClient';
+import SyncStatusBar from './SyncStatusBar';
 
 interface Props {
   title: string;
@@ -24,7 +25,6 @@ const Topbar = ({ title, onMenuClick }: Props) => {
       .single()
       .then(({ data }) => {
         if (data?.avatar_url) setAvatarUrl(data.avatar_url);
-        // fallback: profile name → email prefix
         const fallback = user.email?.split('@')[0] ?? 'User';
         setDisplayName(data?.name ?? fallback);
       });
@@ -41,6 +41,9 @@ const Topbar = ({ title, onMenuClick }: Props) => {
       </button>
 
       <h1 className="font-bold text-gray-900 dark:text-white text-base flex-1 truncate">{title}</h1>
+
+      {/* Sync status indicator */}
+      <SyncStatusBar />
 
       <div className="hidden sm:flex relative flex-shrink-0">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
