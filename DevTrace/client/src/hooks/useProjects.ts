@@ -1,102 +1,57 @@
-// useProjects — fetch, create, update, delete projects
-
-import { useState, useEffect } from 'react';
+// src/hooks/useProjects.ts — PowerSync version
+import { useState } from 'react';
+import { useQuery } from '@powersync/react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuthStore } from '../store/authStore';
-import toast from 'react-hot-toast';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface Project {
   id: string;
   user_id: string;
   name: string;
-  description: string | null;
-  language: string | null;
-  github_url: string | null;
+  description?: string;
+  language?: string;
+  github_url?: string;
   error_count: number;
   session_count: number;
   created_at: string;
   updated_at: string;
 }
 
-export interface CreateProjectInput {
-  name: string;
-  description?: string;
-  language?: string;
-  github_url?: string;
-}
-
 const useProjects = () => {
   const { user } = useAuthStore();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!user) return;
-    fetchProjects();
-  }, [user]);
+  // Read from local SQLite via PowerSync
+  const { data: projects = [] } = useQuery<Project>(
+    'SELECT * FROM projects WHERE user_id = ? ORDER BY updated_at DESC',
+    [user?.id ?? '']
+  );
 
-  const fetchProjects = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
+  const createProject = async (data: Partial<Project>) => {
+    if (!user) return null;
+    const id = uuidv4();
+    const now = new Date().toISOString();
+    // Write to Supabase — PowerSync will sync down to local SQLite
+    const { data: result, error } = await supabase
       .from('projects')
-      .select('*')
-      .eq('user_id', user!.id)
-      .order('updated_at', { ascending: false });
-
-    if (error) toast.error('Failed to load projects');
-    else setProjects(data ?? []);
-    setLoading(false);
+      .insert({ id, user_id: user.id, error_count: 0, session_count: 0, created_at: now, updated_at: now, ...data })
+      .select().single();
+    if (error) { console.error(error); return null; }
+    return result;
   };
 
-  const createProject = async (input: CreateProjectInput) => {
-    const { data, error } = await supabase
-      .from('projects')
-      .insert({ ...input, user_id: user!.id })
-      .select()
-      .single();
-
-    if (error) { toast.error('Failed to create project'); return null; }
-    setProjects((prev) => [data, ...prev]);
-    toast.success('Project created!');
-    return data;
-  };
-
-  const updateProject = async (id: string, updates: Partial<Project>) => {
-    const { error } = await supabase
-      .from('projects')
-      .update(updates)
-      .eq('id', id);
-
-    if (error) { toast.error('Failed to update project'); return false; }
-    setProjects((prev) => prev.map((p) => p.id === id ? { ...p, ...updates } : p));
-    toast.success('Project updated!');
-    return true;
+  const updateProject = async (id: string, data: Partial<Project>) => {
+    const { error } = await supabase.from('projects').update({ ...data, updated_at: new Date().toISOString() }).eq('id', id);
+    return !error;
   };
 
   const deleteProject = async (id: string) => {
-    const { error } = await supabase
-      .from('projects')
-      .delete()
-      .eq('id', id);
-
-    if (error) { toast.error('Failed to delete project'); return false; }
-    setProjects((prev) => prev.filter((p) => p.id !== id));
-    toast.success('Project deleted');
-    return true;
+    const { error } = await supabase.from('projects').delete().eq('id', id);
+    return !error;
   };
 
-  const getProject = async (id: string) => {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) { toast.error('Project not found'); return null; }
-    return data as Project;
-  };
-
-  return { projects, loading, fetchProjects, createProject, updateProject, deleteProject, getProject };
+  return { projects, loading, createProject, updateProject, deleteProject };
 };
 
 export default useProjects;
