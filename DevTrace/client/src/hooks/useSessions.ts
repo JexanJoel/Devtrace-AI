@@ -1,7 +1,8 @@
-// src/hooks/useSessions.ts
 import { useQuery } from '@powersync/react';
 import { powerSync } from '../lib/powersync';
+import { supabase } from '../lib/supabaseClient';
 import { useAuthStore } from '../store/authStore';
+import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 export type Status = 'open' | 'in_progress' | 'resolved';
@@ -20,6 +21,7 @@ export interface DebugSession {
   notes?: string;
   created_at: string;
   updated_at: string;
+  _pending?: boolean;
   project?: { name: string; language?: string };
 }
 
@@ -42,9 +44,18 @@ const useSessions = (projectId?: string) => {
     : 'SELECT * FROM debug_sessions WHERE user_id = ? ORDER BY created_at DESC';
   const params = projectId ? [uid, projectId] : [uid];
 
-  const { data: sessions = [] } = useQuery<DebugSession>(query, params);
+  const { data: syncedSessions = [] } = useQuery<DebugSession>(query, params);
+  const [pendingSessions, setPendingSessions] = useState<DebugSession[]>([]);
+
+  const syncedIds = new Set(syncedSessions.map(s => s.id));
+  const pendingOnly = pendingSessions.filter(s => !syncedIds.has(s.id));
+  const sessions = [...syncedSessions, ...pendingOnly].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
 
   const getSession = async (id: string): Promise<DebugSession | null> => {
+    const pending = pendingSessions.find(s => s.id === id);
+    if (pending) return pending;
     const results = await powerSync.getAll<any>(
       `SELECT ds.*, p.name as project_name, p.language as project_language
        FROM debug_sessions ds
@@ -63,39 +74,45 @@ const useSessions = (projectId?: string) => {
     if (!user) return null;
     const id = uuidv4();
     const now = new Date().toISOString();
-    const severity = data.severity ?? 'medium';
-    const status = data.status ?? 'open';
+    const row: DebugSession = {
+      id, user_id: user.id,
+      severity: data.severity ?? 'medium',
+      status: data.status ?? 'open',
+      title: data.title,
+      project_id: data.project_id,
+      error_message: data.error_message,
+      stack_trace: data.stack_trace,
+      notes: data.notes,
+      created_at: now, updated_at: now,
+      _pending: true,
+    };
 
-    await powerSync.writeTransaction(async (tx) => {
-      await tx.execute(
-        `INSERT INTO debug_sessions (id, user_id, project_id, title, error_message, stack_trace, severity, status, notes, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [id, user.id, data.project_id ?? null, data.title, data.error_message ?? null,
-         data.stack_trace ?? null, severity, status, data.notes ?? null, now, now]
-      );
+    setPendingSessions(prev => [row, ...prev]);
+
+    const { error } = await supabase.from('debug_sessions').insert({
+      id, user_id: user.id, status: row.status, severity: row.severity,
+      created_at: now, updated_at: now, ...data,
     });
 
-    return { id, user_id: user.id, severity, status, created_at: now, updated_at: now, ...data } as DebugSession;
+    if (error) {
+      console.log('Offline — session queued locally');
+    } else {
+      setPendingSessions(prev => prev.filter(s => s.id !== id));
+    }
+
+    return row;
   };
 
   const updateSession = async (id: string, data: Partial<DebugSession>) => {
-    const now = new Date().toISOString();
-    const fields = { ...data, updated_at: now };
-    const setClauses = Object.keys(fields).map(k => `${k} = ?`).join(', ');
-    await powerSync.writeTransaction(async (tx) => {
-      await tx.execute(
-        `UPDATE debug_sessions SET ${setClauses} WHERE id = ?`,
-        [...Object.values(fields), id]
-      );
-    });
-    return true;
+    const { error } = await supabase.from('debug_sessions')
+      .update({ ...data, updated_at: new Date().toISOString() }).eq('id', id);
+    return !error;
   };
 
   const deleteSession = async (id: string) => {
-    await powerSync.writeTransaction(async (tx) => {
-      await tx.execute('DELETE FROM debug_sessions WHERE id = ?', [id]);
-    });
-    return true;
+    setPendingSessions(prev => prev.filter(s => s.id !== id));
+    const { error } = await supabase.from('debug_sessions').delete().eq('id', id);
+    return !error;
   };
 
   return { sessions, loading: false, getSession, createSession, updateSession, deleteSession };

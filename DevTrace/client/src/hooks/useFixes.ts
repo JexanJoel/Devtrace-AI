@@ -1,7 +1,7 @@
-// src/hooks/useFixes.ts
 import { useQuery } from '@powersync/react';
-import { powerSync } from '../lib/powersync';
+import { supabase } from '../lib/supabaseClient';
 import { useAuthStore } from '../store/authStore';
+import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface Fix {
@@ -16,48 +16,55 @@ export interface Fix {
   tags?: string;
   use_count: number;
   created_at: string;
+  _pending?: boolean;
 }
 
 const useFixes = () => {
   const { user } = useAuthStore();
   const uid = user?.id ?? '';
 
-  const { data: fixes = [] } = useQuery<Fix>(
+  const { data: syncedFixes = [] } = useQuery<Fix>(
     'SELECT * FROM fixes WHERE user_id = ? ORDER BY created_at DESC', [uid]
+  );
+  const [pendingFixes, setPendingFixes] = useState<Fix[]>([]);
+
+  const syncedIds = new Set(syncedFixes.map(f => f.id));
+  const pendingOnly = pendingFixes.filter(f => !syncedIds.has(f.id));
+  const fixes = [...syncedFixes, ...pendingOnly].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
   const createFix = async (data: Partial<Fix>) => {
     if (!user) return null;
     const id = uuidv4();
     const now = new Date().toISOString();
-    const tags = Array.isArray(data.tags) ? JSON.stringify(data.tags) : (data.tags ?? null);
+    const row: Fix = { id, user_id: user.id, use_count: 0, created_at: now, _pending: true, ...data } as Fix;
 
-    await powerSync.writeTransaction(async (tx) => {
-      await tx.execute(
-        `INSERT INTO fixes (id, user_id, session_id, project_id, title, error_pattern, fix_content, language, tags, use_count, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [id, user.id, data.session_id ?? null, data.project_id ?? null,
-         data.title, data.error_pattern ?? null, data.fix_content,
-         data.language ?? null, tags, 0, now]
-      );
+    setPendingFixes(prev => [row, ...prev]);
+
+    const { error } = await supabase.from('fixes').insert({
+      id, user_id: user.id, use_count: 0, created_at: now, ...data,
     });
 
-    return { id, user_id: user.id, use_count: 0, created_at: now, ...data } as Fix;
+    if (error) {
+      console.log('Offline — fix queued locally');
+    } else {
+      setPendingFixes(prev => prev.filter(f => f.id !== id));
+    }
+
+    return row;
   };
 
   const deleteFix = async (id: string) => {
-    await powerSync.writeTransaction(async (tx) => {
-      await tx.execute('DELETE FROM fixes WHERE id = ?', [id]);
-    });
-    return true;
+    setPendingFixes(prev => prev.filter(f => f.id !== id));
+    const { error } = await supabase.from('fixes').delete().eq('id', id);
+    return !error;
   };
 
   const incrementUseCount = async (id: string) => {
     const fix = fixes.find(f => f.id === id);
     if (!fix) return;
-    await powerSync.writeTransaction(async (tx) => {
-      await tx.execute('UPDATE fixes SET use_count = ? WHERE id = ?', [(fix.use_count ?? 0) + 1, id]);
-    });
+    await supabase.from('fixes').update({ use_count: (fix.use_count ?? 0) + 1 }).eq('id', id);
   };
 
   return { fixes, loading: false, createFix, deleteFix, incrementUseCount };
