@@ -35,9 +35,9 @@
 | 📁 **Project Management** | Organize debug sessions by project and link GitHub repos |
 | 📊 **Error Analytics** | Visualize resolution rates, error trends and severity breakdowns |
 | 🐙 **GitHub Integration** | View stars, forks, open issues and last push date per project |
-| 🎨 **Dark Mode** | Full dark theme toggled from settings and saved to your profile |
 | 📱 **Mobile Responsive** | Collapsible slide-in sidebar that works on all screen sizes |
 | 🔐 **Auth** | GitHub OAuth, Google OAuth and Email + Password via Supabase |
+| 🎨 **Dark Mode** | Full dark theme toggled from settings and saved to your profile |
 
 ---
 
@@ -113,7 +113,7 @@ DevTrace AI is submitted to the **[PowerSync AI Hackathon 2026](https://www.powe
 - **🥇 Core Prize** - AI powered developer tool built during the hackathon window
 - **🏅 Best Submission Using Supabase** - Supabase powers auth, database (RLS), and storage throughout
 
-PowerSync could naturally extend DevTrace into a **local-first experience** — debug sessions available offline and synced when connectivity is restored.
+PowerSync could naturally extend DevTrace into a **local-first experience** - debug sessions available offline and synced when connectivity is restored.
 
 ---
 
@@ -336,7 +336,7 @@ The Express server handles OAuth token exchange. If you only use email/password 
 
 ## 📄 License
 
-Distributed under the **MIT License** — see [`LICENSE`](LICENSE) for details.
+Distributed under the **MIT License** - see [`LICENSE`](LICENSE) for details.
 
 Free to use, fork, modify, and build upon. A ⭐ star is always appreciated!
 
