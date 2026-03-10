@@ -16,19 +16,19 @@ import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import ProjectsPage from './pages/ProjectsPage';
 import ProjectDetailPage from './pages/ProjectDetailPage';
+import SessionsPage from './pages/SessionsPage';
+import SessionDetailPage from './pages/SessionDetailPage';
 
 const App = () => {
   const { setUser, setSession, setLoading } = useAuthStore();
 
   useEffect(() => {
-    // Load existing session on app boot
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user as any ?? null);
       setLoading(false);
     });
 
-    // Listen for login/logout/token refresh events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
@@ -57,12 +57,12 @@ const App = () => {
       />
 
       <Routes>
-        {/* Public routes */}
+        {/* Public */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Protected routes */}
+        {/* Protected */}
         <Route path="/dashboard" element={
           <ProtectedRoute><DashboardPage /></ProtectedRoute>
         } />
@@ -77,6 +77,12 @@ const App = () => {
         } />
         <Route path="/projects/:id" element={
           <ProtectedRoute><ProjectDetailPage /></ProtectedRoute>
+        } />
+        <Route path="/sessions" element={
+          <ProtectedRoute><SessionsPage /></ProtectedRoute>
+        } />
+        <Route path="/sessions/:id" element={
+          <ProtectedRoute><SessionDetailPage /></ProtectedRoute>
         } />
 
         {/* Catch-all */}
