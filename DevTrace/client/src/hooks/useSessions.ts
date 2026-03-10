@@ -1,8 +1,6 @@
 import { useQuery } from '@powersync/react';
 import { powerSync } from '../lib/powersync';
-import { supabase } from '../lib/supabaseClient';
 import { useAuthStore } from '../store/authStore';
-import { useOnlineStatus } from './useOnlineStatus';
 import { v4 as uuidv4 } from 'uuid';
 
 export type Status = 'open' | 'in_progress' | 'resolved';
@@ -37,7 +35,6 @@ export interface CreateSessionInput {
 const useSessions = (projectId?: string) => {
   const { user } = useAuthStore();
   const uid = user?.id ?? '';
-  const isOnline = useOnlineStatus();
 
   const query = projectId
     ? 'SELECT * FROM debug_sessions WHERE user_id = ? AND project_id = ? ORDER BY created_at DESC'
@@ -73,18 +70,13 @@ const useSessions = (projectId?: string) => {
       ...data,
     };
 
-    // Write to local SQLite first — works offline
     await powerSync.execute(
       `INSERT INTO debug_sessions (id, user_id, project_id, title, error_message, stack_trace, severity, status, notes, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [row.id, row.user_id, row.project_id ?? null, row.title, row.error_message ?? null,
-       row.stack_trace ?? null, row.severity, row.status, row.notes ?? null, now, now]
+      [row.id, row.user_id, row.project_id ?? null, row.title,
+       row.error_message ?? null, row.stack_trace ?? null,
+       row.severity, row.status, row.notes ?? null, now, now]
     );
-
-    if (isOnline) {
-      const { error } = await supabase.from('debug_sessions').insert(row);
-      if (error) console.error('Supabase sync error (will retry):', error);
-    }
 
     return row as DebugSession;
   };
@@ -92,26 +84,16 @@ const useSessions = (projectId?: string) => {
   const updateSession = async (id: string, data: Partial<DebugSession>) => {
     const now = new Date().toISOString();
     const fields = { ...data, updated_at: now };
-
     const setClauses = Object.keys(fields).map(k => `${k} = ?`).join(', ');
     await powerSync.execute(
       `UPDATE debug_sessions SET ${setClauses} WHERE id = ?`,
       [...Object.values(fields), id]
     );
-
-    if (isOnline) {
-      const { error } = await supabase.from('debug_sessions').update(fields).eq('id', id);
-      if (error) console.error('Supabase sync error (will retry):', error);
-    }
     return true;
   };
 
   const deleteSession = async (id: string) => {
     await powerSync.execute('DELETE FROM debug_sessions WHERE id = ?', [id]);
-    if (isOnline) {
-      const { error } = await supabase.from('debug_sessions').delete().eq('id', id);
-      if (error) console.error('Supabase sync error (will retry):', error);
-    }
     return true;
   };
 
