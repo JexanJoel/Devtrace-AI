@@ -6,7 +6,11 @@
 
 <br/>
 
-🐛 &nbsp;**Log errors** with full stack traces and severity levels &nbsp;•&nbsp; ⚡ &nbsp;**Get AI fixes** instantly via Groq + Llama 3.3 70B &nbsp;•&nbsp; 📚 &nbsp;**Save what works** to a fix library you'll actually reuse
+🐛 &nbsp;**Log errors** with full stack traces and severity levels
+<br/>
+⚡ &nbsp;**Get AI fixes** instantly via Groq + Llama 3.3 70B
+<br/>
+📚 &nbsp;**Save what works** to a fix library you'll actually reuse
 
 </div>
 
