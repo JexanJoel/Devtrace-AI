@@ -1,33 +1,56 @@
-// DashboardLayout — wraps all dashboard pages with sidebar + topbar
+// DashboardLayout.tsx — fixed topbar positioning
 
-import { ReactNode } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
+import { useAuthStore } from '../../store/authStore';
+import { useThemeStore } from '../../store/themeStore';
 
 interface Props {
-  children: ReactNode;
+  children: React.ReactNode;
   title: string;
 }
 
 const DashboardLayout = ({ children, title }: Props) => {
+  const { user } = useAuthStore();
+  const { loadTheme } = useThemeStore();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (user) loadTheme(user.id);
+  }, [user]);
+
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
 
-      {/* Fixed sidebar */}
-      <Sidebar />
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-      {/* Main content — offset by sidebar width */}
-      <div className="flex-1 ml-60">
+      {/* Sidebar — fixed, always w-60 */}
+      <div className={`fixed top-0 left-0 h-full z-50 transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+      >
+        <Sidebar onClose={() => setSidebarOpen(false)} />
+      </div>
 
-        {/* Fixed topbar */}
-        <Topbar title={title} />
+      {/* Right side — offset by sidebar width on lg */}
+      <div className="flex flex-col flex-1 lg:ml-60 min-w-0">
 
-        {/* Page content — offset by topbar height */}
-        <main className="pt-16 min-h-screen">
-          <div className="p-6">
-            {children}
-          </div>
+        {/* Topbar — sticky at top of this column, NOT fixed */}
+        <div className="sticky top-0 z-30">
+          <Topbar title={title} onMenuClick={() => setSidebarOpen(true)} />
+        </div>
+
+        {/* Page content */}
+        <main className="flex-1 p-4 sm:p-6">
+          {children}
         </main>
+
       </div>
     </div>
   );

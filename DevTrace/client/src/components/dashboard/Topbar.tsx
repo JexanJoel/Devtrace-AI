@@ -1,77 +1,95 @@
-// Topbar — top navigation bar with search, notifications, user avatar
+// Topbar.tsx — no fixed positioning, reads avatar from profiles
 
-import { useNavigate } from 'react-router-dom';
-import { Search, Bell } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Bell, Menu, Moon, Sun, Search } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
-import useProfile from '../../hooks/useProfile';
+import { useThemeStore } from '../../store/themeStore';
+import { supabase } from '../../lib/supabaseClient';
 
 interface Props {
   title: string;
+  onMenuClick: () => void;
 }
 
-const Topbar = ({ title }: Props) => {
+const Topbar = ({ title, onMenuClick }: Props) => {
   const { user } = useAuthStore();
-  const { profile } = useProfile();
-  const navigate = useNavigate();
+  const { isDark, toggleDark } = useThemeStore();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState('');
 
-  // Get initials for avatar fallback
-  const getInitials = () => {
-    if (profile?.name) {
-      return profile.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
-    }
-    return user?.email?.[0].toUpperCase() ?? 'U';
-  };
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from('profiles')
+      .select('avatar_url, name')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (data?.avatar_url) setAvatarUrl(data.avatar_url);
+        setDisplayName(data?.name ?? user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'User');
+      });
+  }, [user]);
+
+  const email = user?.email ?? '';
+  const initials = displayName.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
   return (
-    <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 fixed top-0 right-0 left-60 z-10">
+    <header className="h-16 w-full bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 flex items-center px-4 sm:px-6 gap-3">
 
-      {/* Page title */}
-      <h1 className="text-lg font-bold text-gray-900">{title}</h1>
+      {/* Hamburger — mobile only */}
+      <button
+        onClick={onMenuClick}
+        className="lg:hidden w-9 h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 transition flex-shrink-0"
+      >
+        <Menu size={20} />
+      </button>
 
-      {/* Right side actions */}
-      <div className="flex items-center gap-3">
+      {/* Title */}
+      <h1 className="font-bold text-gray-900 dark:text-white text-base flex-1 truncate">{title}</h1>
 
-        {/* Search bar */}
-        <div className="relative hidden sm:block">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="bg-gray-50 border border-gray-100 rounded-xl pl-9 pr-4 py-2 text-sm text-gray-600 focus:outline-none focus:border-indigo-300 w-48 transition placeholder-gray-400"
-          />
-        </div>
-
-        {/* Notifications */}
-        <button className="w-9 h-9 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition relative">
-          <Bell size={16} />
-          {/* Notification dot */}
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full" />
-        </button>
-
-        {/* Avatar */}
-        <button
-          onClick={() => navigate('/profile')}
-          className="flex items-center gap-2.5 hover:opacity-80 transition"
-        >
-          {profile?.avatar_url ? (
-            <img
-              src={profile.avatar_url}
-              alt="avatar"
-              className="w-9 h-9 rounded-xl object-cover border border-gray-200"
-            />
-          ) : (
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-sm font-bold">
-              {getInitials()}
-            </div>
-          )}
-          <div className="hidden sm:block text-left">
-            <p className="text-sm font-semibold text-gray-900 leading-none">
-              {profile?.name || 'Developer'}
-            </p>
-            <p className="text-xs text-gray-400 mt-0.5">{user?.email}</p>
-          </div>
-        </button>
+      {/* Search */}
+      <div className="hidden sm:flex relative flex-shrink-0">
+        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search..."
+          className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:border-indigo-300 transition placeholder-gray-400 w-44"
+        />
       </div>
+
+      {/* Dark mode */}
+      <button
+        onClick={() => user && toggleDark(user.id)}
+        className="flex-shrink-0 w-9 h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 transition"
+      >
+        {isDark ? <Sun size={18} /> : <Moon size={18} />}
+      </button>
+
+      {/* Bell */}
+      <button className="flex-shrink-0 relative w-9 h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 transition">
+        <Bell size={18} />
+        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full" />
+      </button>
+
+      {/* Avatar + name */}
+      <div className="flex items-center gap-2.5 flex-shrink-0">
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            className="w-8 h-8 rounded-full object-cover border-2 border-gray-100 dark:border-gray-700"
+            alt={displayName}
+          />
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+            {initials}
+          </div>
+        )}
+        <div className="hidden md:block">
+          <p className="text-sm font-semibold text-gray-900 dark:text-white leading-none max-w-[120px] truncate">{displayName}</p>
+          <p className="text-xs text-gray-400 leading-none mt-0.5 max-w-[120px] truncate">{email}</p>
+        </div>
+      </div>
+
     </header>
   );
 };

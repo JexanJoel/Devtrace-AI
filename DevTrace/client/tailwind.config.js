@@ -1,22 +1,23 @@
 /** @type {import('tailwindcss').Config} */
-// Tailwind config — scans all TSX/TS files for class names
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   darkMode: 'class',
   theme: {
     extend: {
-      colors: {
-        brand: {
-          50:  '#f0f4ff',
-          500: '#4f6ef7',
-          600: '#3b55e6',
-          900: '#1a237e',
-        }
-      }
+      fontFamily: {
+        sans: ['Outfit', 'sans-serif'],
+        'mono-code': ['JetBrains Mono', 'monospace'],
+      },
+      animation: {
+        float: 'float 3s ease-in-out infinite',
+      },
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-8px)' },
+        },
+      },
     },
   },
   plugins: [],
-}
+};
