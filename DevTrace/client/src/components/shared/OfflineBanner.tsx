@@ -1,9 +1,6 @@
 // src/components/shared/OfflineBanner.tsx
-// Shows on every page when offline — uses browser online/offline events
-// Also shows PowerSync sync status when online
-
 import { useEffect, useState } from 'react';
-import { WifiOff, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { WifiOff, RefreshCw, CheckCircle2, Wifi } from 'lucide-react';
 import { powerSync } from '../../lib/powersync';
 
 type SyncState = 'connecting' | 'syncing' | 'synced' | 'offline';
@@ -12,9 +9,8 @@ const OfflineBanner = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [syncState, setSyncState] = useState<SyncState>('connecting');
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
-  const [showSyncBar, setShowSyncBar] = useState(true);
+  const [visible, setVisible] = useState(true);
 
-  // Browser online/offline events
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -26,7 +22,6 @@ const OfflineBanner = () => {
     };
   }, []);
 
-  // PowerSync status
   useEffect(() => {
     const updateStatus = () => {
       const status = powerSync.currentStatus;
@@ -45,14 +40,14 @@ const OfflineBanner = () => {
     return () => unsub?.();
   }, []);
 
-  // Auto-hide sync bar 4 seconds after synced
+  // Auto-hide after 4s when synced
   useEffect(() => {
     if (syncState === 'synced') {
-      setShowSyncBar(true);
-      const t = setTimeout(() => setShowSyncBar(false), 4000);
+      setVisible(true);
+      const t = setTimeout(() => setVisible(false), 4000);
       return () => clearTimeout(t);
     } else {
-      setShowSyncBar(true);
+      setVisible(true);
     }
   }, [syncState]);
 
@@ -63,37 +58,28 @@ const OfflineBanner = () => {
     return `${Math.floor(diff / 60)}m ago`;
   };
 
-  // OFFLINE — show persistent warning banner
+  if (!visible) return null;
+
   if (!isOnline) {
     return (
-      <div className="fixed top-0 left-0 right-0 z-[9999] bg-orange-500 text-white text-xs font-semibold px-4 py-2.5 flex items-center justify-center gap-2 shadow-lg">
+      <div className="w-full bg-orange-500 text-white text-xs font-semibold px-4 py-2.5 flex items-center justify-center gap-2 shadow-lg">
         <WifiOff size={13} />
         You're offline — browsing cached data. Changes will sync when you reconnect.
       </div>
     );
   }
 
-  // ONLINE but syncing/connecting — show slim top bar
-  if (!showSyncBar) return null;
-
   return (
-    <div className={`fixed top-0 left-0 right-0 z-[9999] text-xs font-medium px-4 py-1.5 flex items-center justify-center gap-2 transition-all duration-500 ${
-      syncState === 'syncing' ? 'bg-indigo-600 text-white' :
-      syncState === 'synced' ? 'bg-green-500 text-white' :
-      syncState === 'connecting' ? 'bg-gray-700 text-gray-200' : 'bg-orange-500 text-white'
+    <div className={`w-full text-xs font-medium px-4 py-1.5 flex items-center justify-center gap-2 transition-all duration-500 ${
+      syncState === 'syncing'    ? 'bg-indigo-600 text-white' :
+      syncState === 'synced'     ? 'bg-green-500 text-white' :
+      syncState === 'connecting' ? 'bg-gray-700 text-gray-200' :
+                                   'bg-orange-500 text-white'
     }`}>
-      {syncState === 'connecting' && (
-        <><RefreshCw size={11} className="animate-spin" /> Connecting to PowerSync...</>
-      )}
-      {syncState === 'syncing' && (
-        <><RefreshCw size={11} className="animate-spin" /> Syncing your data...</>
-      )}
-      {syncState === 'synced' && (
-        <><CheckCircle2 size={11} /> All data synced {lastSynced ? formatLastSynced(lastSynced) : ''}</>
-      )}
-      {syncState === 'offline' && (
-        <><WifiOff size={11} /> PowerSync disconnected — using local data</>
-      )}
+      {syncState === 'connecting' && <><RefreshCw size={11} className="animate-spin" /> Connecting to PowerSync...</>}
+      {syncState === 'syncing'    && <><RefreshCw size={11} className="animate-spin" /> Syncing your data...</>}
+      {syncState === 'synced'     && <><CheckCircle2 size={11} /> All data synced {lastSynced ? formatLastSynced(lastSynced) : ''} <Wifi size={10} className="ml-1 opacity-70" /></>}
+      {syncState === 'offline'    && <><WifiOff size={11} /> PowerSync disconnected — using local data</>}
     </div>
   );
 };

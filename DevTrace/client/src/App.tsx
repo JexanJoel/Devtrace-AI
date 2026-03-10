@@ -40,27 +40,31 @@ const App = () => {
   return (
     <PowerSyncProvider>
       <BrowserRouter>
-        {/* Global offline banner — shows on every page when offline */}
-        <OfflineBanner />
-        <Toaster position="top-right" toastOptions={{
-          duration: 3000,
-          style: { background: '#fff', color: '#111827', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '14px' },
-        }} />
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-          <Route path="/projects" element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>} />
-          <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetailPage /></ProtectedRoute>} />
-          <Route path="/sessions" element={<ProtectedRoute><SessionsPage /></ProtectedRoute>} />
-          <Route path="/sessions/:id" element={<ProtectedRoute><SessionDetailPage /></ProtectedRoute>} />
-          <Route path="/fixes" element={<ProtectedRoute><FixLibraryPage /></ProtectedRoute>} />
-          <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        {/* Banner is in normal flow — pushes content down instead of overlaying */}
+        <div className="flex flex-col min-h-screen">
+          <OfflineBanner />
+          <div className="flex-1">
+            <Toaster position="top-right" toastOptions={{
+              duration: 3000,
+              style: { background: '#fff', color: '#111827', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '14px' },
+            }} />
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+              <Route path="/projects" element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>} />
+              <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetailPage /></ProtectedRoute>} />
+              <Route path="/sessions" element={<ProtectedRoute><SessionsPage /></ProtectedRoute>} />
+              <Route path="/sessions/:id" element={<ProtectedRoute><SessionDetailPage /></ProtectedRoute>} />
+              <Route path="/fixes" element={<ProtectedRoute><FixLibraryPage /></ProtectedRoute>} />
+              <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+        </div>
       </BrowserRouter>
     </PowerSyncProvider>
   );
