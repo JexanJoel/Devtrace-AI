@@ -36,7 +36,7 @@
 | 📊 Error Analytics | Visualize resolution rates, error trends and severity breakdowns |
 | 🐙 Github Sync | View stars, forks, open issues and last push date per project |
 | 📶 Offline-First | Offline first with PowerSync - work offline, sync on reconnect |
-| 🔄 Real-Time Sync | PowerSync streams Supabase changes to a local SQLite database instantly |
+| 🔄 Real Time Sync | PowerSync streams Supabase changes to a local SQLite database |
 | 📱 Mobile Responsive | Collapsible slide-in sidebar that works on all screen sizes |
 | 🔐 Auth | GitHub OAuth, Google OAuth and Email + Password via Supabase |
 | 🎨 Dark Mode | Full dark theme toggled from settings and saved to your profile |
@@ -120,7 +120,7 @@ Offline:  Create/browse locally ──► queued in localStorage ──► auto-
 | Scenario | Behavior |
 |:---|:---|
 | ✅ Online | Data syncs in real-time from Supabase via PowerSync streams |
-| 🟠 Offline | Orange banner shown — all existing data available from local SQLite |
+| 🟠 Offline | Orange banner shown - all existing data available from local SQLite |
 | ✏️ Create offline | Projects/sessions saved locally and queued - synced to Supabase on reconnect |
 | 🔄 Reconnect | Pending items automatically uploaded, duplicates safely handled |
 
