@@ -1,5 +1,3 @@
-// App.tsx — root component with all routes
-
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -7,7 +5,6 @@ import { supabase } from './lib/supabaseClient';
 import { useAuthStore } from './store/authStore';
 import ProtectedRoute from './components/shared/ProtectedRoute';
 
-// Pages
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -18,6 +15,7 @@ import ProjectsPage from './pages/ProjectsPage';
 import ProjectDetailPage from './pages/ProjectDetailPage';
 import SessionsPage from './pages/SessionsPage';
 import SessionDetailPage from './pages/SessionDetailPage';
+import FixLibraryPage from './pages/FixLibraryPage';
 
 const App = () => {
   const { setUser, setSession, setLoading } = useAuthStore();
@@ -55,37 +53,18 @@ const App = () => {
           },
         }}
       />
-
       <Routes>
-        {/* Public */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-
-        {/* Protected */}
-        <Route path="/dashboard" element={
-          <ProtectedRoute><DashboardPage /></ProtectedRoute>
-        } />
-        <Route path="/profile" element={
-          <ProtectedRoute><ProfilePage /></ProtectedRoute>
-        } />
-        <Route path="/settings" element={
-          <ProtectedRoute><SettingsPage /></ProtectedRoute>
-        } />
-        <Route path="/projects" element={
-          <ProtectedRoute><ProjectsPage /></ProtectedRoute>
-        } />
-        <Route path="/projects/:id" element={
-          <ProtectedRoute><ProjectDetailPage /></ProtectedRoute>
-        } />
-        <Route path="/sessions" element={
-          <ProtectedRoute><SessionsPage /></ProtectedRoute>
-        } />
-        <Route path="/sessions/:id" element={
-          <ProtectedRoute><SessionDetailPage /></ProtectedRoute>
-        } />
-
-        {/* Catch-all */}
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+        <Route path="/projects" element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>} />
+        <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetailPage /></ProtectedRoute>} />
+        <Route path="/sessions" element={<ProtectedRoute><SessionsPage /></ProtectedRoute>} />
+        <Route path="/sessions/:id" element={<ProtectedRoute><SessionDetailPage /></ProtectedRoute>} />
+        <Route path="/fixes" element={<ProtectedRoute><FixLibraryPage /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

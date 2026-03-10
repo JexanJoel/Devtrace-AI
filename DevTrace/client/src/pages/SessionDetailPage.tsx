@@ -1,17 +1,19 @@
-// SessionDetailPage — full session view with AI fix via Gemini
+// SessionDetailPage — full session view with AI fix, export, save to library
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Loader2, Trash2, Save,
   Sparkles, ChevronDown, Clock, FolderOpen,
-  CheckCircle, AlertCircle, RotateCcw
+  CheckCircle, AlertCircle, RotateCcw, Download, BookOpen
 } from 'lucide-react';
 import DashboardLayout from '../components/dashboard/DashboardLayout';
 import { StatusBadge, SeverityBadge } from '../components/sessions/StatusBadge';
 import useSessions from '../hooks/useSessions';
 import type { DebugSession, Status } from '../hooks/useSessions';
-import { getAIFix } from '../lib/groqClient';
+import useFixes from '../hooks/useFixes';
+import type { getAIFix } from '../lib/groqClient';
+import { exportSessionAsMarkdown } from '../hooks/exportUtils';
 import toast from 'react-hot-toast';
 
 const STATUS_OPTIONS: { value: Status; label: string }[] = [
@@ -24,6 +26,7 @@ const SessionDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getSession, updateSession, deleteSession } = useSessions();
+  const { createFix } = useFixes();
 
   const [session, setSession] = useState<DebugSession | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,6 +34,7 @@ const SessionDetailPage = () => {
   const [savingNotes, setSavingNotes] = useState(false);
   const [gettingFix, setGettingFix] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [savingToLib, setSavingToLib] = useState(false);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
 
   useEffect(() => {
@@ -72,7 +76,7 @@ const SessionDetailPage = () => {
       return;
     }
     setGettingFix(true);
-    toast.loading('Asking Gemini AI...', { id: 'ai-fix' });
+    toast.loading('Asking Groq AI...', { id: 'ai-fix' });
 
     const result = await getAIFix(
       session.error_message,
@@ -83,7 +87,7 @@ const SessionDetailPage = () => {
     toast.dismiss('ai-fix');
 
     if (!result) {
-      toast.error('Failed to get AI fix. Check your Gemini API key.');
+      toast.error('Failed to get AI fix. Check your Groq API key.');
       setGettingFix(false);
       return;
     }
@@ -95,6 +99,26 @@ const SessionDetailPage = () => {
       toast.success('AI fix generated!');
     }
     setGettingFix(false);
+  };
+
+  const handleSaveToLibrary = async () => {
+    if (!session?.ai_fix) return;
+    setSavingToLib(true);
+    await createFix({
+      title: session.title,
+      fix_content: session.ai_fix,
+      session_id: session.id,
+      project_id: session.project_id ?? undefined,
+      error_pattern: session.error_message ?? undefined,
+      language: session.project?.language ?? undefined,
+    });
+    setSavingToLib(false);
+  };
+
+  const handleExport = () => {
+    if (!session) return;
+    exportSessionAsMarkdown(session);
+    toast.success('Session exported as Markdown!');
   };
 
   const handleDelete = async () => {
@@ -139,15 +163,23 @@ const SessionDetailPage = () => {
     <DashboardLayout title={session.title}>
       <div className="max-w-3xl space-y-5">
 
-        {/* Back */}
-        <button
-          onClick={() => navigate('/sessions')}
-          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition"
-        >
-          <ArrowLeft size={14} /> All Sessions
-        </button>
+        {/* Back + export */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => navigate('/sessions')}
+            className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition"
+          >
+            <ArrowLeft size={14} /> All Sessions
+          </button>
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 border border-gray-200 hover:border-gray-300 text-gray-600 px-3 py-2 rounded-xl text-sm font-medium transition"
+          >
+            <Download size={14} /> Export .md
+          </button>
+        </div>
 
-        {/* Session header card */}
+        {/* Header card */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex-1 min-w-0">
@@ -220,7 +252,7 @@ const SessionDetailPage = () => {
           </div>
         )}
 
-        {/* AI Fix section */}
+        {/* AI Fix */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -228,22 +260,34 @@ const SessionDetailPage = () => {
                 <Sparkles size={14} className="text-indigo-600" />
               </div>
               <h3 className="font-bold text-gray-900 text-sm">AI Fix</h3>
-              <span className="text-xs bg-indigo-50 text-indigo-500 border border-indigo-100 px-2 py-0.5 rounded-full">
-                Gemini
+              <span className="text-xs bg-green-50 text-green-600 border border-green-100 px-2 py-0.5 rounded-full">
+                Groq · Llama 3
               </span>
             </div>
-            <button
-              onClick={handleGetAIFix}
-              disabled={gettingFix || !session.error_message}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {gettingFix
-                ? <><Loader2 size={13} className="animate-spin" /> Analyzing...</>
-                : session.ai_fix
-                  ? <><RotateCcw size={13} /> Regenerate</>
-                  : <><Sparkles size={13} /> Get AI Fix</>
-              }
-            </button>
+            <div className="flex items-center gap-2">
+              {session.ai_fix && (
+                <button
+                  onClick={handleSaveToLibrary}
+                  disabled={savingToLib}
+                  className="flex items-center gap-1.5 border border-indigo-200 hover:bg-indigo-50 text-indigo-600 text-xs font-medium px-3 py-1.5 rounded-xl transition disabled:opacity-40"
+                >
+                  {savingToLib ? <Loader2 size={12} className="animate-spin" /> : <BookOpen size={12} />}
+                  Save to Library
+                </button>
+              )}
+              <button
+                onClick={handleGetAIFix}
+                disabled={gettingFix || !session.error_message}
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {gettingFix
+                  ? <><Loader2 size={13} className="animate-spin" /> Analyzing...</>
+                  : session.ai_fix
+                    ? <><RotateCcw size={13} /> Regenerate</>
+                    : <><Sparkles size={13} /> Get AI Fix</>
+                }
+              </button>
+            </div>
           </div>
 
           {session.ai_fix ? (
@@ -256,7 +300,7 @@ const SessionDetailPage = () => {
               <Sparkles size={24} className="text-gray-300 mx-auto mb-2" />
               <p className="text-gray-400 text-sm">
                 {session.error_message
-                  ? 'Click "Get AI Fix" to analyze this error with Gemini'
+                  ? 'Click "Get AI Fix" to analyze this error with Groq AI'
                   : 'Add an error message to enable AI fix suggestions'
                 }
               </p>

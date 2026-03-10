@@ -1,12 +1,14 @@
-// SessionsPage — list of all debug sessions with filters
+// SessionsPage.tsx — list all sessions with export all button
 
 import { useState } from 'react';
-import { Plus, Bug, Search } from 'lucide-react';
+import { Plus, Bug, Search, Download } from 'lucide-react';
 import DashboardLayout from '../components/dashboard/DashboardLayout';
 import SessionRow from '../components/sessions/SessionRow';
 import CreateSessionModal from '../components/sessions/CreateSessionModal';
 import useSessions from '../hooks/useSessions';
 import type { Status } from '../hooks/useSessions';
+import { exportAllSessionsAsMarkdown } from '../hooks/exportUtils';
+import toast from 'react-hot-toast';
 
 const FILTERS: { label: string; value: Status | 'all' }[] = [
   { label: 'All', value: 'all' },
@@ -36,11 +38,17 @@ const SessionsPage = () => {
     resolved: sessions.filter((s) => s.status === 'resolved').length,
   };
 
+  const handleExportAll = () => {
+    if (sessions.length === 0) { toast.error('No sessions to export'); return; }
+    exportAllSessionsAsMarkdown(sessions);
+    toast.success(`Exported ${sessions.length} sessions!`);
+  };
+
   return (
     <DashboardLayout title="Debug Sessions">
       <div className="space-y-6">
 
-        {/* Header row */}
+        {/* Header */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="relative flex-1 max-w-sm">
             <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -52,12 +60,20 @@ const SessionsPage = () => {
               className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-50 transition placeholder-gray-400"
             />
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition"
-          >
-            <Plus size={16} /> New Session
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExportAll}
+              className="flex items-center gap-2 border border-gray-200 hover:border-gray-300 text-gray-600 font-medium px-4 py-2.5 rounded-xl text-sm transition"
+            >
+              <Download size={15} /> Export All
+            </button>
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition"
+            >
+              <Plus size={16} /> New Session
+            </button>
+          </div>
         </div>
 
         {/* Filter tabs */}
