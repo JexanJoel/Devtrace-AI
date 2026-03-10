@@ -4,44 +4,70 @@ import { powerSync } from '../../lib/powersync';
 
 type SyncState = 'connecting' | 'syncing' | 'synced' | 'offline';
 
-const getState = (): { state: SyncState; lastSynced: Date | null } => {
-  const status = powerSync.currentStatus;
-  if (!status || !status.connected) return { state: 'offline', lastSynced: null };
-  if (status.dataFlowStatus?.uploading || status.dataFlowStatus?.downloading)
-    return { state: 'syncing', lastSynced: null };
-  if (status.lastSyncedAt)
-    return { state: 'synced', lastSynced: new Date(status.lastSyncedAt) };
-  return { state: 'connecting', lastSynced: null };
-};
-
 const OfflineBanner = () => {
   const [syncState, setSyncState] = useState<SyncState>('connecting');
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
   const [visible, setVisible] = useState(true);
+  const [isOnline, setIsOnline] = useState(true);
 
-  const update = () => {
-    const { state, lastSynced } = getState();
-    setSyncState(state);
-    if (lastSynced) setLastSynced(lastSynced);
+  // Real connectivity check — fetch a tiny resource
+  const checkOnline = async () => {
+    try {
+      await fetch('https://www.google.com/favicon.ico', {
+        method: 'HEAD',
+        cache: 'no-store',
+        signal: AbortSignal.timeout(3000),
+      });
+      setIsOnline(true);
+    } catch {
+      setIsOnline(false);
+    }
+  };
+
+  // PowerSync sync state
+  const updateSyncState = () => {
+    const status = powerSync.currentStatus;
+    if (!status || !status.connected) { setSyncState('offline'); return; }
+    if (status.dataFlowStatus?.uploading || status.dataFlowStatus?.downloading) {
+      setSyncState('syncing'); return;
+    }
+    if (status.lastSyncedAt) {
+      setSyncState('synced');
+      setLastSynced(new Date(status.lastSyncedAt));
+    } else {
+      setSyncState('connecting');
+    }
   };
 
   useEffect(() => {
-    update();
-    const unsub = powerSync.registerListener({ statusChanged: update });
-    // Poll every 3s — catches DevTools offline toggle which doesn't fire events
-    const interval = setInterval(update, 3000);
-    return () => { unsub?.(); clearInterval(interval); };
+    checkOnline();
+    updateSyncState();
+
+    // Poll both every 3s
+    const interval = setInterval(() => {
+      checkOnline();
+      updateSyncState();
+    }, 3000);
+
+    const unsub = powerSync.registerListener({ statusChanged: updateSyncState });
+    window.addEventListener('online', () => setIsOnline(true));
+    window.addEventListener('offline', () => setIsOnline(false));
+
+    return () => {
+      clearInterval(interval);
+      unsub?.();
+    };
   }, []);
 
   // Auto-hide 4s after synced
   useEffect(() => {
-    if (syncState === 'synced') {
+    if (syncState === 'synced' && isOnline) {
       setVisible(true);
       const t = setTimeout(() => setVisible(false), 4000);
       return () => clearTimeout(t);
     }
     setVisible(true);
-  }, [syncState]);
+  }, [syncState, isOnline]);
 
   if (!visible) return null;
 
@@ -52,7 +78,8 @@ const OfflineBanner = () => {
     return `${Math.floor(diff / 60)}m ago`;
   };
 
-  if (syncState === 'offline') {
+  // Offline wins — show orange banner
+  if (!isOnline || syncState === 'offline') {
     return (
       <div className="w-full bg-orange-500 text-white text-xs font-semibold px-4 py-2.5 flex items-center justify-center gap-2">
         <WifiOff size={13} />
