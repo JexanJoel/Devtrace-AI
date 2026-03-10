@@ -1,41 +1,39 @@
-// src/components/shared/OfflineBanner.tsx
 import { useEffect, useState } from 'react';
 import { WifiOff, RefreshCw, CheckCircle2, Wifi } from 'lucide-react';
 import { powerSync } from '../../lib/powersync';
 
 type SyncState = 'connecting' | 'syncing' | 'synced' | 'offline';
 
+const getState = (): { state: SyncState; lastSynced: Date | null } => {
+  const status = powerSync.currentStatus;
+  if (!status || !status.connected) return { state: 'offline', lastSynced: null };
+  if (status.dataFlowStatus?.uploading || status.dataFlowStatus?.downloading)
+    return { state: 'syncing', lastSynced: null };
+  if (status.lastSyncedAt)
+    return { state: 'synced', lastSynced: new Date(status.lastSyncedAt) };
+  return { state: 'connecting', lastSynced: null };
+};
+
 const OfflineBanner = () => {
   const [syncState, setSyncState] = useState<SyncState>('connecting');
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
   const [visible, setVisible] = useState(true);
 
+  const update = () => {
+    const { state, lastSynced } = getState();
+    setSyncState(state);
+    if (lastSynced) setLastSynced(lastSynced);
+  };
+
   useEffect(() => {
-    const updateStatus = () => {
-      const status = powerSync.currentStatus;
-
-      // No status or not connected = offline
-      if (!status || !status.connected) {
-        setSyncState('offline');
-        return;
-      }
-
-      if (status.dataFlowStatus?.uploading || status.dataFlowStatus?.downloading) {
-        setSyncState('syncing');
-      } else if (status.lastSyncedAt) {
-        setSyncState('synced');
-        setLastSynced(new Date(status.lastSyncedAt));
-      } else {
-        setSyncState('connecting');
-      }
-    };
-
-    updateStatus();
-    const unsub = powerSync.registerListener({ statusChanged: updateStatus });
-    return () => unsub?.();
+    update();
+    const unsub = powerSync.registerListener({ statusChanged: update });
+    // Poll every 3s — catches DevTools offline toggle which doesn't fire events
+    const interval = setInterval(update, 3000);
+    return () => { unsub?.(); clearInterval(interval); };
   }, []);
 
-  // Auto-hide 4s after synced, but always show when offline/syncing/connecting
+  // Auto-hide 4s after synced
   useEffect(() => {
     if (syncState === 'synced') {
       setVisible(true);
@@ -47,14 +45,13 @@ const OfflineBanner = () => {
 
   if (!visible) return null;
 
-  const formatLastSynced = (date: Date) => {
+  const formatTime = (date: Date) => {
     const diff = Math.floor((Date.now() - date.getTime()) / 1000);
     if (diff < 10) return 'just now';
     if (diff < 60) return `${diff}s ago`;
     return `${Math.floor(diff / 60)}m ago`;
   };
 
-  // Offline — orange persistent banner
   if (syncState === 'offline') {
     return (
       <div className="w-full bg-orange-500 text-white text-xs font-semibold px-4 py-2.5 flex items-center justify-center gap-2">
@@ -64,7 +61,6 @@ const OfflineBanner = () => {
     );
   }
 
-  // Online states — slim colored bar
   return (
     <div className={`w-full text-xs font-medium px-4 py-1.5 flex items-center justify-center gap-2 transition-all duration-500 ${
       syncState === 'syncing'    ? 'bg-indigo-600 text-white' :
@@ -73,7 +69,7 @@ const OfflineBanner = () => {
     }`}>
       {syncState === 'connecting' && <><RefreshCw size={11} className="animate-spin" /> Connecting to PowerSync...</>}
       {syncState === 'syncing'    && <><RefreshCw size={11} className="animate-spin" /> Syncing your data...</>}
-      {syncState === 'synced'     && <><CheckCircle2 size={11} /> All data synced {lastSynced ? formatLastSynced(lastSynced) : ''} <Wifi size={10} className="ml-1 opacity-70" /></>}
+      {syncState === 'synced'     && <><CheckCircle2 size={11} /> All data synced {lastSynced ? formatTime(lastSynced) : ''} <Wifi size={10} className="ml-1 opacity-70" /></>}
     </div>
   );
 };
