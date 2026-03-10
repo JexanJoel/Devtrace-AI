@@ -8,10 +8,6 @@
 [![Report Bug](https://img.shields.io/badge/Report_Bug-dc2626?style=for-the-badge&logo=github&logoColor=white)](https://github.com/JexanJoel/DevTrace-AI/issues)
 [![Request Feature](https://img.shields.io/badge/Request_Feature-16a34a?style=for-the-badge&logo=github&logoColor=white)](https://github.com/JexanJoel/DevTrace-AI/issues)
 
-![MIT License](https://img.shields.io/github/license/JexanJoel/DevTrace-AI?style=flat-square)
-![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)
-![PowerSync Hackathon](https://img.shields.io/badge/PowerSync_Hackathon-2026-6366f1?style=flat-square)
-
 </div>
 
 ---
@@ -83,54 +79,18 @@
 
 ## Features
 
-<div align="center">
-
-<table>
-  <tr>
-    <td align="center" width="200">
-      <strong>🐛 Session Tracking</strong><br/>
-      <sub>Log errors with stack traces, severity and status</sub>
-    </td>
-    <td align="center" width="200">
-      <strong>⚡ AI Fix Suggestions</strong><br/>
-      <sub>Groq + Llama 3.3 70B with confidence scores</sub>
-    </td>
-    <td align="center" width="200">
-      <strong>📚 Fix Library</strong><br/>
-      <sub>Save and reuse AI fixes across projects</sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="200">
-      <strong>📁 Project Management</strong><br/>
-      <sub>Organize sessions by project, link GitHub repos</sub>
-    </td>
-    <td align="center" width="200">
-      <strong>📊 Error Analytics</strong><br/>
-      <sub>Charts for trends, resolution rates and severity</sub>
-    </td>
-    <td align="center" width="200">
-      <strong>🐙 GitHub Integration</strong><br/>
-      <sub>Stars, forks, open issues and last push</sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="200">
-      <strong>🎨 Dark Mode</strong><br/>
-      <sub>Full dark theme, synced to your profile</sub>
-    </td>
-    <td align="center" width="200">
-      <strong>📱 Mobile Responsive</strong><br/>
-      <sub>Slide-in sidebar, works on all screen sizes</sub>
-    </td>
-    <td align="center" width="200">
-      <strong>🔐 Auth</strong><br/>
-      <sub>GitHub OAuth, Google OAuth, Email + Password</sub>
-    </td>
-  </tr>
-</table>
-
-</div>
+| &nbsp; | Feature | Description |
+|:---:|:---|:---|
+| 🐛 | **Session Tracking** | Log errors with full stack traces, severity levels and status |
+| ⚡ | **AI Fix Suggestions** | Groq + Llama 3.3 70B analyzes errors and returns fixes with confidence scores |
+| 📚 | **Fix Library** | Save AI-generated fixes and reuse them across all your projects |
+| 📁 | **Project Management** | Organize debug sessions by project and link GitHub repos |
+| 📊 | **Error Analytics** | Visualize resolution rates, error trends and severity breakdowns |
+| 🐙 | **GitHub Integration** | View stars, forks, open issues and last push date per project |
+| 🎨 | **Dark Mode** | Full dark theme toggled from settings and saved to your profile |
+| 📱 | **Mobile Responsive** | Collapsible slide-in sidebar that works on all screen sizes |
+| 🔐 | **Auth** | GitHub OAuth, Google OAuth and Email + Password via Supabase |
+| 🧭 | **Onboarding** | 3-step guided walkthrough for new users |
 
 ---
 
