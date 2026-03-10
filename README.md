@@ -8,15 +8,6 @@
 
 **Track sessions · Get AI fixes · Ship faster**
 
-[![React](https://img.shields.io/badge/React_18-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com/)
-[![Groq](https://img.shields.io/badge/Groq_AI-F55036?style=flat-square&logo=lightning&logoColor=white)](https://groq.com/)
-[![Express](https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white)](https://expressjs.com/)
-[![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com/)
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![PowerSync Hackathon](https://img.shields.io/badge/PowerSync_Hackathon-2026-6366f1?style=flat-square)](https://www.powersync.com/)
@@ -46,29 +37,74 @@ Built for the **[PowerSync AI Hackathon 2026](https://www.powersync.com/)** usin
 | 📊 **Error Analytics** | Visualize resolution rates, error trends, and severity breakdowns with charts |
 | 🐙 **GitHub Integration** | View repo stats (stars, forks, open issues, last push) linked per project |
 | 🎨 **Dark Mode** | Full dark theme, saved per user in the database |
-| 📱 **Mobile Responsive** | Works on all screen sizes with a slide-in sidebar |
+| 📱 **Mobile Responsive** | Works on all screen sizes with a slide-in sidebar drawer |
 | 🔐 **Auth** | GitHub OAuth, Google OAuth, Email + Password via Supabase Auth |
 | 🧭 **Onboarding Flow** | 3-step walkthrough for new users |
 
 ---
 
-## 🖼️ Screenshots
+## 🧰 Tech Stack
 
-> **Dashboard**
-> <!-- Add screenshot: public/screenshots/dashboard.png -->
-> ![Dashboard](https://placehold.co/1200x675/4f46e5/ffffff?text=Dashboard)
+<div align="center">
 
-> **Debug Session + AI Fix**
-> <!-- Add screenshot: public/screenshots/session-detail.png -->
-> ![Session Detail](https://placehold.co/1200x675/1e1b4b/ffffff?text=AI+Fix+in+Action)
+<table>
+  <tr>
+    <td align="center" width="130">
+      <img src="https://img.shields.io/badge/React_18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" /><br/>
+      <sub>Frontend</sub>
+    </td>
+    <td align="center" width="130">
+      <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" /><br/>
+      <sub>Language</sub>
+    </td>
+    <td align="center" width="130">
+      <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" /><br/>
+      <sub>Build Tool</sub>
+    </td>
+    <td align="center" width="130">
+      <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" /><br/>
+      <sub>Styling</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="130">
+      <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" /><br/>
+      <sub>Database & Auth</sub>
+    </td>
+    <td align="center" width="130">
+      <img src="https://img.shields.io/badge/Groq_AI-F55036?style=for-the-badge&logo=lightning&logoColor=white" /><br/>
+      <sub>AI Engine</sub>
+    </td>
+    <td align="center" width="130">
+      <img src="https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white" /><br/>
+      <sub>Backend</sub>
+    </td>
+    <td align="center" width="130">
+      <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" /><br/>
+      <sub>Deployment</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="130">
+      <img src="https://img.shields.io/badge/Zustand-FF6B35?style=for-the-badge&logo=react&logoColor=white" /><br/>
+      <sub>State</sub>
+    </td>
+    <td align="center" width="130">
+      <img src="https://img.shields.io/badge/Recharts-22C55E?style=for-the-badge&logo=chartdotjs&logoColor=white" /><br/>
+      <sub>Charts</sub>
+    </td>
+    <td align="center" width="130">
+      <img src="https://img.shields.io/badge/Lucide-F97316?style=for-the-badge&logo=lucide&logoColor=white" /><br/>
+      <sub>Icons</sub>
+    </td>
+    <td align="center" width="130">
+      <img src="https://img.shields.io/badge/Llama_3.3_70B-FF0000?style=for-the-badge&logo=meta&logoColor=white" /><br/>
+      <sub>AI Model</sub>
+    </td>
+  </tr>
+</table>
 
-> **Analytics**
-> <!-- Add screenshot: public/screenshots/analytics.png -->
-> ![Analytics](https://placehold.co/1200x675/065f46/ffffff?text=Error+Analytics)
-
-> **Fix Library**
-> <!-- Add screenshot: public/screenshots/fix-library.png -->
-> ![Fix Library](https://placehold.co/1200x675/7c3aed/ffffff?text=Fix+Library)
+</div>
 
 ---
 
@@ -134,10 +170,10 @@ cd DevTrace-AI/DevTrace
 ### 2. Set up Supabase
 
 1. Create a new project at [supabase.com](https://supabase.com)
-2. Run the following SQL in your Supabase SQL editor:
+2. Run the SQL setup in your Supabase SQL editor:
 
 <details>
-<summary>Click to expand SQL setup</summary>
+<summary>📋 Click to expand full SQL setup</summary>
 
 ```sql
 -- Profiles
@@ -208,7 +244,7 @@ create policy "Users can create fixes" on fixes for insert with check (auth.uid(
 create policy "Users can update own fixes" on fixes for update using (auth.uid() = user_id);
 create policy "Users can delete own fixes" on fixes for delete using (auth.uid() = user_id);
 
--- Helper functions
+-- Triggers + helpers
 create or replace function update_updated_at() returns trigger as $$
 begin new.updated_at = timezone('utc', now()); return new; end;
 $$ language plpgsql;
@@ -228,13 +264,12 @@ returns void as $$ update fixes set use_count = use_count + 1 where id = fix_id;
 </details>
 
 3. Go to **Authentication → Settings** and:
-   - Disable **"Confirm email"** (so users can sign in immediately)
-   - Add `http://localhost:5173` as your Site URL
+   - Disable **"Confirm email"**
+   - Set Site URL to `http://localhost:5173`
    - Enable GitHub and Google OAuth providers
+4. Create a storage bucket called `avatars` set to **public**
 
-4. Create a storage bucket called `avatars` and set it to **public**
-
-### 3. Install & configure the frontend
+### 3. Frontend setup
 
 ```bash
 cd client
@@ -249,7 +284,7 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 VITE_GROQ_API_KEY=your_groq_api_key
 ```
 
-### 4. Install & configure the backend
+### 4. Backend setup
 
 ```bash
 cd ../server
@@ -264,34 +299,15 @@ SUPABASE_URL=your_supabase_project_url
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 ```
 
-### 5. Run the app
+### 5. Run
 
 ```bash
-# Terminal 1 — Frontend
+# Terminal 1 — Frontend (http://localhost:5173)
 cd client && npm run dev
-# → http://localhost:5173
 
-# Terminal 2 — Backend
+# Terminal 2 — Backend (http://localhost:4000)
 cd server && npm run dev
-# → http://localhost:4000
 ```
-
----
-
-## 🧰 Tech Stack
-
-| Layer | Technology |
-|---|---|
-| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS 3 |
-| **State** | Zustand, React Router v6 |
-| **Backend** | Express 5, TypeScript, Node.js |
-| **Database** | Supabase (PostgreSQL + RLS) |
-| **Auth** | Supabase Auth (GitHub OAuth, Google OAuth, Email+Password) |
-| **AI** | Groq API — Llama 3.3 70B Versatile |
-| **Charts** | Recharts |
-| **UI Icons** | Lucide React |
-| **Storage** | Supabase Storage (avatar uploads) |
-| **Deployment** | Vercel (frontend), Railway (backend) |
 
 ---
 
