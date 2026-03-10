@@ -1,5 +1,4 @@
-// DashboardLayout.tsx — fixed topbar positioning
-
+// DashboardLayout.tsx
 import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
@@ -21,27 +20,24 @@ const DashboardLayout = ({ children, title }: Props) => {
   }, [user]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
+    <div className="bg-gray-50 dark:bg-gray-950 flex flex-1">
 
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Sidebar — fixed, always w-60 */}
       <div className={`fixed top-0 left-0 h-full z-50 transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
-      >
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <Sidebar onClose={() => setSidebarOpen(false)} />
       </div>
 
-      {/* Right side — offset by sidebar width on lg */}
-      <div className="flex flex-col flex-1 lg:ml-60 min-w-0">
+      {/* Right side */}
+      <div className="flex flex-col flex-1 lg:ml-60 min-w-0 min-h-screen">
 
-        {/* Topbar — sticky at top of this column, NOT fixed */}
+        {/* Topbar — sticky, sits naturally below the banner */}
         <div className="sticky top-0 z-30">
           <Topbar title={title} onMenuClick={() => setSidebarOpen(true)} />
         </div>
