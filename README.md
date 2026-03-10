@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🐛 DevTrace AI
+# DevTrace AI
 
 **AI-powered debugging assistant for developers**
 
@@ -8,13 +8,15 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![PowerSync Hackathon](https://img.shields.io/badge/PowerSync_Hackathon-2026-6366f1?style=flat-square)](https://www.powersync.com/)
 
-[🚀 Live Demo](https://devtrace-ai.vercel.app) · [🐛 Report Bug](https://github.com/JexanJoel/DevTrace-AI/issues) · [✨ Request Feature](https://github.com/JexanJoel/DevTrace-AI/issues)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-4f46e5?style=for-the-badge&logo=vercel&logoColor=white)](https://devtrace-ai.vercel.app)
+[![Report Bug](https://img.shields.io/badge/Report_Bug-dc2626?style=for-the-badge&logo=github&logoColor=white)](https://github.com/JexanJoel/DevTrace-AI/issues)
+[![Request Feature](https://img.shields.io/badge/Request_Feature-16a34a?style=for-the-badge&logo=github&logoColor=white)](https://github.com/JexanJoel/DevTrace-AI/issues)
 
 </div>
 
 ---
 
-## 🧰 Tech Stack
+## Tech Stack
 
 <div align="center">
 
@@ -79,10 +81,12 @@
 
 ---
 
-## ✨ Features
+## Features
+
+<div align="center">
 
 | | Feature | Description |
-|---|---|---|
+|:---:|:---|:---|
 | 🐛 | **Session Tracking** | Log errors with stack traces, severity levels and status |
 | ⚡ | **AI Fix Suggestions** | Groq + Llama 3.3 70B returns fixes with confidence scores |
 | 📚 | **Fix Library** | Save and reuse AI fixes across all your projects |
@@ -94,20 +98,22 @@
 | 🔐 | **Auth** | GitHub OAuth, Google OAuth and Email + Password |
 | 🧭 | **Onboarding** | 3-step walkthrough for new users |
 
+</div>
+
 ---
 
-## 🏆 Hackathon — PowerSync AI Hackathon 2026
+## Hackathon — PowerSync AI Hackathon 2026
 
 DevTrace AI is submitted to the **[PowerSync AI Hackathon 2026](https://www.powersync.com/)** targeting:
 
-- 🥇 **Core Prize** — AI-powered developer tool built during the hackathon window
-- 💚 **Best Submission Using Supabase** — Supabase powers auth, database (RLS), and storage throughout
+- **Core Prize** — AI-powered developer tool built during the hackathon window
+- **Best Submission Using Supabase** — Supabase powers auth, database (RLS), and storage throughout
 
 PowerSync could extend DevTrace into a local-first experience where debug sessions are available offline and sync when connectivity is restored — a natural next step for the product.
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 DevTrace-AI/
@@ -129,7 +135,7 @@ DevTrace-AI/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -150,7 +156,7 @@ cd DevTrace-AI/DevTrace
 2. Run the SQL:
 
 <details>
-<summary>📋 Click to expand SQL setup</summary>
+<summary>Click to expand SQL setup</summary>
 
 ```sql
 -- Profiles
@@ -273,13 +279,13 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 ### 5. Run
 
 ```bash
-cd client && npm run dev   # → http://localhost:5173
-cd server && npm run dev   # → http://localhost:4000
+cd client && npm run dev   # http://localhost:5173
+cd server && npm run dev   # http://localhost:4000
 ```
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repo
 2. Create your branch: `git checkout -b feature/amazing-feature`
@@ -289,7 +295,7 @@ cd server && npm run dev   # → http://localhost:4000
 
 ---
 
-## 📄 License
+## License
 
 MIT License — see [LICENSE](LICENSE) for details.
 
@@ -299,6 +305,6 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 Built with ❤️ for the **PowerSync AI Hackathon 2026**
 
-[⭐ Star this repo](https://github.com/JexanJoel/DevTrace-AI) if you found it useful!
+[Star this repo](https://github.com/JexanJoel/DevTrace-AI) if you found it useful!
 
 </div>
