@@ -2,7 +2,7 @@ import { useQuery } from '@powersync/react';
 import { powerSync } from '../lib/powersync';
 import { supabase } from '../lib/supabaseClient';
 import { useAuthStore } from '../store/authStore';
-import { useState } from 'react';
+import { usePendingQueue } from './usePendingQueue';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface Project {
@@ -16,7 +16,7 @@ export interface Project {
   session_count: number;
   created_at: string;
   updated_at: string;
-  _pending?: boolean; // marks offline-created items
+  _pending?: boolean;
 }
 
 export interface CreateProjectInput {
@@ -29,25 +29,25 @@ export interface CreateProjectInput {
 const useProjects = () => {
   const { user } = useAuthStore();
   const uid = user?.id ?? '';
+  const { pending, addPending, removePending } = usePendingQueue<Project>('projects');
 
-  // Synced data from PowerSync local SQLite
   const { data: syncedProjects = [] } = useQuery<Project>(
     'SELECT * FROM projects WHERE user_id = ? ORDER BY updated_at DESC', [uid]
   );
 
-  // Pending offline items not yet synced
-  const [pendingProjects, setPendingProjects] = useState<Project[]>([]);
-
-  // Merge: synced wins over pending if same id exists
+  // Remove pending items that have been synced
   const syncedIds = new Set(syncedProjects.map(p => p.id));
-  const pendingOnly = pendingProjects.filter(p => !syncedIds.has(p.id));
-  const projects = [...syncedProjects, ...pendingOnly].sort(
-    (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-  );
+  const pendingOnly = pending.filter(p => !syncedIds.has(p.id));
+
+  const projects = [
+    ...pendingOnly,
+    ...syncedProjects,
+  ].filter((p, i, arr) => arr.findIndex(x => x.id === p.id) === i)
+   .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
 
   const getProject = async (id: string): Promise<Project | null> => {
-    const pending = pendingProjects.find(p => p.id === id);
-    if (pending) return pending;
+    const p = pending.find(p => p.id === id);
+    if (p) return p;
     const results = await powerSync.getAll<Project>(
       'SELECT * FROM projects WHERE id = ? LIMIT 1', [id]
     );
@@ -63,21 +63,18 @@ const useProjects = () => {
       created_at: now, updated_at: now, _pending: true, ...data,
     };
 
-    // Show immediately in UI
-    setPendingProjects(prev => [row, ...prev]);
+    // Save to localStorage immediately — survives navigation
+    addPending(row);
 
-    // Try Supabase — if offline this fails silently
+    // Try Supabase
     const { error } = await supabase.from('projects').insert({
       id, user_id: user.id, error_count: 0, session_count: 0,
       created_at: now, updated_at: now, ...data,
     });
 
-    if (error) {
-      // Stay in pending — will retry when online
-      console.log('Offline — project queued locally');
-    } else {
-      // Supabase succeeded — PowerSync will sync it, remove from pending
-      setPendingProjects(prev => prev.filter(p => p.id !== id));
+    if (!error) {
+      // Synced — remove from pending (PowerSync will bring it back via useQuery)
+      removePending(id);
     }
 
     return row;
@@ -90,8 +87,7 @@ const useProjects = () => {
   };
 
   const deleteProject = async (id: string) => {
-    // Remove from pending immediately
-    setPendingProjects(prev => prev.filter(p => p.id !== id));
+    removePending(id);
     const { error } = await supabase.from('projects').delete().eq('id', id);
     return !error;
   };

@@ -2,7 +2,7 @@ import { useQuery } from '@powersync/react';
 import { powerSync } from '../lib/powersync';
 import { supabase } from '../lib/supabaseClient';
 import { useAuthStore } from '../store/authStore';
-import { useState } from 'react';
+import { usePendingQueue } from './usePendingQueue';
 import { v4 as uuidv4 } from 'uuid';
 
 export type Status = 'open' | 'in_progress' | 'resolved';
@@ -38,6 +38,7 @@ export interface CreateSessionInput {
 const useSessions = (projectId?: string) => {
   const { user } = useAuthStore();
   const uid = user?.id ?? '';
+  const { pending, addPending, removePending } = usePendingQueue<DebugSession>('sessions');
 
   const query = projectId
     ? 'SELECT * FROM debug_sessions WHERE user_id = ? AND project_id = ? ORDER BY created_at DESC'
@@ -45,17 +46,22 @@ const useSessions = (projectId?: string) => {
   const params = projectId ? [uid, projectId] : [uid];
 
   const { data: syncedSessions = [] } = useQuery<DebugSession>(query, params);
-  const [pendingSessions, setPendingSessions] = useState<DebugSession[]>([]);
 
   const syncedIds = new Set(syncedSessions.map(s => s.id));
-  const pendingOnly = pendingSessions.filter(s => !syncedIds.has(s.id));
-  const sessions = [...syncedSessions, ...pendingOnly].sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  const pendingOnly = pending.filter(s =>
+    !syncedIds.has(s.id) &&
+    (!projectId || s.project_id === projectId)
   );
 
+  const sessions = [
+    ...pendingOnly,
+    ...syncedSessions,
+  ].filter((s, i, arr) => arr.findIndex(x => x.id === s.id) === i)
+   .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
   const getSession = async (id: string): Promise<DebugSession | null> => {
-    const pending = pendingSessions.find(s => s.id === id);
-    if (pending) return pending;
+    const p = pending.find(s => s.id === id);
+    if (p) return p;
     const results = await powerSync.getAll<any>(
       `SELECT ds.*, p.name as project_name, p.language as project_language
        FROM debug_sessions ds
@@ -87,18 +93,14 @@ const useSessions = (projectId?: string) => {
       _pending: true,
     };
 
-    setPendingSessions(prev => [row, ...prev]);
+    addPending(row);
 
     const { error } = await supabase.from('debug_sessions').insert({
       id, user_id: user.id, status: row.status, severity: row.severity,
       created_at: now, updated_at: now, ...data,
     });
 
-    if (error) {
-      console.log('Offline — session queued locally');
-    } else {
-      setPendingSessions(prev => prev.filter(s => s.id !== id));
-    }
+    if (!error) removePending(id);
 
     return row;
   };
@@ -110,7 +112,7 @@ const useSessions = (projectId?: string) => {
   };
 
   const deleteSession = async (id: string) => {
-    setPendingSessions(prev => prev.filter(s => s.id !== id));
+    removePending(id);
     const { error } = await supabase.from('debug_sessions').delete().eq('id', id);
     return !error;
   };
