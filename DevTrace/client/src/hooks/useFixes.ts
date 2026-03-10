@@ -1,5 +1,6 @@
 import { useQuery } from '@powersync/react';
 import { powerSync } from '../lib/powersync';
+import { supabase } from '../lib/supabaseClient';
 import { useAuthStore } from '../store/authStore';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -30,32 +31,21 @@ const useFixes = () => {
     const id = uuidv4();
     const now = new Date().toISOString();
     const row = { id, user_id: user.id, use_count: 0, created_at: now, ...data };
-
-    await powerSync.execute(
-      `INSERT INTO fixes (id, user_id, session_id, project_id, title, error_pattern, fix_content, language, tags, use_count, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [row.id, row.user_id, row.session_id ?? null, row.project_id ?? null,
-       row.title, row.error_pattern ?? null, row.fix_content,
-       row.language ?? null,
-       Array.isArray(row.tags) ? JSON.stringify(row.tags) : (row.tags ?? null),
-       0, now]
-    );
-
-    return row as Fix;
+    const { data: result, error } = await supabase.from('fixes').insert(row).select().single();
+    if (error) { console.error('Create fix error:', error); return null; }
+    return result as Fix;
   };
 
   const deleteFix = async (id: string) => {
-    await powerSync.execute('DELETE FROM fixes WHERE id = ?', [id]);
+    const { error } = await supabase.from('fixes').delete().eq('id', id);
+    if (error) { console.error('Delete fix error:', error); return false; }
     return true;
   };
 
   const incrementUseCount = async (id: string) => {
     const fix = fixes.find(f => f.id === id);
     if (!fix) return;
-    await powerSync.execute(
-      'UPDATE fixes SET use_count = ? WHERE id = ?',
-      [(fix.use_count ?? 0) + 1, id]
-    );
+    await supabase.from('fixes').update({ use_count: (fix.use_count ?? 0) + 1 }).eq('id', id);
   };
 
   return { fixes, loading: false, createFix, deleteFix, incrementUseCount };

@@ -1,5 +1,6 @@
 import { useQuery } from '@powersync/react';
 import { powerSync } from '../lib/powersync';
+import { supabase } from '../lib/supabaseClient';
 import { useAuthStore } from '../store/authStore';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -27,6 +28,7 @@ const useProjects = () => {
   const { user } = useAuthStore();
   const uid = user?.id ?? '';
 
+  // Reads from local SQLite — reactive, offline-capable
   const { data: projects = [] } = useQuery<Project>(
     'SELECT * FROM projects WHERE user_id = ? ORDER BY updated_at DESC', [uid]
   );
@@ -42,37 +44,23 @@ const useProjects = () => {
     if (!user) return null;
     const id = uuidv4();
     const now = new Date().toISOString();
-    const row = {
-      id, user_id: user.id,
-      error_count: 0, session_count: 0,
-      created_at: now, updated_at: now,
-      ...data,
-    };
-
-    // Write ONLY to local SQLite — PowerSync syncs to Supabase automatically
-    await powerSync.execute(
-      `INSERT INTO projects (id, user_id, name, description, language, github_url, error_count, session_count, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [row.id, row.user_id, row.name, row.description ?? null, row.language ?? null,
-       row.github_url ?? null, 0, 0, now, now]
-    );
-
-    return row as Project;
+    const row = { id, user_id: user.id, error_count: 0, session_count: 0, created_at: now, updated_at: now, ...data };
+    // Write to Supabase → PowerSync syncs it back down to local SQLite
+    const { data: result, error } = await supabase.from('projects').insert(row).select().single();
+    if (error) { console.error('Create project error:', error); return null; }
+    return result as Project;
   };
 
   const updateProject = async (id: string, data: Partial<Project>) => {
-    const now = new Date().toISOString();
-    const fields = { ...data, updated_at: now };
-    const setClauses = Object.keys(fields).map(k => `${k} = ?`).join(', ');
-    await powerSync.execute(
-      `UPDATE projects SET ${setClauses} WHERE id = ?`,
-      [...Object.values(fields), id]
-    );
+    const { error } = await supabase.from('projects')
+      .update({ ...data, updated_at: new Date().toISOString() }).eq('id', id);
+    if (error) { console.error('Update project error:', error); return false; }
     return true;
   };
 
   const deleteProject = async (id: string) => {
-    await powerSync.execute('DELETE FROM projects WHERE id = ?', [id]);
+    const { error } = await supabase.from('projects').delete().eq('id', id);
+    if (error) { console.error('Delete project error:', error); return false; }
     return true;
   };
 
