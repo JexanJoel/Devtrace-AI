@@ -32,10 +32,10 @@
 | 🐛 Session Tracking | Log errors with full stack traces, severity levels and status |
 | ⚡ AI Fix Suggestions | Groq + Llama 3.3 70B analyzes errors and returns fixes instantly |
 | 📚 Fix Library | Save AI-generated fixes and reuse them across all your projects |
-| 📁 Workspace | Organize debug sessions by project and link GitHub repos |
+| 📁 Projects | Organize debug sessions by project and link GitHub repos |
 | 📊 Error Analytics | Visualize resolution rates, error trends and severity breakdowns |
-| 🐙 Repo Link | View stars, forks, open issues and last push date per project |
-| 📶 Offline First | Offline-first with PowerSync - work offline, sync on reconnect |
+| 🐙 Github Sync | View stars, forks, open issues and last push date per project |
+| 📶 Offline-First | Offline first with PowerSync - work offline, sync on reconnect |
 | 🔄 Real-Time Sync | PowerSync streams Supabase changes to a local SQLite database instantly |
 | 📱 Mobile Responsive | Collapsible slide in sidebar that works on all screen sizes |
 | 🔐 Auth | GitHub OAuth, Google OAuth and Email + Password via Supabase |
@@ -108,7 +108,7 @@
 
 ---
 
-## 📶 Offline First Architecture (PowerSync)
+## 📶 Offline-First Architecture (PowerSync)
 
 DevTrace AI is fully **local-first** powered by [PowerSync](https://www.powersync.com/). Your data is always available - even without internet.
 
@@ -119,9 +119,9 @@ Offline:  Create/browse locally ──► queued in localStorage ──► auto-
 
 | Scenario | Behavior |
 |:---|:---|
-| ✅ Online | Data syncs in real time from Supabase via PowerSync streams |
+| ✅ Online | Data syncs in real-time from Supabase via PowerSync streams |
 | 🟠 Offline | Orange banner shown - all existing data available from local SQLite |
-| ✏️ Create offline | Projects/sessions saved locally and queued - synced to Supabase on reconnect |
+| ✏️ Create offline | Projects/sessions saved locally and queued — synced to Supabase on reconnect |
 | 🔄 Reconnect | Pending items automatically uploaded, duplicates safely handled |
 
 ---
@@ -149,7 +149,7 @@ DevTrace AI is submitted to the **[PowerSync AI Hackathon 2026](https://www.powe
 
 ```bash
 git clone https://github.com/JexanJoel/DevTrace-AI.git
-cd DevTrace-AI/DevTrace
+cd DevTrace-AI/DevTrace/client
 ```
 
 ### 2. Supabase Setup
@@ -243,7 +243,7 @@ create publication powersync for table profiles, projects, debug_sessions, fixes
 </details>
 
 3. In **Auth → Settings**: disable **Confirm email**, set Site URL to `http://localhost:5173`
-4. Enable **GitHub + Google** OAuth providers
+4. Enable **GitHub + Google** OAuth providers in Supabase Auth
 5. Create a storage bucket called `avatars` set to **public**
 
 ### 3. PowerSync Setup
@@ -270,13 +270,13 @@ create publication powersync for table profiles, projects, debug_sessions, fixes
 
 4. Copy your **PowerSync instance URL**
 
-### 4. Frontend
+### 4. Install & Run
 
 ```bash
-cd client && npm install
+npm install
 ```
 
-Create `client/.env`:
+Create `.env`:
 
 ```env
 VITE_SUPABASE_URL=your_supabase_project_url
@@ -285,29 +285,11 @@ VITE_GROQ_API_KEY=your_groq_api_key
 VITE_POWERSYNC_URL=your_powersync_instance_url
 ```
 
-### 5. Backend
-
 ```bash
-cd ../server && npm install
+npm run dev   # http://localhost:5173
 ```
 
-Create `server/.env`:
-
-```env
-PORT=4000
-SUPABASE_URL=your_supabase_project_url
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-```
-
-### 6. Run
-
-```bash
-# Terminal 1 — Frontend
-cd client && npm run dev     # http://localhost:5173
-
-# Terminal 2 — Backend
-cd server && npm run dev     # http://localhost:4000
-```
+That's it — no backend required. 🎉
 
 ---
 
@@ -316,19 +298,14 @@ cd server && npm run dev     # http://localhost:4000
 ```
 DevTrace-AI/
 └── DevTrace/
-    ├── client/                  # React + Vite frontend
-    │   └── src/
-    │       ├── components/      # auth, dashboard, sessions, fixes, projects
-    │       ├── hooks/           # Custom React hooks (PowerSync + data)
-    │       ├── lib/             # Supabase, Groq, PowerSync clients
-    │       ├── pages/           # Route-level page components
-    │       ├── store/           # Zustand stores (auth, theme)
-    │       └── types/           # TypeScript types
-    └── server/                  # Express backend
+    └── client/                  # React + Vite frontend
         └── src/
-            ├── routes/          # Auth routes
-            ├── middleware/       # JWT verification
-            └── lib/             # Supabase admin client
+            ├── components/      # auth, dashboard, sessions, fixes, projects
+            ├── hooks/           # Custom React hooks (PowerSync + data)
+            ├── lib/             # Supabase, Groq, PowerSync clients
+            ├── pages/           # Route-level page components
+            ├── store/           # Zustand stores (auth, theme)
+            └── types/           # TypeScript types
 ```
 
 ---
@@ -368,13 +345,13 @@ Yes. PowerSync syncs your data to a local SQLite database in the browser. You ca
 <details>
 <summary><b>Which AI model is used?</b></summary>
 <br/>
-Llama 3.3 70B served via Groq's ultra-fast inference API. You can swap the model in <code>client/src/lib/groqClient.ts</code>.
+Llama 3.3 70B served via Groq's ultra-fast inference API. You can swap the model in <code>src/lib/groqClient.ts</code>.
 </details>
 
 <details>
-<summary><b>Can I use this without the Express backend?</b></summary>
+<summary><b>Do I need a backend server?</b></summary>
 <br/>
-The Express server handles OAuth token exchange. If you only use email/password auth you can skip it, but GitHub and Google OAuth require the backend.
+No. DevTrace AI is a fully client-side app. Supabase handles auth (including GitHub and Google OAuth), database, and storage. No Express server or Node.js backend needed.
 </details>
 
 ---
