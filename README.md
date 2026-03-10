@@ -22,7 +22,7 @@
 > **[→ Try the live demo](https://dev-trace-ai.vercel.app)**
 
 <!-- Add your dashboard screenshot below — see instructions at bottom of this file -->
-<!-- ![DevTrace AI Dashboard](assets/dashboard.png) -->
+[DevTrace AI Dashboard](assets/dashboard.png)
 
 ---
 
