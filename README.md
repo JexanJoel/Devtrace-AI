@@ -108,9 +108,9 @@
 
 ---
 
-## 📶 Offline-First Architecture (PowerSync)
+## 📶 Offline First Architecture (PowerSync)
 
-DevTrace AI is fully **local-first** powered by [PowerSync](https://www.powersync.com/). Your data is always available — even without internet.
+DevTrace AI is fully **local-first** powered by [PowerSync](https://www.powersync.com/). Your data is always available - even without internet.
 
 ```
 Online:   Supabase ──► PowerSync ──► Local SQLite ──► UI (instant reads)
