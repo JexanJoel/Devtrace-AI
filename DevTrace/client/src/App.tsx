@@ -5,6 +5,7 @@ import { supabase } from './lib/supabaseClient';
 import { useAuthStore } from './store/authStore';
 import ProtectedRoute from './components/shared/ProtectedRoute';
 import { PowerSyncProvider } from './components/providers/PowerSyncProvider';
+import OfflineBanner from './components/shared/OfflineBanner';
 
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
@@ -39,6 +40,8 @@ const App = () => {
   return (
     <PowerSyncProvider>
       <BrowserRouter>
+        {/* Global offline banner — shows on every page when offline */}
+        <OfflineBanner />
         <Toaster position="top-right" toastOptions={{
           duration: 3000,
           style: { background: '#fff', color: '#111827', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '14px' },
