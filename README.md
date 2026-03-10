@@ -350,7 +350,7 @@ Contributions, issues, and feature requests are welcome!
 <details>
 <summary><b>Is DevTrace AI free to use?</b></summary>
 <br/>
-Yes — fully open source under MIT. Groq, Supabase, and PowerSync all have generous free tiers, so you can self-host at zero cost.
+Yes - fully open source under MIT. Groq, Supabase, and PowerSync all have generous free tiers, so you can self-host at zero cost.
 </details>
 
 <details>
