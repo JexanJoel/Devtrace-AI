@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🐛 DevTrace AI
+# 💡 DevTrace AI
 
 ### AI-powered debugging assistant for developers
 
@@ -11,7 +11,7 @@
 [![Live Demo](https://img.shields.io/badge/Live_Demo-4f46e5?style=for-the-badge&logo=vercel&logoColor=white)](https://dev-trace-ai.vercel.app)
 [![Report Bug](https://img.shields.io/badge/Report_Bug-dc2626?style=for-the-badge&logo=github&logoColor=white)](https://github.com/JexanJoel/DevTrace-AI/issues)
 [![Request Feature](https://img.shields.io/badge/Request_Feature-16a34a?style=for-the-badge&logo=github&logoColor=white)](https://github.com/JexanJoel/DevTrace-AI/issues)
-[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+[![MIT License](https://img.shields.io/badge/⚖_License-MIT-f59e0b?style=for-the-badge)](LICENSE)
 
 </div>
 
@@ -21,8 +21,7 @@
 
 > **[→ Try the live demo](https://dev-trace-ai.vercel.app)**
 
-<!-- Add your dashboard screenshot below — see instructions at bottom of this file -->
-[DevTrace AI Dashboard](assets/dashboard.png)
+![DevTrace AI Dashboard](assets/dashboard.png)
 
 ---
 
@@ -107,12 +106,12 @@
 
 ---
 
-## 🏆 Hackathon — PowerSync AI Hackathon 2026
+## 🏆 Hackathon- PowerSync AI Hackathon 2026
 
 DevTrace AI is submitted to the **[PowerSync AI Hackathon 2026](https://www.powersync.com/)** targeting:
 
-- **🥇 Core Prize** — AI-powered developer tool built during the hackathon window
-- **🏅 Best Submission Using Supabase** — Supabase powers auth, database (RLS), and storage throughout
+- **🥇 Core Prize** - AI powered developer tool built during the hackathon window
+- **🏅 Best Submission Using Supabase** - Supabase powers auth, database (RLS), and storage throughout
 
 PowerSync could naturally extend DevTrace into a **local-first experience** — debug sessions available offline and synced when connectivity is restored.
 
@@ -345,6 +344,6 @@ Free to use, fork, modify, and build upon. A ⭐ star is always appreciated!
 
 <div align="center">
 
-Built with ❤️ for the **PowerSync AI Hackathon 2026**
+Built with ❤️ by JexanJoel for the **PowerSync AI Hackathon 2026**
 
 </div>
