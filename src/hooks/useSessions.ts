@@ -25,6 +25,9 @@ export interface DebugSession {
   updated_at: string;
   _pending?: boolean;
   project?: { name: string; language?: string };
+  // raw JOIN columns from PowerSync query
+  project_name?: string;
+  project_language?: string;
 }
 
 export interface CreateSessionInput {
@@ -43,12 +46,27 @@ const useSessions = (projectId?: string) => {
   const { pending, addPending, removePending } = usePendingQueue<DebugSession>('sessions');
   const isOnline = useOnlineStatus();
 
+  // ✅ JOIN projects so session.project is always populated
   const query = projectId
-    ? 'SELECT * FROM debug_sessions WHERE user_id = ? AND project_id = ? ORDER BY created_at DESC'
-    : 'SELECT * FROM debug_sessions WHERE user_id = ? ORDER BY created_at DESC';
+    ? `SELECT ds.*, p.name as project_name, p.language as project_language
+       FROM debug_sessions ds
+       LEFT JOIN projects p ON ds.project_id = p.id
+       WHERE ds.user_id = ? AND ds.project_id = ?
+       ORDER BY ds.created_at DESC`
+    : `SELECT ds.*, p.name as project_name, p.language as project_language
+       FROM debug_sessions ds
+       LEFT JOIN projects p ON ds.project_id = p.id
+       WHERE ds.user_id = ?
+       ORDER BY ds.created_at DESC`;
   const params = projectId ? [uid, projectId] : [uid];
 
-  const { data: syncedSessions = [] } = useQuery<DebugSession>(query, params);
+  const { data: rawSessions = [] } = useQuery<DebugSession>(query, params);
+
+  // Map JOIN columns → nested project object
+  const syncedSessions = rawSessions.map(s => ({
+    ...s,
+    project: s.project_name ? { name: s.project_name, language: s.project_language ?? undefined } : undefined,
+  }));
 
   const syncedIds = new Set(syncedSessions.map(s => s.id));
   const pendingOnly = pending.filter(s =>
