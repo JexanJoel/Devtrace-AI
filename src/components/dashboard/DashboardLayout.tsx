@@ -23,12 +23,11 @@ const DashboardLayout = ({ children, title }: Props) => {
   useEffect(() => {
     if (!user) return;
     loadTheme(user.id);
-    // Restore queue from DB so it survives refresh
     loadFromDB(user.id);
   }, [user]);
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-950 flex flex-1">
+    <div className="min-h-screen w-full bg-gray-50 dark:bg-gray-950 flex">
 
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -40,11 +39,12 @@ const DashboardLayout = ({ children, title }: Props) => {
         <Sidebar onClose={() => setSidebarOpen(false)} />
       </div>
 
-      <div className="flex flex-col flex-1 lg:ml-60 min-w-0 min-h-screen">
+      {/* Main content — takes all remaining width */}
+      <div className="flex flex-col flex-1 lg:ml-60 w-0 min-h-screen">
         <div className="sticky top-0 z-30">
           <Topbar title={title} onMenuClick={() => setSidebarOpen(true)} />
         </div>
-        <main className="flex-1 p-4 sm:p-6">
+        <main className="flex-1 p-4 sm:p-6 w-full">
           {children}
         </main>
       </div>
