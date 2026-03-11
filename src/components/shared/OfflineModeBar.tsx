@@ -1,4 +1,4 @@
-import { WifiOff, CloudOff, HardDrive } from 'lucide-react';
+import { WifiOff, CloudOff, HardDrive, RefreshCw } from 'lucide-react';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 
 const OfflineModeBar = () => {
@@ -7,36 +7,35 @@ const OfflineModeBar = () => {
   if (isOnline) return null;
 
   return (
-    <div className="w-full bg-gray-900 dark:bg-gray-950 border-b border-orange-500/30 px-4 sm:px-6 py-2.5 flex items-center gap-6 flex-wrap">
+    <div className="w-full bg-orange-50 dark:bg-orange-950/30 border-b border-orange-200 dark:border-orange-800/50 px-4 sm:px-6 py-2 flex items-center gap-3 flex-wrap">
 
-      {/* Left label */}
-      <div className="flex items-center gap-2 flex-shrink-0">
-        <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
-        <span className="text-orange-400 font-semibold text-xs tracking-wide uppercase">
-          Offline Mode Active
+      {/* Mode label */}
+      <div className="flex items-center gap-1.5 flex-shrink-0">
+        <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+        <span className="text-orange-600 dark:text-orange-400 font-semibold text-xs tracking-wide uppercase">
+          Offline Mode
         </span>
       </div>
 
-      {/* Divider */}
-      <div className="hidden sm:block w-px h-4 bg-gray-700 flex-shrink-0" />
+      <div className="w-px h-3 bg-orange-200 dark:bg-orange-700 flex-shrink-0" />
 
-      {/* Status pills */}
-      <div className="flex items-center gap-3 flex-wrap">
+      {/* Pills */}
+      <div className="flex items-center gap-2 flex-wrap">
 
-        <div className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium px-2.5 py-1 rounded-full">
-          <CloudOff size={11} />
-          Cloud AI Unavailable
-        </div>
+        <span className="flex items-center gap-1 text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 px-2 py-0.5 rounded-md">
+          <CloudOff size={10} />
+          Cloud AI unavailable
+        </span>
 
-        <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium px-2.5 py-1 rounded-full">
-          <HardDrive size={11} />
-          Local history &amp; saved fixes still available
-        </div>
+        <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 px-2 py-0.5 rounded-md">
+          <HardDrive size={10} />
+          Local history &amp; fixes available
+        </span>
 
-        <div className="flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-medium px-2.5 py-1 rounded-full">
-          <WifiOff size={11} />
-          Changes will sync on reconnect
-        </div>
+        <span className="flex items-center gap-1 text-xs text-orange-500 dark:text-orange-400 bg-orange-100/60 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/50 px-2 py-0.5 rounded-md">
+          <RefreshCw size={10} />
+          Syncs on reconnect
+        </span>
 
       </div>
     </div>
