@@ -42,29 +42,27 @@ const Topbar = ({ title, onMenuClick }: Props) => {
         <Menu size={20} />
       </button>
 
-      {/* Title + offline pills */}
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <h1 className="font-bold text-gray-900 dark:text-white text-base flex-shrink-0">{title}</h1>
+      <h1 className="font-bold text-gray-900 dark:text-white text-base flex-1 truncate">{title}</h1>
 
-        {!isOnline && (
-          <div className="hidden sm:flex items-center gap-1.5 flex-wrap">
-            <span className="flex items-center gap-1 text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 px-2 py-0.5 rounded-md font-medium">
-              <CloudOff size={10} />
-              Cloud AI unavailable
-            </span>
-            <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 px-2 py-0.5 rounded-md font-medium">
-              <HardDrive size={10} />
-              Local data available
-            </span>
-            <span className="flex items-center gap-1 text-xs text-orange-500 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/50 px-2 py-0.5 rounded-md font-medium">
-              <RefreshCw size={10} />
-              Syncs on reconnect
-            </span>
-          </div>
-        )}
-      </div>
+      {/* Offline pills — right side, next to SyncStatusBar */}
+      {!isOnline && (
+        <div className="hidden md:flex items-center gap-1.5">
+          <span className="flex items-center gap-1 text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 px-2 py-0.5 rounded-md font-medium">
+            <CloudOff size={10} />
+            Cloud AI unavailable
+          </span>
+          <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 px-2 py-0.5 rounded-md font-medium">
+            <HardDrive size={10} />
+            Local data available
+          </span>
+          <span className="flex items-center gap-1 text-xs text-orange-500 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/50 px-2 py-0.5 rounded-md font-medium">
+            <RefreshCw size={10} />
+            Syncs on reconnect
+          </span>
+        </div>
+      )}
 
-      {/* Sync status indicator */}
+      {/* Sync status pill */}
       <SyncStatusBar />
 
       <div className="hidden sm:flex relative flex-shrink-0">
