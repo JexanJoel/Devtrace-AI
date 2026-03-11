@@ -1,9 +1,9 @@
-// DashboardLayout.tsx
 import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import { useAuthStore } from '../../store/authStore';
 import { useThemeStore } from '../../store/themeStore';
+import DevTraceChatbot from '../shared/DevTraceChatbot';
 
 interface Props {
   children: React.ReactNode;
@@ -48,6 +48,10 @@ const DashboardLayout = ({ children, title }: Props) => {
         </main>
 
       </div>
+
+      {/* Floating chatbot — bottom right */}
+      <DevTraceChatbot />
+
     </div>
   );
 };
