@@ -34,7 +34,6 @@ const ProjectDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // ✅ Get full projects list (includes pending from localStorage)
   const { projects, updateProject, deleteProject } = useProjects();
   const { sessions, loading: sessionsLoading, createSession } = useSessions(id);
 
@@ -46,11 +45,9 @@ const ProjectDetailPage = () => {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  // ✅ Find project directly from reactive list — no async lookup needed
   const project = projects.find(p => p.id === id) ?? null;
   const loading = projects.length === 0 && !project;
 
-  // Sync edit fields when project loads
   useEffect(() => {
     if (project) {
       setEditName(project.name);
@@ -89,7 +86,6 @@ const ProjectDetailPage = () => {
     return 'Just now';
   };
 
-  // Still loading — PowerSync not ready yet
   if (loading) return (
     <DashboardLayout title="Project">
       <div className="flex items-center justify-center h-64">
@@ -98,7 +94,6 @@ const ProjectDetailPage = () => {
     </DashboardLayout>
   );
 
-  // Projects loaded but this ID not found
   if (!project) return (
     <DashboardLayout title="Project">
       <div className="flex flex-col items-center justify-center h-64 text-center">
@@ -115,16 +110,16 @@ const ProjectDetailPage = () => {
       <div className="space-y-6">
 
         <button onClick={() => navigate('/projects')}
-          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition">
+          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition">
           <ArrowLeft size={14} /> All Projects
         </button>
 
         {/* Header */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap">
-                <h2 className="text-xl font-bold text-gray-900">{project.name}</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">{project.name}</h2>
                 {project.language && (
                   <span className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${LANGUAGE_COLORS[project.language] ?? 'bg-gray-100 text-gray-600 border-gray-200'}`}>
                     {LANGUAGE_LABELS[project.language] ?? project.language}
@@ -143,34 +138,36 @@ const ProjectDetailPage = () => {
             </div>
             {project.github_url && (
               <a href={project.github_url} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 border border-gray-200 hover:border-gray-300 text-gray-600 px-3 py-2 rounded-xl text-sm font-medium transition">
+                className="flex items-center gap-2 border border-gray-200 dark:border-gray-700 hover:border-gray-300 text-gray-600 dark:text-gray-300 px-3 py-2 rounded-xl text-sm font-medium transition">
                 <Github size={15} /> View Repo <ExternalLink size={12} />
               </a>
             )}
           </div>
           <div className="grid grid-cols-3 gap-3 mt-5">
             {[
-              { label: 'Debug Sessions', value: sessions.length, color: 'text-blue-600', bg: 'bg-blue-50' },
-              { label: 'Total Errors', value: sessions.filter(s => s.error_message).length, color: 'text-red-600', bg: 'bg-red-50' },
-              { label: 'Resolved', value: sessions.filter(s => s.status === 'resolved').length, color: 'text-green-600', bg: 'bg-green-50' },
+              { label: 'Debug Sessions', value: sessions.length, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950' },
+              { label: 'Total Errors', value: sessions.filter(s => s.error_message).length, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950' },
+              { label: 'Resolved', value: sessions.filter(s => s.status === 'resolved').length, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-950' },
             ].map((s, i) => (
               <div key={i} className={`${s.bg} rounded-xl p-3 text-center`}>
                 <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{s.label}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit">
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-fit">
           {([
             { key: 'overview', label: 'Overview', icon: <BarChart2 size={14} /> },
             { key: 'settings', label: 'Settings', icon: <Settings size={14} /> },
           ] as { key: Tab; label: string; icon: any }[]).map((t) => (
             <button key={t.key} onClick={() => setTab(t.key)}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition ${
-                tab === t.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                tab === t.key
+                  ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
               }`}>
               {t.icon} {t.label}
             </button>
@@ -181,9 +178,9 @@ const ProjectDetailPage = () => {
         {tab === 'overview' && (
           <div className="space-y-5">
             {project.github_url && <GitHubStatsCard githubUrl={project.github_url} />}
-            <div className="bg-white rounded-2xl border border-gray-100 p-6">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
               <div className="flex items-center justify-between mb-5">
-                <h3 className="font-bold text-gray-900">Debug Sessions</h3>
+                <h3 className="font-bold text-gray-900 dark:text-white">Debug Sessions</h3>
                 <button onClick={() => setShowModal(true)}
                   className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-3 py-2 rounded-xl transition">
                   <Plus size={13} /> New Session
@@ -203,10 +200,10 @@ const ProjectDetailPage = () => {
                 </div>
               ) : sessions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center mb-3">
+                  <div className="w-12 h-12 bg-blue-50 dark:bg-blue-950 rounded-2xl flex items-center justify-center mb-3">
                     <Bug size={22} className="text-blue-400" />
                   </div>
-                  <p className="text-gray-700 font-medium text-sm">No sessions yet</p>
+                  <p className="text-gray-700 dark:text-gray-300 font-medium text-sm">No sessions yet</p>
                   <p className="text-gray-400 text-xs mt-1 mb-4">Start a debug session to track errors in this project</p>
                   <button onClick={() => setShowModal(true)}
                     className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-4 py-2 rounded-xl transition">
@@ -214,16 +211,16 @@ const ProjectDetailPage = () => {
                   </button>
                 </div>
               ) : (
-                <div className="divide-y divide-gray-50">
+                <div className="divide-y divide-gray-50 dark:divide-gray-800">
                   {sessions.map((session) => (
                     <div key={session.id} onClick={() => navigate(`/sessions/${session.id}`)}
-                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition group">
+                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition group">
                       <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
                         session.status === 'open' ? 'bg-red-500' :
                         session.status === 'in_progress' ? 'bg-yellow-500' : 'bg-green-500'
                       }`} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-800 truncate group-hover:text-indigo-600 transition">
+                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate group-hover:text-indigo-600 transition">
                           {session.title}
                           {session._pending && <span className="ml-2 text-xs text-orange-400">(pending)</span>}
                         </p>
@@ -246,47 +243,56 @@ const ProjectDetailPage = () => {
           </div>
         )}
 
-        {/* Settings */}
+        {/* Settings — full width two-column */}
         {tab === 'settings' && (
-          <div className="space-y-4 max-w-lg">
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4">
-              <h3 className="font-bold text-gray-900">Project Settings</h3>
-              <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Project Name</label>
-                <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)}
-                  className="w-full border-2 border-gray-100 focus:border-indigo-400 text-gray-900 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 transition" />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Description</label>
-                <textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={2}
-                  className="w-full border-2 border-gray-100 focus:border-indigo-400 text-gray-900 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 transition resize-none" />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">GitHub URL</label>
-                <input type="url" value={editGithub} onChange={(e) => setEditGithub(e.target.value)}
-                  placeholder="https://github.com/username/repo"
-                  className="w-full border-2 border-gray-100 focus:border-indigo-400 text-gray-900 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 transition placeholder-gray-300" />
-              </div>
-              <button onClick={handleSave} disabled={saving || !editName.trim()}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition disabled:opacity-50">
-                {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                {saving ? 'Saving...' : 'Save Changes'}
-              </button>
-            </div>
-            <div className="bg-white rounded-2xl border border-red-100 p-6">
-              <h3 className="font-bold text-red-600 mb-4">Danger Zone</h3>
-              <div className="flex items-center justify-between">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            {/* Left — Project Settings (wider) */}
+            <div className="lg:col-span-2">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 space-y-4">
+                <h3 className="font-bold text-gray-900 dark:text-white">Project Settings</h3>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Delete Project</p>
-                  <p className="text-xs text-gray-400">Permanently delete this project and all its data</p>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Project Name</label>
+                  <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)}
+                    className="w-full border-2 border-gray-100 dark:border-gray-700 focus:border-indigo-400 text-gray-900 dark:text-white dark:bg-gray-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 transition" />
                 </div>
-                <button onClick={handleDelete} disabled={deleting}
-                  className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 font-medium px-4 py-2 rounded-xl text-sm transition border border-red-200 disabled:opacity-50">
-                  {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                  Delete
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Description</label>
+                  <textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={3}
+                    className="w-full border-2 border-gray-100 dark:border-gray-700 focus:border-indigo-400 text-gray-900 dark:text-white dark:bg-gray-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 transition resize-none" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">GitHub URL</label>
+                  <input type="url" value={editGithub} onChange={(e) => setEditGithub(e.target.value)}
+                    placeholder="https://github.com/username/repo"
+                    className="w-full border-2 border-gray-100 dark:border-gray-700 focus:border-indigo-400 text-gray-900 dark:text-white dark:bg-gray-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 transition placeholder-gray-300" />
+                </div>
+                <button onClick={handleSave} disabled={saving || !editName.trim()}
+                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition disabled:opacity-50">
+                  {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                  {saving ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </div>
+
+            {/* Right — Danger Zone */}
+            <div>
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-red-100 dark:border-red-900 p-6">
+                <h3 className="font-bold text-red-600 mb-4">Danger Zone</h3>
+                <div className="p-4 bg-red-50 dark:bg-red-950 rounded-xl space-y-3">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">Delete Project</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Permanently delete this project and all its sessions and data. This cannot be undone.</p>
+                  </div>
+                  <button onClick={handleDelete} disabled={deleting}
+                    className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-xl text-sm transition disabled:opacity-50 w-full justify-center">
+                    {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                    {deleting ? 'Deleting...' : 'Delete Project'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
           </div>
         )}
       </div>
