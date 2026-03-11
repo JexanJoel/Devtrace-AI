@@ -4,6 +4,7 @@ import Topbar from './Topbar';
 import { useAuthStore } from '../../store/authStore';
 import { useThemeStore } from '../../store/themeStore';
 import DevTraceChatbot from '../shared/DevTraceChatbot';
+import SyncQueueIndicator from '../shared/SyncQueueIndicator';
 
 interface Props {
   children: React.ReactNode;
@@ -37,19 +38,20 @@ const DashboardLayout = ({ children, title }: Props) => {
       {/* Right side */}
       <div className="flex flex-col flex-1 lg:ml-60 min-w-0 min-h-screen">
 
-        {/* Topbar sticky */}
         <div className="sticky top-0 z-30">
           <Topbar title={title} onMenuClick={() => setSidebarOpen(true)} />
         </div>
 
-        {/* Page content */}
         <main className="flex-1 p-4 sm:p-6">
           {children}
         </main>
 
       </div>
 
-      {/* Floating chatbot */}
+      {/* Bottom-left: sync queue */}
+      <SyncQueueIndicator />
+
+      {/* Bottom-right: chatbot */}
       <DevTraceChatbot />
 
     </div>
