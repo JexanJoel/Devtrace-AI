@@ -42,20 +42,24 @@ const Topbar = ({ title, onMenuClick }: Props) => {
         <Menu size={20} />
       </button>
 
-      <h1 className="font-bold text-gray-900 dark:text-white text-base flex-1 truncate">{title}</h1>
+      {/* Title — no flex-1 */}
+      <h1 className="font-bold text-gray-900 dark:text-white text-base truncate flex-shrink-0">{title}</h1>
 
-      {/* Offline pills — right side, next to SyncStatusBar */}
+      {/* Spacer pushes everything else to the right */}
+      <div className="flex-1" />
+
+      {/* Offline pills — grouped right before the sync pill */}
       {!isOnline && (
-        <div className="hidden md:flex items-center gap-1.5">
-          <span className="flex items-center gap-1 text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 px-2 py-0.5 rounded-md font-medium">
+        <div className="hidden md:flex items-center gap-1.5 flex-shrink-0">
+          <span className="flex items-center gap-1 text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 px-2 py-0.5 rounded-md font-medium whitespace-nowrap">
             <CloudOff size={10} />
             Cloud AI unavailable
           </span>
-          <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 px-2 py-0.5 rounded-md font-medium">
+          <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 px-2 py-0.5 rounded-md font-medium whitespace-nowrap">
             <HardDrive size={10} />
             Local data available
           </span>
-          <span className="flex items-center gap-1 text-xs text-orange-500 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/50 px-2 py-0.5 rounded-md font-medium">
+          <span className="flex items-center gap-1 text-xs text-orange-500 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/50 px-2 py-0.5 rounded-md font-medium whitespace-nowrap">
             <RefreshCw size={10} />
             Syncs on reconnect
           </span>
