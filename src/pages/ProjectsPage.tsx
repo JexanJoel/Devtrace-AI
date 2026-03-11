@@ -1,156 +1,128 @@
-import { useState, useEffect } from 'react';
-import { Github, Mail, User, Save, Loader2, Shield, Key } from 'lucide-react';
+// ProjectsPage — grid of all user projects with create modal
+
+import { useState } from 'react';
+import { Plus, FolderOpen, Search } from 'lucide-react';
 import DashboardLayout from '../components/dashboard/DashboardLayout';
-import AvatarUpload from '../components/profile/AvatarUpload';
-import useProfile from '../hooks/useProfile';
-import { useAuthStore } from '../store/authStore';
+import ProjectCard from '../components/projects/ProjectCard';
+import CreateProjectModal from '../components/projects/CreateProjectModal';
+import useProjects from '../hooks/useProjects';
 
-const ProfilePage = () => {
-  const { user } = useAuthStore();
-  const { profile, loading, updateProfile, uploadAvatar } = useProfile();
+const ProjectsPage = () => {
+  const { projects, loading, createProject } = useProjects();
+  const [showModal, setShowModal] = useState(false);
+  const [search, setSearch] = useState('');
 
-  const [name, setName] = useState('');
-  const [githubUsername, setGithubUsername] = useState('');
-  const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (profile) {
-      setName(profile.name || '');
-      setGithubUsername(profile.github_username || '');
-    }
-  }, [profile]);
-
-  const handleSave = async () => {
-    setSaving(true);
-    await updateProfile({ name: name.trim(), github_username: githubUsername.trim() });
-    setSaving(false);
-  };
-
-  const getInitials = () => {
-    if (name) return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
-    return user?.email?.[0].toUpperCase() ?? 'U';
-  };
-
-  const authProvider = (user as any)?.app_metadata?.provider ?? 'email';
-
-  if (loading) return (
-    <DashboardLayout title="Profile">
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="animate-spin text-indigo-500" size={28} />
-      </div>
-    </DashboardLayout>
+  // Filter projects by search
+  const filtered = projects.filter((p) =>
+    p.name.toLowerCase().includes(search.toLowerCase()) ||
+    p.description?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <DashboardLayout title="Profile">
-      <div className="max-w-5xl space-y-6">
+    <DashboardLayout title="Projects">
+      <div className="space-y-6">
 
-        {/* Top hero card */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
-          <div className="flex items-center gap-6 flex-wrap">
-            <AvatarUpload
-              currentUrl={profile?.avatar_url ?? null}
-              initials={getInitials()}
-              onUpload={uploadAvatar}
+        {/* Header row */}
+        <div className="flex items-center justify-between gap-4">
+
+          {/* Search */}
+          <div className="relative flex-1 max-w-sm">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search projects..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-50 transition placeholder-gray-400"
             />
-            <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{name || 'Your Name'}</h2>
-              <p className="text-sm text-gray-400 mt-0.5">{user?.email}</p>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-xs bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 px-2.5 py-1 rounded-lg font-medium capitalize">
-                  {authProvider}
-                </span>
-                <span className="text-xs bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-800 px-2.5 py-1 rounded-lg font-medium">
-                  Active
-                </span>
-              </div>
-            </div>
           </div>
+
+          {/* Create button */}
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition"
+          >
+            <Plus size={16} />
+            New Project
+          </button>
         </div>
 
-        {/* Two column layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-          {/* Left col — Personal Info (wider) */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
-              <h3 className="font-bold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
-                <User size={16} className="text-indigo-500" /> Personal Info
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Full Name</label>
-                  <div className="relative">
-                    <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input type="text" placeholder="Your full name" value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full border-2 border-gray-100 dark:border-gray-700 focus:border-indigo-400 text-gray-900 dark:text-white dark:bg-gray-800 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 transition placeholder-gray-300" />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Email Address</label>
-                  <div className="relative">
-                    <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input type="email" value={user?.email ?? ''} disabled
-                      className="w-full border-2 border-gray-100 dark:border-gray-700 text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-xl pl-10 pr-4 py-2.5 text-sm cursor-not-allowed" />
-                  </div>
-                  <p className="text-xs text-gray-400 mt-1">Email cannot be changed</p>
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">GitHub Username</label>
-                  <div className="relative">
-                    <Github size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input type="text" placeholder="your-github-username" value={githubUsername}
-                      onChange={(e) => setGithubUsername(e.target.value)}
-                      className="w-full border-2 border-gray-100 dark:border-gray-700 focus:border-indigo-400 text-gray-900 dark:text-white dark:bg-gray-800 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 transition placeholder-gray-300" />
-                  </div>
-                </div>
-                <button onClick={handleSave} disabled={saving}
-                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2.5 rounded-xl transition disabled:opacity-50 text-sm">
-                  {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </button>
+        {/* Loading state */}
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl border border-gray-100 p-5 animate-pulse">
+                <div className="h-4 bg-gray-100 rounded-lg w-3/4 mb-2" />
+                <div className="h-3 bg-gray-100 rounded-lg w-1/2 mb-4" />
+                <div className="h-6 bg-gray-100 rounded-lg w-1/4 mb-4" />
+                <div className="h-3 bg-gray-100 rounded-lg w-full" />
               </div>
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+
+          /* Empty state */
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-4">
+              <FolderOpen size={28} className="text-indigo-400" />
+            </div>
+            <h3 className="font-bold text-gray-900 mb-1">
+              {search ? 'No projects found' : 'No projects yet'}
+            </h3>
+            <p className="text-gray-400 text-sm mb-6 max-w-xs">
+              {search
+                ? `No projects match "${search}"`
+                : 'Create your first project to start tracking debug sessions'
+              }
+            </p>
+            {!search && (
+              <button
+                onClick={() => setShowModal(true)}
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition"
+              >
+                <Plus size={15} />
+                Create First Project
+              </button>
+            )}
+          </div>
+        ) : (
+
+          /* Project grid */
+          <div>
+            <p className="text-xs text-gray-400 mb-3 font-medium">
+              {filtered.length} project{filtered.length !== 1 ? 's' : ''}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {filtered.map((project) => (
+                <ProjectCard key={project.id} project={project} />
+              ))}
+
+              {/* Add more card */}
+              <button
+                onClick={() => setShowModal(true)}
+                className="bg-white rounded-2xl border-2 border-dashed border-gray-200 p-5 hover:border-indigo-300 hover:bg-indigo-50/30 transition flex flex-col items-center justify-center gap-2 min-h-[160px] group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-gray-100 group-hover:bg-indigo-100 flex items-center justify-center transition">
+                  <Plus size={18} className="text-gray-400 group-hover:text-indigo-600 transition" />
+                </div>
+                <span className="text-sm font-medium text-gray-400 group-hover:text-indigo-600 transition">
+                  New Project
+                </span>
+              </button>
             </div>
           </div>
-
-          {/* Right col — Account Info */}
-          <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
-              <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <Key size={16} className="text-indigo-500" /> Account Info
-              </h3>
-              <div className="space-y-3">
-                {[
-                  { label: 'Account ID', value: (user?.id?.slice(0, 8) ?? '') + '...' },
-                  { label: 'Member since', value: profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : '—' },
-                  { label: 'Auth provider', value: authProvider },
-                ].map((item, i) => (
-                  <div key={i} className="flex flex-col gap-0.5 py-2 border-b border-gray-50 dark:border-gray-800 last:border-0">
-                    <span className="text-xs text-gray-400">{item.label}</span>
-                    <span className="text-sm font-semibold text-gray-900 dark:text-white capitalize">{item.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-green-50 dark:bg-green-950 rounded-2xl border border-green-100 dark:border-green-900 p-5">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-green-100 dark:bg-green-900 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Shield size={16} className="text-green-600 dark:text-green-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-green-800 dark:text-green-200">Account Secured</p>
-                  <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">Protected by Supabase Auth</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
+        )}
       </div>
+
+      {/* Create modal */}
+      {showModal && (
+        <CreateProjectModal
+          onClose={() => setShowModal(false)}
+          onCreate={createProject}
+        />
+      )}
     </DashboardLayout>
   );
 };
 
-export default ProfilePage;
+export default ProjectsPage;
