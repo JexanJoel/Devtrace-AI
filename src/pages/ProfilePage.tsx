@@ -47,30 +47,54 @@ const ProfilePage = () => {
 
         {/* Top hero card */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
-          <div className="flex items-center gap-5">
-            {/* Avatar — fixed size, no shrink */}
-            <div className="flex-shrink-0">
-              <AvatarUpload
-                currentUrl={profile?.avatar_url ?? null}
-                initials={getInitials()}
-                onUpload={uploadAvatar}
-              />
-            </div>
-            {/* Divider */}
-            <div className="w-px h-16 bg-gray-100 dark:bg-gray-800 flex-shrink-0" />
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">{name || 'Your Name'}</h2>
-              <p className="text-sm text-gray-400 mt-1">{user?.email}</p>
-              <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-                <span className="text-xs bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 px-2.5 py-1 rounded-full font-semibold capitalize">
-                  {authProvider}
-                </span>
-                <span className="text-xs bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800 px-2.5 py-1 rounded-full font-semibold">
-                  ● Active
-                </span>
+          <div className="flex items-center gap-5 justify-between flex-wrap">
+
+            {/* Left — avatar + name */}
+            <div className="flex items-center gap-5">
+              <div className="flex-shrink-0">
+                <AvatarUpload
+                  currentUrl={profile?.avatar_url ?? null}
+                  initials={getInitials()}
+                  onUpload={uploadAvatar}
+                />
+              </div>
+              <div className="w-px h-16 bg-gray-100 dark:bg-gray-800 flex-shrink-0" />
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">{name || 'Your Name'}</h2>
+                <p className="text-sm text-gray-400 mt-1">{user?.email}</p>
+                <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+                  <span className="text-xs bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 px-2.5 py-1 rounded-full font-semibold capitalize">
+                    {authProvider}
+                  </span>
+                  <span className="text-xs bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800 px-2.5 py-1 rounded-full font-semibold">
+                    ● Active
+                  </span>
+                </div>
               </div>
             </div>
+
+            {/* Right — quick stats pushed to end */}
+            <div className="flex items-center gap-6 text-center flex-shrink-0">
+              <div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {profile?.created_at ? Math.floor((Date.now() - new Date(profile.created_at).getTime()) / 86400000) : 0}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">Days active</p>
+              </div>
+              <div className="w-px h-10 bg-gray-100 dark:bg-gray-800" />
+              <div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white capitalize">{authProvider}</p>
+                <p className="text-xs text-gray-400 mt-0.5">Auth provider</p>
+              </div>
+              <div className="w-px h-10 bg-gray-100 dark:bg-gray-800" />
+              <div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—'}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">Member since</p>
+              </div>
+            </div>
+
           </div>
         </div>
 
