@@ -1,4 +1,4 @@
-import { WifiOff, CloudOff, HardDrive, RefreshCw } from 'lucide-react';
+import { CloudOff, HardDrive, RefreshCw } from 'lucide-react';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 
 const OfflineModeBar = () => {
