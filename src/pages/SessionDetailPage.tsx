@@ -24,7 +24,6 @@ const SessionDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // ✅ Use reactive sessions list — includes pending from localStorage
   const { sessions, updateSession, deleteSession } = useSessions();
   const { createFix } = useFixes();
 
@@ -37,7 +36,6 @@ const SessionDetailPage = () => {
   const [localAiFix, setLocalAiFix] = useState<string | null>(null);
   const [localStatus, setLocalStatus] = useState<Status | null>(null);
 
-  // ✅ Find session from reactive list — works offline + pending
   const session = sessions.find(s => s.id === id) ?? null;
   const loading = sessions.length === 0 && !session;
 
@@ -139,19 +137,21 @@ const SessionDetailPage = () => {
 
   return (
     <DashboardLayout title={session.title}>
-      <div className="max-w-3xl space-y-5">
+      <div className="space-y-5">
 
+        {/* Top bar */}
         <div className="flex items-center justify-between">
           <button onClick={() => navigate('/sessions')}
-            className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition">
+            className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition">
             <ArrowLeft size={14} /> All Sessions
           </button>
           <button onClick={handleExport}
-            className="flex items-center gap-2 border border-gray-200 hover:border-gray-300 text-gray-600 px-3 py-2 rounded-xl text-sm font-medium transition">
+            className="flex items-center gap-2 border border-gray-200 dark:border-gray-700 hover:border-gray-300 text-gray-600 dark:text-gray-400 px-3 py-2 rounded-xl text-sm font-medium transition">
             <Download size={14} /> Export .md
           </button>
         </div>
 
+        {/* Session header */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex-1 min-w-0">
@@ -180,7 +180,7 @@ const SessionDetailPage = () => {
             </div>
             <div className="relative">
               <button onClick={() => setShowStatusMenu(!showStatusMenu)}
-                className="flex items-center gap-2 border border-gray-200 hover:border-indigo-300 text-gray-600 dark:text-gray-400 px-3 py-2 rounded-xl text-sm font-medium transition">
+                className="flex items-center gap-2 border border-gray-200 dark:border-gray-700 hover:border-indigo-300 text-gray-600 dark:text-gray-400 px-3 py-2 rounded-xl text-sm font-medium transition">
                 Change Status <ChevronDown size={14} />
               </button>
               {showStatusMenu && (
@@ -200,96 +200,132 @@ const SessionDetailPage = () => {
           </div>
         </div>
 
-        {session.error_message && (
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
-            <div className="flex items-center gap-2 mb-3">
-              <AlertCircle size={16} className="text-red-500" />
-              <h3 className="font-bold text-gray-900 dark:text-white text-sm">Error Message</h3>
-            </div>
-            <div className="bg-red-50 border border-red-100 rounded-xl p-4 font-mono text-sm text-red-800 whitespace-pre-wrap">
-              {session.error_message}
-            </div>
-          </div>
-        )}
+        {/* Two-column body */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-        {session.stack_trace && (
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
-            <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-3">Stack Trace</h3>
-            <div className="bg-gray-900 rounded-xl p-4 font-mono text-xs text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-64 overflow-y-auto">
-              {session.stack_trace}
-            </div>
-          </div>
-        )}
+          {/* Left col — Error + Stack + AI Fix */}
+          <div className="lg:col-span-2 space-y-5">
 
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-indigo-50 dark:bg-indigo-950 rounded-lg flex items-center justify-center">
-                <Sparkles size={14} className="text-indigo-600" />
+            {session.error_message && (
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <AlertCircle size={16} className="text-red-500" />
+                  <h3 className="font-bold text-gray-900 dark:text-white text-sm">Error Message</h3>
+                </div>
+                <div className="bg-red-50 dark:bg-red-950 border border-red-100 dark:border-red-900 rounded-xl p-4 font-mono text-sm text-red-800 dark:text-red-300 whitespace-pre-wrap">
+                  {session.error_message}
+                </div>
               </div>
-              <h3 className="font-bold text-gray-900 dark:text-white text-sm">AI Fix</h3>
-              <span className="text-xs bg-green-50 text-green-600 border border-green-100 px-2 py-0.5 rounded-full">Groq · Llama 3</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {effectiveAiFix && (
-                <button onClick={handleSaveToLibrary} disabled={savingToLib}
-                  className="flex items-center gap-1.5 border border-indigo-200 hover:bg-indigo-50 text-indigo-600 text-xs font-medium px-3 py-1.5 rounded-xl transition disabled:opacity-40">
-                  {savingToLib ? <Loader2 size={12} className="animate-spin" /> : <BookOpen size={12} />}
-                  Save to Library
-                </button>
+            )}
+
+            {session.stack_trace && (
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
+                <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-3">Stack Trace</h3>
+                <div className="bg-gray-900 rounded-xl p-4 font-mono text-xs text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-64 overflow-y-auto">
+                  {session.stack_trace}
+                </div>
+              </div>
+            )}
+
+            {/* AI Fix */}
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 bg-indigo-50 dark:bg-indigo-950 rounded-lg flex items-center justify-center">
+                    <Sparkles size={14} className="text-indigo-600" />
+                  </div>
+                  <h3 className="font-bold text-gray-900 dark:text-white text-sm">AI Fix</h3>
+                  <span className="text-xs bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-900 px-2 py-0.5 rounded-full">Groq · Llama 3</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {effectiveAiFix && (
+                    <button onClick={handleSaveToLibrary} disabled={savingToLib}
+                      className="flex items-center gap-1.5 border border-indigo-200 hover:bg-indigo-50 dark:hover:bg-indigo-950 text-indigo-600 text-xs font-medium px-3 py-1.5 rounded-xl transition disabled:opacity-40">
+                      {savingToLib ? <Loader2 size={12} className="animate-spin" /> : <BookOpen size={12} />}
+                      Save to Library
+                    </button>
+                  )}
+                  <button onClick={handleGetAIFix} disabled={gettingFix || !session.error_message}
+                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed">
+                    {gettingFix
+                      ? <><Loader2 size={13} className="animate-spin" /> Analyzing...</>
+                      : effectiveAiFix
+                        ? <><RotateCcw size={13} /> Regenerate</>
+                        : <><Sparkles size={13} /> Get AI Fix</>
+                    }
+                  </button>
+                </div>
+              </div>
+              {effectiveAiFix ? (
+                <div className="bg-indigo-50 dark:bg-indigo-950 border border-indigo-100 dark:border-indigo-900 rounded-xl p-4 text-sm text-gray-800 dark:text-gray-200 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: formatAIFix(effectiveAiFix) }} />
+              ) : (
+                <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl p-8 text-center">
+                  <Sparkles size={24} className="text-gray-300 mx-auto mb-2" />
+                  <p className="text-gray-400 text-sm">
+                    {session.error_message
+                      ? 'Click "Get AI Fix" to analyze this error with Groq AI'
+                      : 'Add an error message to enable AI fix suggestions'}
+                  </p>
+                </div>
               )}
-              <button onClick={handleGetAIFix} disabled={gettingFix || !session.error_message}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed">
-                {gettingFix
-                  ? <><Loader2 size={13} className="animate-spin" /> Analyzing...</>
-                  : effectiveAiFix
-                    ? <><RotateCcw size={13} /> Regenerate</>
-                    : <><Sparkles size={13} /> Get AI Fix</>
-                }
+            </div>
+
+          </div>
+
+          {/* Right col — Notes + Danger Zone */}
+          <div className="space-y-5">
+
+            {/* Notes */}
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
+              <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-3">Notes</h3>
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)}
+                placeholder="Add your debugging notes, observations, or next steps..."
+                rows={6}
+                className="w-full border-2 border-gray-100 dark:border-gray-700 focus:border-indigo-400 text-gray-900 dark:text-white dark:bg-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 transition placeholder-gray-300 resize-none" />
+              <button onClick={handleSaveNotes} disabled={savingNotes || notes === (session.notes ?? '')}
+                className="mt-3 w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition disabled:opacity-40">
+                {savingNotes ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                {savingNotes ? 'Saving...' : 'Save Notes'}
               </button>
             </div>
-          </div>
-          {effectiveAiFix ? (
-            <div className="bg-indigo-50 dark:bg-indigo-950 border border-indigo-100 dark:border-indigo-900 rounded-xl p-4 text-sm text-gray-800 dark:text-gray-200 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: formatAIFix(effectiveAiFix) }} />
-          ) : (
-            <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl p-8 text-center">
-              <Sparkles size={24} className="text-gray-300 mx-auto mb-2" />
-              <p className="text-gray-400 text-sm">
-                {session.error_message ? 'Click "Get AI Fix" to analyze this error with Groq AI' : 'Add an error message to enable AI fix suggestions'}
-              </p>
-            </div>
-          )}
-        </div>
 
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
-          <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-3">Notes</h3>
-          <textarea value={notes} onChange={(e) => setNotes(e.target.value)}
-            placeholder="Add your debugging notes, observations, or next steps..."
-            rows={4}
-            className="w-full border-2 border-gray-100 dark:border-gray-700 focus:border-indigo-400 text-gray-900 dark:text-white dark:bg-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 transition placeholder-gray-300 resize-none" />
-          <button onClick={handleSaveNotes} disabled={savingNotes || notes === (session.notes ?? '')}
-            className="mt-3 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition disabled:opacity-40">
-            {savingNotes ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-            {savingNotes ? 'Saving...' : 'Save Notes'}
-          </button>
-        </div>
-
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-red-100 dark:border-red-900 p-6">
-          <h3 className="font-bold text-red-600 mb-4">Danger Zone</h3>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">Delete Session</p>
-              <p className="text-xs text-gray-400">Permanently delete this session and all its data</p>
+            {/* Session meta */}
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
+              <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-4">Session Info</h3>
+              <div className="space-y-3">
+                {[
+                  { label: 'Status', value: <StatusBadge status={effectiveStatus} /> },
+                  { label: 'Severity', value: <SeverityBadge severity={session.severity} /> },
+                  { label: 'Project', value: <span className="text-sm text-gray-700 dark:text-gray-300">{session.project?.name ?? '—'}</span> },
+                  { label: 'Created', value: <span className="text-sm text-gray-700 dark:text-gray-300">{new Date(session.created_at).toLocaleDateString()}</span> },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center justify-between py-1.5 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                    <span className="text-xs text-gray-400">{item.label}</span>
+                    {item.value}
+                  </div>
+                ))}
+              </div>
             </div>
-            <button onClick={handleDelete} disabled={deleting}
-              className="flex items-center gap-2 bg-red-50 hover:bg-red-100 dark:bg-red-950 text-red-600 font-medium px-4 py-2 rounded-xl text-sm transition border border-red-200 dark:border-red-800 disabled:opacity-50">
-              {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-              Delete
-            </button>
+
+            {/* Danger Zone */}
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-red-100 dark:border-red-900 p-6">
+              <h3 className="font-bold text-red-600 mb-4">Danger Zone</h3>
+              <div className="p-4 bg-red-50 dark:bg-red-950 rounded-xl space-y-3">
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">Delete Session</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Permanently delete this session and all its data.</p>
+                </div>
+                <button onClick={handleDelete} disabled={deleting}
+                  className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-xl text-sm transition disabled:opacity-50 w-full justify-center">
+                  {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                  {deleting ? 'Deleting...' : 'Delete Session'}
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
-
       </div>
     </DashboardLayout>
   );
