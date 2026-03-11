@@ -7,6 +7,7 @@ const SyncQueueIndicator = () => {
   const { items, clearDone } = useSyncQueue();
   const [expanded, setExpanded] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [hideTimer, setHideTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   const pending  = items.filter((i) => i.status === 'pending');
   const syncing  = items.filter((i) => i.status === 'syncing');
@@ -17,29 +18,32 @@ const SyncQueueIndicator = () => {
   const activeCount = pending.length + syncing.length;
 
   useEffect(() => {
-    if (total > 0) setVisible(true);
+    // Show immediately when any item arrives
+    if (total > 0) {
+      setVisible(true);
+      if (hideTimer) clearTimeout(hideTimer);
+    }
+
+    // Hide 3s after everything is done
     if (total > 0 && activeCount === 0 && errored.length === 0) {
       const t = setTimeout(() => {
         setVisible(false);
         clearDone();
         setExpanded(false);
       }, 3000);
+      setHideTimer(t);
       return () => clearTimeout(t);
     }
   }, [total, activeCount, errored.length]);
 
-  if (!visible || total === 0) return null;
-
-  const isSyncing  = syncing.length > 0;
-  const allDone    = activeCount === 0 && errored.length === 0 && done.length > 0;
-  const hasErrors  = errored.length > 0;
-  const hasPending = pending.length > 0 && !isSyncing;
-
+  // Always render the container — use opacity/transform to animate in/out
   return (
-    <div className="fixed bottom-5 left-5 z-50 flex flex-col items-start gap-2">
+    <div className={`fixed bottom-5 left-5 z-50 flex flex-col items-start gap-2 transition-all duration-300 ${
+      visible && total > 0 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+    }`}>
 
       {/* Expanded list */}
-      {expanded && (
+      {expanded && total > 0 && (
         <div className="w-72 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
             <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
@@ -74,26 +78,37 @@ const SyncQueueIndicator = () => {
       )}
 
       {/* Summary pill */}
-      <button
-        onClick={() => setExpanded((e) => !e)}
-        className={`flex items-center gap-2 px-3.5 py-2 rounded-full shadow-lg text-xs font-semibold transition-all duration-300 ${
-          hasErrors  ? 'bg-red-500 text-white' :
-          isSyncing  ? 'bg-indigo-600 text-white' :
-          allDone    ? 'bg-emerald-500 text-white' :
-                       'bg-orange-500 text-white'
-        }`}>
-        {isSyncing  && <Loader2      size={13} className="animate-spin" />}
-        {allDone    && <CheckCircle2 size={13} />}
-        {hasPending && <Clock        size={13} />}
-        {hasErrors  && <AlertCircle  size={13} />}
+      {total > 0 && (() => {
+        const isSyncing  = syncing.length > 0;
+        const allDone    = activeCount === 0 && errored.length === 0 && done.length > 0;
+        const hasErrors  = errored.length > 0;
+        const hasPending = pending.length > 0 && !isSyncing;
 
-        {isSyncing  && `Syncing ${syncing.length + pending.length} change${syncing.length + pending.length !== 1 ? 's' : ''}...`}
-        {allDone    && 'All changes synced'}
-        {hasPending && `${pending.length} change${pending.length !== 1 ? 's' : ''} pending`}
-        {hasErrors  && `${errored.length} action${errored.length !== 1 ? 's' : ''} failed`}
+        return (
+          <button
+            onClick={() => setExpanded((e) => !e)}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-full shadow-lg text-xs font-semibold transition-all duration-200 ${
+              hasErrors  ? 'bg-red-500 text-white' :
+              isSyncing  ? 'bg-indigo-600 text-white' :
+              allDone    ? 'bg-emerald-500 text-white' :
+                           'bg-orange-500 text-white'
+            }`}>
+            {isSyncing  && <Loader2      size={13} className="animate-spin" />}
+            {allDone    && <CheckCircle2 size={13} />}
+            {hasPending && <Clock        size={13} />}
+            {hasErrors  && <AlertCircle  size={13} />}
 
-        {expanded ? <ChevronDown size={12} /> : <ChevronUp size={12} />}
-      </button>
+            <span>
+              {isSyncing  ? `Syncing ${syncing.length + pending.length} change${syncing.length + pending.length !== 1 ? 's' : ''}...` :
+               allDone    ? 'All changes synced' :
+               hasPending ? `${pending.length} change${pending.length !== 1 ? 's' : ''} pending` :
+                            `${errored.length} action${errored.length !== 1 ? 's' : ''} failed`}
+            </span>
+
+            {expanded ? <ChevronDown size={12} /> : <ChevronUp size={12} />}
+          </button>
+        );
+      })()}
     </div>
   );
 };
