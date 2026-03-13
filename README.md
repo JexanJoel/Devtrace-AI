@@ -81,72 +81,18 @@ Offline? Writes go into a queue in `localStorage`. The moment you reconnect, the
 
 ## The AI Debug Panel — 8 Tabs Per Bug
 
-> Every session gets a full structured breakdown powered by **Groq + Llama 3.3 70B**. The complete analysis is saved as **JSONB** in Supabase — persists across reloads, no re-analyzing needed.
+Every session gets a full structured breakdown powered by **Groq + Llama 3.3 70B**. The complete analysis is saved as JSONB in Supabase — persists across reloads, no re-analyzing needed.
 
-<br/>
-
-<div align="center">
-
-<table>
-<tr>
-<td width="50%" valign="top">
-
-**🔍 Overview**
-Plain English explanation of the bug, root cause, symptom vs cause, category badge (React State / Supabase RLS / TypeScript / Network), confidence score, and files to check.
-
-</td>
-<td width="50%" valign="top">
-
-**⚡ Fixes**
-3 options — quick patch, proper fix, workaround. Each has full code, pros/cons, and a recommended pick highlighted.
-
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
-**🕐 Timeline**
-Visual step-by-step of how the crash happened — from component mount all the way to the error throw.
-
-</td>
-<td width="50%" valign="top">
-
-**✅ Checklist**
-Interactive priority-ranked action list. Check items off as you go — state persists with the session.
-
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
-**💬 Follow-up Chat**
-Context-aware AI chat about your specific bug. Click suggested questions or type your own — full conversation history saved.
-
-</td>
-<td width="50%" valign="top">
-
-**🧪 Tests**
-AI-generated reproduction steps and test cases so you can verify the fix actually works.
-
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
-**📋 Logs**
-Paste raw console or server logs. AI strips the noise and surfaces only what matters.
-
-</td>
-<td width="50%" valign="top">
-
-**🏗️ Structure**
-Paste your file tree. AI reviews your architecture and flags structural problems or anti-patterns.
-
-</td>
-</tr>
-</table>
-
-</div>
+| Tab | What you get |
+|:---|:---|
+| 🔍 **Overview** | Plain English explanation, root cause, symptom vs cause, category badge, confidence score, files to check |
+| ⚡ **Fixes** | 3 options — quick patch, proper fix, workaround — each with full code, pros/cons, and a recommended pick |
+| 🕐 **Timeline** | Visual step-by-step of how the crash happened from component mount to error throw |
+| ✅ **Checklist** | Interactive priority-ranked action list — check items off as you debug |
+| 💬 **Follow-up** | Context-aware AI chat — click suggested questions or type your own |
+| 🧪 **Tests** | AI-generated reproduction steps and test cases to verify the fix works |
+| 📋 **Logs** | Paste raw console or server logs — AI strips noise and surfaces what matters |
+| 🏗️ **Structure** | Paste your file tree — AI reviews architecture and flags problems |
 
 ---
 
