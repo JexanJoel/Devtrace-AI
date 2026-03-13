@@ -19,6 +19,8 @@ import SessionsPage from './pages/SessionsPage';
 import SessionDetailPage from './pages/SessionDetailPage';
 import FixLibraryPage from './pages/FixLibraryPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import AIInsightsPage from './pages/AIInsightsPage';
+import SyncStatusPage from './pages/SyncStatusPage';
 
 const App = () => {
   const { setUser, setSession, setLoading } = useAuthStore();
@@ -40,7 +42,6 @@ const App = () => {
   return (
     <PowerSyncProvider>
       <BrowserRouter>
-        {/* Banner is in normal flow — pushes content down instead of overlaying */}
         <div className="flex flex-col min-h-screen">
           <OfflineBanner />
           <div className="flex-1">
@@ -52,15 +53,17 @@ const App = () => {
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
-              <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-              <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-              <Route path="/projects" element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>} />
+              <Route path="/dashboard"    element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+              <Route path="/profile"      element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="/settings"     element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+              <Route path="/projects"     element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>} />
               <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetailPage /></ProtectedRoute>} />
-              <Route path="/sessions" element={<ProtectedRoute><SessionsPage /></ProtectedRoute>} />
+              <Route path="/sessions"     element={<ProtectedRoute><SessionsPage /></ProtectedRoute>} />
               <Route path="/sessions/:id" element={<ProtectedRoute><SessionDetailPage /></ProtectedRoute>} />
-              <Route path="/fixes" element={<ProtectedRoute><FixLibraryPage /></ProtectedRoute>} />
-              <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+              <Route path="/fixes"        element={<ProtectedRoute><FixLibraryPage /></ProtectedRoute>} />
+              <Route path="/analytics"    element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+              <Route path="/ai-insights"  element={<ProtectedRoute><AIInsightsPage /></ProtectedRoute>} />
+              <Route path="/sync-status"  element={<ProtectedRoute><SyncStatusPage /></ProtectedRoute>} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>

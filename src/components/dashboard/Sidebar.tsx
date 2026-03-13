@@ -1,14 +1,19 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FolderOpen, Bug, BookOpen, User, Settings, Terminal, LogOut, BarChart2, X } from 'lucide-react';
+import {
+  LayoutDashboard, FolderOpen, Bug, BookOpen, User, Settings,
+  Terminal, LogOut, BarChart2, X, Sparkles, Database
+} from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import toast from 'react-hot-toast';
 
 const NAV = [
-  { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
-  { to: '/projects',  icon: <FolderOpen size={18} />,      label: 'Projects' },
-  { to: '/sessions',  icon: <Bug size={18} />,              label: 'Debug Sessions' },
-  { to: '/fixes',     icon: <BookOpen size={18} />,         label: 'Fix Library' },
-  { to: '/analytics', icon: <BarChart2 size={18} />,        label: 'Analytics' },
+  { to: '/dashboard',    icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
+  { to: '/projects',     icon: <FolderOpen size={18} />,      label: 'Projects' },
+  { to: '/sessions',     icon: <Bug size={18} />,             label: 'Debug Sessions' },
+  { to: '/fixes',        icon: <BookOpen size={18} />,        label: 'Fix Library' },
+  { to: '/analytics',    icon: <BarChart2 size={18} />,       label: 'Analytics' },
+  { to: '/ai-insights',  icon: <Sparkles size={18} />,        label: 'AI Insights' },
+  { to: '/sync-status',  icon: <Database size={18} />,        label: 'Sync Status' },
 ];
 
 const BOTTOM_NAV = [
