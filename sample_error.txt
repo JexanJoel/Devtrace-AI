@@ -1,0 +1,181 @@
+═══════════════════════════════════════════════════════════════
+  DEVTRACE AI — SAMPLE ERRORS
+═══════════════════════════════════════════════════════════════
+
+These 3 errors are chosen to showcase different AI categories:
+  #1 → React State (most common, beginner-friendly)
+  #2 → Supabase RLS (impressive for judges, real-world)
+  #3 → PowerSync / Offline (unique to your stack, wow factor)
+
+───────────────────────────────────────────────────────────────
+ERROR #1 — React State / Null Auth Race Condition
+───────────────────────────────────────────────────────────────
+Title:
+  TypeError: Cannot read properties of null (reading 'id')
+
+Error Message:
+  TypeError: Cannot read properties of null (reading 'id')
+  at Dashboard (Dashboard.tsx:14:32)
+
+Stack Trace:
+  TypeError: Cannot read properties of null (reading 'id')
+      at Dashboard (Dashboard.tsx:14:32)
+      at renderWithHooks (react-dom.development.js:14985)
+      at mountIndeterminateComponent (react-dom.development.js:17811)
+      at beginWork (react-dom.development.js:19049)
+      at HTMLUnknownElement.callCallback (react-dom.development.js:3945)
+
+Related Code (paste in Advanced):
+  const Dashboard = () => {
+    const { user } = useAuthStore();
+
+    useEffect(() => {
+      fetchProjects(user.id);  // crashes — user is null on first render
+    }, []);
+
+    return (
+      <div>
+        <h1>Welcome, {user.name}</h1>
+      </div>
+    );
+  };
+
+Expected Behavior:
+  Dashboard should load and display the user's projects on mount
+
+Environment:    Development
+Severity:       High
+Category AI should detect: React State
+Best fix AI should suggest: Optional chaining (user?.id) + early return guard
+
+───────────────────────────────────────────────────────────────
+ERROR #2 — Supabase RLS Policy Blocking Insert
+───────────────────────────────────────────────────────────────
+Title:
+  Supabase insert fails silently — RLS policy violation on projects
+
+Error Message:
+  new row violates row-level security policy for table "projects"
+  PostgrestError: { code: '42501', details: null, hint: null }
+
+Stack Trace:
+  Error: new row violates row-level security policy for table "projects"
+      at useProjects.createProject (useProjects.ts:48:18)
+      at handleCreate (ProjectsPage.tsx:72:5)
+      at HTMLButtonElement.onClick (ProjectsPage.tsx:91:17)
+
+Related Code (paste in Advanced):
+  const createProject = async (data) => {
+    const { error } = await supabase
+      .from('projects')
+      .insert({ name: data.name, description: data.description });
+      // missing user_id — RLS policy requires it
+    if (error) console.error(error);
+  };
+
+Expected Behavior:
+  New project should be created and appear in the projects grid immediately
+
+Environment:    Production
+Severity:       Critical
+Category AI should detect: Supabase RLS
+Best fix AI should suggest: Include user_id in the insert payload
+
+───────────────────────────────────────────────────────────────
+ERROR #3 — PowerSync Offline Sync Queue Stuck
+───────────────────────────────────────────────────────────────
+Title:
+  PowerSync sync queue stuck — changes not uploading after reconnect
+
+Error Message:
+  PowerSyncDatabase: Upload failed — cannot read property 'upload' of undefined
+  Sync queue has 7 pending items, status remains 'pending' after reconnect
+
+Stack Trace:
+  Error: Cannot read properties of undefined (reading 'upload')
+      at PowerSyncDatabase.uploadData (powersync.ts:34:22)
+      at AbstractPowerSyncDatabase.runExclusive (powersync-core.js:218)
+      at SyncStreamImplementation.triggerCrudUpload (powersync-core.js:445)
+
+Related Code (paste in Advanced):
+  export const powerSync = new PowerSyncDatabase({
+    schema: AppSchema,
+    database: new WASQLiteOpenFactory({
+      dbFilename: 'devtrace.db',
+    }),
+    // uploadData function missing — required for writes to sync back
+  });
+
+Expected Behavior:
+  Debug sessions and fixes created offline should automatically upload
+  to Supabase once internet connection is restored
+
+Environment:    Production
+Severity:       Critical
+Category AI should detect: PowerSync
+Best fix AI should suggest: Implement uploadData function in PowerSyncDatabase config
+
+───────────────────────────────────────────────────────────────
+DEMO RECORDING ORDER (recommended flow)
+───────────────────────────────────────────────────────────────
+1. Start screen recording
+2. Open DevTrace AI → Dashboard (show the stats)
+3. Click Debug Sessions → New Session
+4. Paste Error #1 (React State) — show the modal fields
+5. Open the session → click Analyze Bug
+6. Walk through tabs: Overview → Fixes → Timeline → Checklist
+7. Click Follow-up tab → click a suggested question → show AI chat
+8. Click Save to Library
+9. Create Error #2 (Supabase RLS) — run analysis, show category badge changes
+10. Create Error #3 (PowerSync) — run analysis, show PowerSync category
+11. Go to Fix Library → click a fix card → show expand modal
+12. End on Dashboard showing session count went up
+
+Total estimated video length: 3-4 minutes
+
+───────────────────────────────────────────────────────────────
+LOGS TAB DEMO (paste into Logs tab during recording)
+───────────────────────────────────────────────────────────────
+[vite] connecting...
+[vite] connected.
+Warning: Each child in a list should have a unique "key" prop.
+PowerSync: Connected to sync service
+PowerSync: Syncing tables: projects, debug_sessions, fixes
+[React DevTools]: Component tree updated
+Uncaught TypeError: Cannot read properties of null (reading 'id')
+    at Dashboard (Dashboard.tsx:14)
+    at renderWithHooks
+PowerSync: Sync completed — 3 tables updated
+Warning: Can't perform a React state update on an unmounted component
+
+───────────────────────────────────────────────────────────────
+STRUCTURE TAB DEMO (paste into Structure tab during recording)
+───────────────────────────────────────────────────────────────
+src/
+  pages/
+    Dashboard.tsx
+    LoginPage.tsx
+    ProjectsPage.tsx
+    DebugSessionsPage.tsx
+    SessionDetailPage.tsx
+    FixLibraryPage.tsx
+  hooks/
+    useAuthStore.ts
+    useProjects.ts
+    useSessions.ts
+    useFixes.ts
+  components/
+    dashboard/
+      DashboardLayout.tsx
+    sessions/
+      AIDebugPanel.tsx
+      CreateSessionModal.tsx
+    fixes/
+      FixCard.tsx
+  lib/
+    supabaseClient.ts
+    powersync.ts
+    groqClient.ts
+  store/
+    authStore.ts
+    useSyncQueue.ts
