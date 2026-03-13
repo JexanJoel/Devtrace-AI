@@ -6,8 +6,6 @@
 
 <h2>AI powered debugging assistant for developers</h2>
 
-<p>Log errors → get full AI analysis → save fixes → ship faster.<br/>Works completely offline. Powered by Groq + Supabase + PowerSync.</p>
-
 <br/>
 
 <table><tr>
