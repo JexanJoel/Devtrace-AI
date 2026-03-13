@@ -10,6 +10,7 @@ import GitHubStatsCard from '../components/github/GitHubStatsCard';
 import useProjects from '../hooks/useProjects';
 import useSessions from '../hooks/useSessions';
 import CreateSessionModal from '../components/sessions/CreateSessionModal';
+import { computeHealthScore } from '../lib/projectHealth';
 
 const LANGUAGE_COLORS: Record<string, string> = {
   javascript: 'bg-yellow-100 text-yellow-700 border-yellow-200',
@@ -47,6 +48,7 @@ const ProjectDetailPage = () => {
 
   const project = projects.find(p => p.id === id) ?? null;
   const loading = projects.length === 0 && !project;
+  const health = computeHealthScore(sessions);
 
   useEffect(() => {
     if (project) {
@@ -143,18 +145,48 @@ const ProjectDetailPage = () => {
               </a>
             )}
           </div>
-          <div className="grid grid-cols-3 gap-3 mt-5">
+
+          {/* Stats row — now includes health score */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
             {[
-              { label: 'Debug Sessions', value: sessions.length, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950' },
-              { label: 'Total Errors', value: sessions.filter(s => s.error_message).length, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950' },
-              { label: 'Resolved', value: sessions.filter(s => s.status === 'resolved').length, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-950' },
+              { label: 'Debug Sessions', value: sessions.length,                               color: 'text-blue-600',  bg: 'bg-blue-50 dark:bg-blue-950' },
+              { label: 'Total Errors',   value: sessions.filter(s => s.error_message).length,  color: 'text-red-600',   bg: 'bg-red-50 dark:bg-red-950' },
+              { label: 'Resolved',       value: sessions.filter(s => s.status === 'resolved').length, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-950' },
             ].map((s, i) => (
               <div key={i} className={`${s.bg} rounded-xl p-3 text-center`}>
                 <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{s.label}</p>
               </div>
             ))}
+
+            {/* Health score stat */}
+            <div className={`${health.bg} rounded-xl p-3 text-center ring-2 ${health.ring}`}>
+              <p className={`text-xl font-bold ${health.color}`}>{health.score}</p>
+              <p className={`text-xs font-semibold mt-0.5 ${health.color}`}>{health.label}</p>
+              <div className="mt-1.5 h-1 bg-white/50 dark:bg-black/20 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full ${health.bar}`} style={{ width: `${health.score}%` }} />
+              </div>
+            </div>
           </div>
+
+          {/* Health deductions detail */}
+          {health.deductions.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-50 dark:border-gray-800">
+              <p className="text-xs font-semibold text-gray-400 mb-2">Health Score Breakdown</p>
+              <div className="flex flex-wrap gap-2">
+                {health.deductions.map((d, i) => (
+                  <span key={i} className="flex items-center gap-1 text-xs bg-red-50 dark:bg-red-950 text-red-600 px-2.5 py-1 rounded-lg border border-red-100 dark:border-red-900">
+                    −{d.points} {d.reason}
+                  </span>
+                ))}
+                {health.bonus > 0 && (
+                  <span className="flex items-center gap-1 text-xs bg-green-50 dark:bg-green-950 text-green-600 px-2.5 py-1 rounded-lg border border-green-100 dark:border-green-900">
+                    +{health.bonus} High resolution rate
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Tabs */}
@@ -243,11 +275,9 @@ const ProjectDetailPage = () => {
           </div>
         )}
 
-        {/* Settings — full width two-column */}
+        {/* Settings */}
         {tab === 'settings' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            {/* Left — Project Settings (wider) */}
             <div className="lg:col-span-2">
               <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 space-y-4">
                 <h3 className="font-bold text-gray-900 dark:text-white">Project Settings</h3>
@@ -274,15 +304,13 @@ const ProjectDetailPage = () => {
                 </button>
               </div>
             </div>
-
-            {/* Right — Danger Zone */}
             <div>
               <div className="bg-white dark:bg-gray-900 rounded-2xl border border-red-100 dark:border-red-900 p-6">
                 <h3 className="font-bold text-red-600 mb-4">Danger Zone</h3>
                 <div className="p-4 bg-red-50 dark:bg-red-950 rounded-xl space-y-3">
                   <div>
                     <p className="text-sm font-semibold text-gray-900 dark:text-white">Delete Project</p>
-                    <p className="text-xs text-gray-400 mt-0.5">Permanently delete this project and all its sessions and data. This cannot be undone.</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Permanently delete this project and all its sessions and data.</p>
                   </div>
                   <button onClick={handleDelete} disabled={deleting}
                     className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-xl text-sm transition disabled:opacity-50 w-full justify-center">
@@ -292,7 +320,6 @@ const ProjectDetailPage = () => {
                 </div>
               </div>
             </div>
-
           </div>
         )}
       </div>
