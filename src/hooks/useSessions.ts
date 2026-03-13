@@ -6,9 +6,11 @@ import { usePendingQueue } from './usePendingQueue';
 import { syncQueueAddItem, syncQueueUpdateItem } from '../store/useSyncQueue';
 import { v4 as uuidv4 } from 'uuid';
 import { useOnlineStatus } from './useOnlineStatus';
+import type { AIAnalysis } from '../lib/groqClient';
 
 export type Status = 'open' | 'in_progress' | 'resolved';
 export type Severity = 'low' | 'medium' | 'high' | 'critical';
+export type Environment = 'development' | 'staging' | 'production';
 
 export interface DebugSession {
   id: string;
@@ -17,15 +19,18 @@ export interface DebugSession {
   title: string;
   error_message?: string;
   stack_trace?: string;
+  code_snippet?: string;
+  expected_behavior?: string;
+  environment?: Environment;
   severity: Severity;
   status: Status;
   ai_fix?: string;
+  ai_analysis?: AIAnalysis | null;
   notes?: string;
   created_at: string;
   updated_at: string;
   _pending?: boolean;
   project?: { name: string; language?: string };
-  // raw JOIN columns from PowerSync query
   project_name?: string;
   project_language?: string;
 }
@@ -35,6 +40,9 @@ export interface CreateSessionInput {
   project_id?: string;
   error_message?: string;
   stack_trace?: string;
+  code_snippet?: string;
+  expected_behavior?: string;
+  environment?: Environment;
   severity?: Severity;
   status?: Status;
   notes?: string;
@@ -46,7 +54,6 @@ const useSessions = (projectId?: string) => {
   const { pending, addPending, removePending } = usePendingQueue<DebugSession>('sessions');
   const isOnline = useOnlineStatus();
 
-  // ✅ JOIN projects so session.project is always populated
   const query = projectId
     ? `SELECT ds.*, p.name as project_name, p.language as project_language
        FROM debug_sessions ds
@@ -62,9 +69,11 @@ const useSessions = (projectId?: string) => {
 
   const { data: rawSessions = [] } = useQuery<DebugSession>(query, params);
 
-  // Map JOIN columns → nested project object
   const syncedSessions = rawSessions.map(s => ({
     ...s,
+    ai_analysis: s.ai_analysis
+      ? (typeof s.ai_analysis === 'string' ? JSON.parse(s.ai_analysis) : s.ai_analysis)
+      : null,
     project: s.project_name ? { name: s.project_name, language: s.project_language ?? undefined } : undefined,
   }));
 
@@ -73,11 +82,9 @@ const useSessions = (projectId?: string) => {
     !syncedIds.has(s.id) && (!projectId || s.project_id === projectId)
   );
 
-  const sessions = [
-    ...pendingOnly,
-    ...syncedSessions,
-  ].filter((s, i, arr) => arr.findIndex(x => x.id === s.id) === i)
-   .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  const sessions = [...pendingOnly, ...syncedSessions]
+    .filter((s, i, arr) => arr.findIndex(x => x.id === s.id) === i)
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const getSession = async (id: string): Promise<DebugSession | null> => {
     const p = pending.find(s => s.id === id);
@@ -90,7 +97,11 @@ const useSessions = (projectId?: string) => {
     );
     if (!results.length) return null;
     const s = results[0];
-    return { ...s, project: s.project_name ? { name: s.project_name, language: s.project_language } : undefined } as DebugSession;
+    return {
+      ...s,
+      ai_analysis: s.ai_analysis ? (typeof s.ai_analysis === 'string' ? JSON.parse(s.ai_analysis) : s.ai_analysis) : null,
+      project: s.project_name ? { name: s.project_name, language: s.project_language } : undefined,
+    } as DebugSession;
   };
 
   const createSession = async (data: CreateSessionInput) => {
@@ -106,13 +117,15 @@ const useSessions = (projectId?: string) => {
       project_id: data.project_id,
       error_message: data.error_message,
       stack_trace: data.stack_trace,
+      code_snippet: data.code_snippet,
+      expected_behavior: data.expected_behavior,
+      environment: data.environment ?? 'development',
       notes: data.notes,
       created_at: now, updated_at: now, _pending: true,
     };
 
     addPending(row);
     syncQueueAddItem({ id: qid, action: 'create_session', label: `Create session "${data.title}"`, status: 'pending' });
-
     await new Promise(r => setTimeout(r, 80));
     syncQueueUpdateItem(qid, { status: 'syncing' });
 
@@ -121,13 +134,8 @@ const useSessions = (projectId?: string) => {
       created_at: now, updated_at: now, ...data,
     });
 
-    if (!error) {
-      removePending(id);
-      syncQueueUpdateItem(qid, { status: 'done' });
-    } else {
-      syncQueueUpdateItem(qid, { status: isOnline ? 'error' : 'pending' });
-    }
-
+    if (!error) { removePending(id); syncQueueUpdateItem(qid, { status: 'done' }); }
+    else { syncQueueUpdateItem(qid, { status: isOnline ? 'error' : 'pending' }); }
     return row;
   };
 
@@ -136,11 +144,10 @@ const useSessions = (projectId?: string) => {
     const session = sessions.find(s => s.id === id);
     const label = data.status
       ? `Mark "${session?.title ?? 'session'}" as ${data.status.replace('_', ' ')}`
-      : data.notes !== undefined
-        ? `Update notes on "${session?.title ?? 'session'}"`
-        : data.ai_fix
-          ? `Save AI fix for "${session?.title ?? 'session'}"`
-          : `Update "${session?.title ?? 'session'}"`;
+      : data.notes !== undefined ? `Update notes on "${session?.title ?? 'session'}"`
+      : data.ai_fix ? `Save AI fix for "${session?.title ?? 'session'}"`
+      : data.ai_analysis ? `Save AI analysis for "${session?.title ?? 'session'}"`
+      : `Update "${session?.title ?? 'session'}"`;
 
     syncQueueAddItem({ id: qid, action: 'update_session', label, status: 'syncing' });
     const { error } = await supabase.from('debug_sessions')

@@ -2,15 +2,16 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Loader2, Trash2, Save,
-  Sparkles, ChevronDown, Clock, FolderOpen,
-  CheckCircle, AlertCircle, RotateCcw, Download, BookOpen
+  ChevronDown, Clock, FolderOpen,
+  CheckCircle, Download
 } from 'lucide-react';
 import DashboardLayout from '../components/dashboard/DashboardLayout';
 import { StatusBadge, SeverityBadge } from '../components/sessions/StatusBadge';
+import AIDebugPanel from '../components/sessions/AIDebugPanel';
 import useSessions from '../hooks/useSessions';
 import type { Status } from '../hooks/useSessions';
 import useFixes from '../hooks/useFixes';
-import { getAIFix } from '../lib/groqClient';
+import type { AIAnalysis } from '../lib/groqClient';
 import { exportSessionAsMarkdown } from '../hooks/exportUtils';
 import toast from 'react-hot-toast';
 
@@ -19,6 +20,12 @@ const STATUS_OPTIONS: { value: Status; label: string }[] = [
   { value: 'in_progress', label: 'In Progress' },
   { value: 'resolved', label: 'Resolved' },
 ];
+
+const ENV_COLORS: Record<string, string> = {
+  development: 'bg-blue-50 text-blue-600 border-blue-200',
+  staging: 'bg-yellow-50 text-yellow-600 border-yellow-200',
+  production: 'bg-red-50 text-red-600 border-red-200',
+};
 
 const SessionDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -29,11 +36,9 @@ const SessionDetailPage = () => {
 
   const [notes, setNotes] = useState('');
   const [savingNotes, setSavingNotes] = useState(false);
-  const [gettingFix, setGettingFix] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [savingToLib, setSavingToLib] = useState(false);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
-  const [localAiFix, setLocalAiFix] = useState<string | null>(null);
   const [localStatus, setLocalStatus] = useState<Status | null>(null);
 
   const session = sessions.find(s => s.id === id) ?? null;
@@ -43,7 +48,6 @@ const SessionDetailPage = () => {
     if (session) setNotes(session.notes ?? '');
   }, [session?.id]);
 
-  const effectiveAiFix = localAiFix ?? session?.ai_fix ?? null;
   const effectiveStatus = localStatus ?? session?.status ?? 'open';
 
   const handleStatusChange = async (status: Status) => {
@@ -61,34 +65,27 @@ const SessionDetailPage = () => {
     setSavingNotes(false);
   };
 
-  const handleGetAIFix = async () => {
-    if (!session?.error_message) { toast.error('Add an error message first to get an AI fix'); return; }
-    setGettingFix(true);
-    toast.loading('Asking Groq AI...', { id: 'ai-fix' });
-
-    const result = await getAIFix(
-      session.error_message,
-      session.stack_trace ?? undefined,
-      session.project?.language ?? undefined
-    );
-
-    toast.dismiss('ai-fix');
-
-    if (!result) { toast.error('Failed to get AI fix. Check your Groq API key.'); setGettingFix(false); return; }
-
-    const aiFix = `**Fix (${result.confidence}% confidence)**\n\n${result.fix}\n\n**Why this happens:**\n${result.explanation}`;
-    setLocalAiFix(aiFix);
-    await updateSession(session.id, { ai_fix: aiFix });
-    toast.success('AI fix generated!');
-    setGettingFix(false);
+  const handleSaveAnalysis = async (analysis: AIAnalysis) => {
+    if (!session) return;
+    // Also save a legacy ai_fix string for backward compatibility
+    const bestFix = analysis.fixes[analysis.best_fix_index] ?? analysis.fixes[0];
+    const ai_fix = bestFix
+      ? `**Fix (${analysis.confidence}% confidence)**\n\n${bestFix.code}\n\n**Why this happens:**\n${analysis.root_cause}`
+      : analysis.plain_english;
+    await updateSession(session.id, { ai_analysis: analysis, ai_fix });
+    toast.success('Analysis saved!');
   };
 
   const handleSaveToLibrary = async () => {
-    if (!effectiveAiFix || !session) return;
+    if (!session?.ai_analysis && !session?.ai_fix) return;
     setSavingToLib(true);
+    const analysis = session.ai_analysis;
+    const bestFix = analysis?.fixes[analysis.best_fix_index ?? 0] ?? analysis?.fixes[0];
     await createFix({
       title: session.title,
-      fix_content: effectiveAiFix,
+      fix_content: bestFix
+        ? `**${bestFix.title}**\n\n${bestFix.code}\n\n${bestFix.explanation}`
+        : session.ai_fix ?? '',
       session_id: session.id,
       project_id: session.project_id ?? undefined,
       error_pattern: session.error_message ?? undefined,
@@ -100,7 +97,7 @@ const SessionDetailPage = () => {
 
   const handleExport = () => {
     if (!session) return;
-    exportSessionAsMarkdown({ ...session, ai_fix: effectiveAiFix ?? undefined, status: effectiveStatus });
+    exportSessionAsMarkdown({ ...session, status: effectiveStatus });
     toast.success('Session exported as Markdown!');
   };
 
@@ -112,9 +109,6 @@ const SessionDetailPage = () => {
     if (ok) navigate('/sessions');
     setDeleting(false);
   };
-
-  const formatAIFix = (text: string) =>
-    text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>');
 
   if (loading) return (
     <DashboardLayout title="Session">
@@ -151,7 +145,7 @@ const SessionDetailPage = () => {
           </button>
         </div>
 
-        {/* Session header */}
+        {/* Session header card */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex-1 min-w-0">
@@ -166,6 +160,11 @@ const SessionDetailPage = () => {
               <div className="flex items-center gap-2 flex-wrap">
                 <StatusBadge status={effectiveStatus} />
                 <SeverityBadge severity={session.severity} />
+                {session.environment && (
+                  <span className={`text-xs px-2.5 py-1 rounded-lg border font-medium capitalize ${ENV_COLORS[session.environment] ?? 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                    {session.environment}
+                  </span>
+                )}
                 {session.project && (
                   <div className="flex items-center gap-1 text-xs text-gray-400 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700">
                     <FolderOpen size={11} /> {session.project.name}
@@ -203,77 +202,58 @@ const SessionDetailPage = () => {
         {/* Two-column body */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-          {/* Left col — Error + Stack + AI Fix */}
+          {/* Left col — Error details + AI Debug Panel */}
           <div className="lg:col-span-2 space-y-5">
 
+            {/* Error Message */}
             {session.error_message && (
               <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <AlertCircle size={16} className="text-red-500" />
-                  <h3 className="font-bold text-gray-900 dark:text-white text-sm">Error Message</h3>
-                </div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Error Message</p>
                 <div className="bg-red-50 dark:bg-red-950 border border-red-100 dark:border-red-900 rounded-xl p-4 font-mono text-sm text-red-800 dark:text-red-300 whitespace-pre-wrap">
                   {session.error_message}
                 </div>
               </div>
             )}
 
+            {/* Stack Trace */}
             {session.stack_trace && (
               <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
-                <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-3">Stack Trace</h3>
-                <div className="bg-gray-900 rounded-xl p-4 font-mono text-xs text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-64 overflow-y-auto">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Stack Trace</p>
+                <div className="bg-gray-900 rounded-xl p-4 font-mono text-xs text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-48 overflow-y-auto">
                   {session.stack_trace}
                 </div>
               </div>
             )}
 
-            {/* AI Fix */}
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
-              <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 bg-indigo-50 dark:bg-indigo-950 rounded-lg flex items-center justify-center">
-                    <Sparkles size={14} className="text-indigo-600" />
-                  </div>
-                  <h3 className="font-bold text-gray-900 dark:text-white text-sm">AI Fix</h3>
-                  <span className="text-xs bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-900 px-2 py-0.5 rounded-full">Groq · Llama 3</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {effectiveAiFix && (
-                    <button onClick={handleSaveToLibrary} disabled={savingToLib}
-                      className="flex items-center gap-1.5 border border-indigo-200 hover:bg-indigo-50 dark:hover:bg-indigo-950 text-indigo-600 text-xs font-medium px-3 py-1.5 rounded-xl transition disabled:opacity-40">
-                      {savingToLib ? <Loader2 size={12} className="animate-spin" /> : <BookOpen size={12} />}
-                      Save to Library
-                    </button>
-                  )}
-                  <button onClick={handleGetAIFix} disabled={gettingFix || !session.error_message}
-                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed">
-                    {gettingFix
-                      ? <><Loader2 size={13} className="animate-spin" /> Analyzing...</>
-                      : effectiveAiFix
-                        ? <><RotateCcw size={13} /> Regenerate</>
-                        : <><Sparkles size={13} /> Get AI Fix</>
-                    }
-                  </button>
+            {/* Code Snippet */}
+            {session.code_snippet && (
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Related Code</p>
+                <div className="bg-gray-900 rounded-xl p-4 font-mono text-xs text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-48 overflow-y-auto">
+                  {session.code_snippet}
                 </div>
               </div>
-              {effectiveAiFix ? (
-                <div className="bg-indigo-50 dark:bg-indigo-950 border border-indigo-100 dark:border-indigo-900 rounded-xl p-4 text-sm text-gray-800 dark:text-gray-200 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: formatAIFix(effectiveAiFix) }} />
-              ) : (
-                <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl p-8 text-center">
-                  <Sparkles size={24} className="text-gray-300 mx-auto mb-2" />
-                  <p className="text-gray-400 text-sm">
-                    {session.error_message
-                      ? 'Click "Get AI Fix" to analyze this error with Groq AI'
-                      : 'Add an error message to enable AI fix suggestions'}
-                  </p>
-                </div>
-              )}
-            </div>
+            )}
+
+            {/* Expected Behavior */}
+            {session.expected_behavior && (
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Expected Behavior</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300">{session.expected_behavior}</p>
+              </div>
+            )}
+
+            {/* AI Debug Panel */}
+            <AIDebugPanel
+              session={session}
+              onSaveAnalysis={handleSaveAnalysis}
+              onSaveToLibrary={handleSaveToLibrary}
+              savingToLib={savingToLib}
+            />
 
           </div>
 
-          {/* Right col — Notes + Danger Zone */}
+          {/* Right col — Notes + Session Info + Danger Zone */}
           <div className="space-y-5">
 
             {/* Notes */}
@@ -290,13 +270,14 @@ const SessionDetailPage = () => {
               </button>
             </div>
 
-            {/* Session meta */}
+            {/* Session Info */}
             <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
               <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-4">Session Info</h3>
               <div className="space-y-3">
                 {[
                   { label: 'Status', value: <StatusBadge status={effectiveStatus} /> },
                   { label: 'Severity', value: <SeverityBadge severity={session.severity} /> },
+                  { label: 'Environment', value: <span className={`text-xs px-2 py-0.5 rounded-lg border font-medium capitalize ${ENV_COLORS[session.environment ?? 'development'] ?? ''}`}>{session.environment ?? 'development'}</span> },
                   { label: 'Project', value: <span className="text-sm text-gray-700 dark:text-gray-300">{session.project?.name ?? '—'}</span> },
                   { label: 'Created', value: <span className="text-sm text-gray-700 dark:text-gray-300">{new Date(session.created_at).toLocaleDateString()}</span> },
                 ].map((item, i) => (
