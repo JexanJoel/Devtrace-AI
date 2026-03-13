@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Database, Wifi, WifiOff, RefreshCw, CheckCircle,
   Clock, Activity, ArrowRight, Zap, Shield, AlertTriangle,
@@ -17,6 +17,33 @@ const TABLE_META = [
   { key: 'debug_sessions', label: 'Debug Sessions', icon: <Bug size={14} />,         color: 'text-blue-600',   bg: 'bg-blue-50 dark:bg-blue-950' },
   { key: 'fixes',          label: 'Fixes',          icon: <BookOpen size={14} />,   color: 'text-green-600',  bg: 'bg-green-50 dark:bg-green-950' },
 ];
+
+// ── Small helper components for the architecture diagram ──
+const ArchArrow = ({ label }: { label: string }) => (
+  <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
+    <ArrowRight size={16} className="text-indigo-400" />
+    <p className="text-xs text-gray-400">{label}</p>
+  </div>
+);
+
+const ArchNode = ({
+  icon, bg, border, label, sub, badgeBg, badgeText, badgeIcon,
+}: {
+  icon: React.ReactNode; bg: string; border: string;
+  label: string; sub: string;
+  badgeBg: string; badgeText: string; badgeIcon: React.ReactNode;
+}) => (
+  <div className="flex flex-col items-center gap-1.5 flex-1">
+    <div className={`w-12 h-12 ${bg} rounded-2xl flex items-center justify-center border-2 ${border}`}>
+      {icon}
+    </div>
+    <p className="text-xs font-bold text-gray-700 dark:text-gray-300 text-center whitespace-nowrap">{label}</p>
+    <p className="text-xs text-gray-400 text-center whitespace-pre-line leading-tight hidden sm:block">{sub}</p>
+    <div className={`flex items-center gap-1 ${badgeBg} text-xs px-2 py-0.5 rounded-full whitespace-nowrap`}>
+      {badgeIcon} {badgeText}
+    </div>
+  </div>
+);
 
 const SyncStatusPage = () => {
   const isOnline = useOnlineStatus();
@@ -111,38 +138,48 @@ const SyncStatusPage = () => {
           <div className="overflow-x-auto -mx-2 px-2">
             <div className="flex items-center justify-between gap-2 min-w-[480px]">
 
-              {[
-                { icon: <Database size={20} className="text-green-600" />, bg: 'bg-green-50 dark:bg-green-950', border: 'border-green-200 dark:border-green-800', label: 'Supabase', sub: 'PostgreSQL\nSource of truth', badge: { color: 'bg-green-100 dark:bg-green-950 text-green-600', text: 'Connected', icon: <CheckCircle size={10} /> } },
-                null, // arrow
-                { icon: <RefreshCw size={20} className={`${isOnline ? 'text-violet-600 animate-spin' : 'text-gray-400'}`} style={{ animationDuration: '3s' }}, bg: isOnline ? 'bg-violet-50 dark:bg-violet-950' : 'bg-gray-50 dark:bg-gray-800', border: isOnline ? 'border-violet-200 dark:border-violet-800' : 'border-gray-200 dark:border-gray-700', label: 'PowerSync', sub: 'Sync engine\nReal-time stream', badge: { color: isOnline ? 'bg-violet-100 dark:bg-violet-950 text-violet-600' : 'bg-gray-100 dark:bg-gray-800 text-gray-500', text: isOnline ? 'Streaming' : 'Paused', icon: isOnline ? <Zap size={10} /> : <Clock size={10} /> } },
-                null,
-                { icon: <Database size={20} className="text-blue-600" />, bg: 'bg-blue-50 dark:bg-blue-950', border: 'border-blue-200 dark:border-blue-800', label: 'Local SQLite', sub: 'devtrace.db\nInstant reads', badge: { color: 'bg-blue-100 dark:bg-blue-950 text-blue-600', text: 'Ready', icon: <CheckCircle size={10} /> } },
-                null,
-                { icon: <Activity size={20} className="text-indigo-600" />, bg: 'bg-indigo-50 dark:bg-indigo-950', border: 'border-indigo-200 dark:border-indigo-800', label: 'DevTrace UI', sub: 'React + Vite\nuseQuery hook', badge: { color: 'bg-indigo-100 dark:bg-indigo-950 text-indigo-600', text: 'Rendering', icon: <CheckCircle size={10} /> } },
-              ].map((item, i) => {
-                if (item === null) {
-                  const labels = ['WAL', 'instant', '0ms'];
-                  const idx = Math.floor(i / 2);
-                  return (
-                    <div key={i} className="flex flex-col items-center gap-0.5 flex-shrink-0">
-                      <ArrowRight size={16} className="text-indigo-400" />
-                      <p className="text-xs text-gray-400">{labels[idx]}</p>
-                    </div>
-                  );
-                }
-                return (
-                  <div key={i} className="flex flex-col items-center gap-1.5 flex-1">
-                    <div className={`w-12 h-12 ${item.bg} rounded-2xl flex items-center justify-center border-2 ${item.border}`}>
-                      {item.icon}
-                    </div>
-                    <p className="text-xs font-bold text-gray-700 dark:text-gray-300 text-center whitespace-nowrap">{item.label}</p>
-                    <p className="text-xs text-gray-400 text-center whitespace-pre-line leading-tight hidden sm:block">{item.sub}</p>
-                    <div className={`flex items-center gap-1 ${item.badge.color} text-xs px-2 py-0.5 rounded-full whitespace-nowrap`}>
-                      {item.badge.icon} {item.badge.text}
-                    </div>
-                  </div>
-                );
-              })}
+              {/* Supabase */}
+              <ArchNode
+                icon={<Database size={20} className="text-green-600" />}
+                bg="bg-green-50 dark:bg-green-950" border="border-green-200 dark:border-green-800"
+                label="Supabase" sub={'PostgreSQL\nSource of truth'}
+                badgeBg="bg-green-100 dark:bg-green-950 text-green-600"
+                badgeText="Connected" badgeIcon={<CheckCircle size={10} />}
+              />
+              <ArchArrow label="WAL" />
+
+              {/* PowerSync */}
+              <ArchNode
+                icon={<RefreshCw size={20} className={isOnline ? 'text-violet-600 animate-spin' : 'text-gray-400'} style={{ animationDuration: '3s' }} />}
+                bg={isOnline ? 'bg-violet-50 dark:bg-violet-950' : 'bg-gray-50 dark:bg-gray-800'}
+                border={isOnline ? 'border-violet-200 dark:border-violet-800' : 'border-gray-200 dark:border-gray-700'}
+                label="PowerSync" sub={'Sync engine\nReal-time stream'}
+                badgeBg={isOnline ? 'bg-violet-100 dark:bg-violet-950 text-violet-600' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}
+                badgeText={isOnline ? 'Streaming' : 'Paused'}
+                badgeIcon={isOnline ? <Zap size={10} /> : <Clock size={10} />}
+              />
+              <ArchArrow label="instant" />
+
+              {/* Local SQLite */}
+              <ArchNode
+                icon={<Database size={20} className="text-blue-600" />}
+                bg="bg-blue-50 dark:bg-blue-950" border="border-blue-200 dark:border-blue-800"
+                label="Local SQLite" sub={'devtrace.db\nInstant reads'}
+                badgeBg="bg-blue-100 dark:bg-blue-950 text-blue-600"
+                badgeText="Ready" badgeIcon={<CheckCircle size={10} />}
+              />
+              <ArchArrow label="0ms" />
+
+              {/* DevTrace UI */}
+              <ArchNode
+                icon={<Activity size={20} className="text-indigo-600" />}
+                bg="bg-indigo-50 dark:bg-indigo-950" border="border-indigo-200 dark:border-indigo-800"
+                label="DevTrace UI" sub={'React + Vite\nuseQuery hook'}
+                badgeBg="bg-indigo-100 dark:bg-indigo-950 text-indigo-600"
+                badgeText="Rendering" badgeIcon={<CheckCircle size={10} />}
+              />
+
+
             </div>
           </div>
 
