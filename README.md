@@ -285,14 +285,17 @@ DevTrace AI ships a dedicated `/sync-status` page showing the full architecture,
 
 <div align="center">
 
-![React](https://img.shields.io/badge/React_18-20232A?style=flat-square&logo=react&logoColor=61DAFB)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
-![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)
-![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white)
-![PowerSync](https://img.shields.io/badge/PowerSync-6366F1?style=flat-square&logoColor=white)
-![Groq](https://img.shields.io/badge/Groq_AI-F55036?style=flat-square&logoColor=white)
-![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
+<table><tr>
+<td align="center"><img src="https://img.shields.io/badge/React_18-20232A?style=flat-square&logo=react&logoColor=61DAFB"/></td>
+<td align="center"><img src="https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white"/></td>
+<td align="center"><img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white"/></td>
+<td align="center"><img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white"/></td>
+</tr><tr>
+<td align="center"><img src="https://img.shields.io/badge/Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white"/></td>
+<td align="center"><img src="https://img.shields.io/badge/PowerSync-6366F1?style=flat-square&logoColor=white"/></td>
+<td align="center"><img src="https://img.shields.io/badge/Groq_AI-F55036?style=flat-square&logoColor=white"/></td>
+<td align="center"><img src="https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white"/></td>
+</tr></table>
 
 </div>
 
