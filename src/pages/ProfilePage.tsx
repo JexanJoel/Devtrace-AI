@@ -23,7 +23,8 @@ const ProfilePage = () => {
   }, [profile]);
 
   // Check if GitHub identity is linked via Supabase identities
-  const githubIdentity = user?.identities?.find((id: any) => id.provider === 'github');
+  // Cast to any because the Supabase JS v2 User type omits identities in some versions
+  const githubIdentity = (user as any)?.identities?.find((id: any) => id.provider === 'github');
   const isGitHubConnected = !!githubIdentity || !!profile?.github_username;
   const githubUsername = profile?.github_username
     ?? githubIdentity?.identity_data?.user_name
