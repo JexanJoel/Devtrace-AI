@@ -36,23 +36,27 @@ const useShares = () => {
     if (!user) return;
     const { data, error } = await supabase
       .from('shares')
-      .select(`
-        *,
-        invitee:invitee_id (
-          id,
-          email:email,
-          raw_user_meta_data
-        )
-      `)
+      .select('*')
       .eq('owner_id', user.id)
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      setMyShares(data.map((s: any) => ({
-        ...s,
-        invitee_email: s.invitee?.email ?? '',
-        invitee_name: s.invitee?.raw_user_meta_data?.full_name ?? s.invitee?.email ?? '',
-      })));
+      const enriched = await Promise.all(
+        data.map(async (s: any) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('name, email')
+            .eq('id', s.invitee_id)
+            .limit(1);
+          const p = profile?.[0];
+          return {
+            ...s,
+            invitee_email: p?.email ?? '',
+            invitee_name: p?.name ?? p?.email ?? '',
+          };
+        })
+      );
+      setMyShares(enriched);
     }
   };
 
