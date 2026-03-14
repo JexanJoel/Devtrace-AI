@@ -131,6 +131,7 @@ const SessionDetailPage = () => {
   );
 
   return (
+    <>
     <DashboardLayout title={session.title}>
       <div className="space-y-5">
 
@@ -342,6 +343,7 @@ const SessionDetailPage = () => {
         onClose={() => setShowShareModal(false)}
       />
     )}
+    </>
   );
 };
 
