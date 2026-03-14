@@ -24,13 +24,15 @@
 
 ## What is DevTrace AI?
 
-DevTrace AI is a **local-first debugging assistant** built for React, TypeScript, and Supabase developers.
+DevTrace AI is your **permanent debugging memory** - log bugs, get instant AI analysis, save what works, and share with teammates. Works offline. Remembers everything.
 
-- 🔍 **Every bug gets a permanent record** — error, stack trace, code snippet, severity, and environment all in one place
-- 🤖 **Full AI analysis on demand** — root cause, 3 fix options with code, crash timeline, checklist, follow-up chat, and test cases
-- 💾 **Nothing is lost** — every session and fix is saved, searchable, and persists across reloads
-- 📶 **Works completely offline** — browse, create, and debug without internet thanks to PowerSync's local SQLite
-- 🔗 **Share with teammates** — share projects and sessions with other DevTrace users for read-only collaboration
+| | |
+|:--|:--|
+| 🔍 | Every bug gets a permanent structured record |
+| 🤖 | Full AI breakdown - root cause, fixes, timeline |
+| 💾 | Saved as JSONB - persists across reloads |
+| 📶 | Fully offline via PowerSync local SQLite |
+| 🔗 | Share projects and sessions with teammates |
 
 **The core problem it solves:** Debugging is slow and scattered. You repeat the same mistakes, forget what fixed what, and lose context every time you close a tab. DevTrace AI is your permanent debugging memory.
 
@@ -38,9 +40,9 @@ DevTrace AI is a **local-first debugging assistant** built for React, TypeScript
 
 - 🐛 **Log bugs** with stack traces, code snippets, severity, and environment
 - 🤖 **Full AI analysis** - root cause, 3 fixes, timeline, checklist, and more
-- 💬 **Follow-up chat** - ask the AI questions about your exact bug
+- 💬 **Follow up chat** - ask the AI questions about your exact bug
 - 📚 **Fix Library** - save what works, reuse it across projects
-- 📶 **Offline-first** - create, browse, and debug without internet
+- 📶 **Offline first** - create, browse, and debug without internet
 - 🔗 **Share sessions** - invite teammates by email for read-only access
 
 ---
@@ -240,8 +242,8 @@ DevTrace AI supports read-only sharing of projects and sessions between register
 
 - **Share a project** → the invitee sees all debug sessions inside it (read-only)
 - **Share a session** → the invitee sees just that one session (read-only)
-- **No email required** — sharing is instant. The invitee logs into their DevTrace account and finds shared content under **Shared with Me** in the sidebar
-- **Revokable** — the owner can remove access at any time from the Share modal
+- **No email required** - sharing is instant. The invitee logs into their DevTrace account and finds shared content under **Shared with Me** in the sidebar
+- **Revokable** - the owner can remove access at any time from the Share modal
 
 ### Share flow
 
