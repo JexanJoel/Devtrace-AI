@@ -29,62 +29,77 @@ const SharedSessionView = () => {
       if (!id || !user) return;
       setLoading(true);
 
-      // Verify the share exists (direct session share OR via project share)
-      const { data: directShare } = await supabase
+      // Check for direct session share
+      const { data: directShares } = await supabase
         .from('shares')
         .select('owner_id')
         .eq('resource_type', 'session')
         .eq('resource_id', id)
         .eq('invitee_id', user.id)
-        .single();
+        .limit(1);
 
-      let ownerId = directShare?.owner_id ?? null;
+      let ownerId = directShares?.[0]?.owner_id ?? null;
 
       // If not a direct share, check if session belongs to a shared project
       if (!ownerId) {
-        const { data: sess } = await supabase
+        const { data: sessList } = await supabase
           .from('debug_sessions')
           .select('project_id')
           .eq('id', id)
-          .single();
+          .limit(1);
 
-        if (sess?.project_id) {
-          const { data: projShare } = await supabase
+        const projectId = sessList?.[0]?.project_id ?? null;
+
+        if (projectId) {
+          const { data: projShares } = await supabase
             .from('shares')
             .select('owner_id')
             .eq('resource_type', 'project')
-            .eq('resource_id', sess.project_id)
+            .eq('resource_id', projectId)
             .eq('invitee_id', user.id)
-            .single();
-          ownerId = projShare?.owner_id ?? null;
+            .limit(1);
+
+          ownerId = projShares?.[0]?.owner_id ?? null;
         }
       }
 
-      if (!ownerId) { setNotFound(true); setLoading(false); return; }
+      if (!ownerId) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
 
-      // Fetch owner name
-      const { data: ownerProfile } = await supabase
+      // Fetch owner profile
+      const { data: ownerProfiles } = await supabase
         .from('profiles')
         .select('name, email')
         .eq('id', ownerId)
-        .single();
-      setSharedBy(ownerProfile?.name || ownerProfile?.email || 'Someone');
+        .limit(1);
+      const op = ownerProfiles?.[0];
+      setSharedBy(op?.name || op?.email || 'Someone');
 
       // Fetch session with project info
-      const { data: raw } = await supabase
+      const { data: rawList } = await supabase
         .from('debug_sessions')
         .select('*, projects(name, language)')
         .eq('id', id)
-        .single();
+        .limit(1);
 
-      if (!raw) { setNotFound(true); setLoading(false); return; }
+      const raw = rawList?.[0] ?? null;
+      if (!raw) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
 
       setSession({
         ...raw,
         ai_analysis: raw.ai_analysis
           ? (typeof raw.ai_analysis === 'string' ? JSON.parse(raw.ai_analysis) : raw.ai_analysis)
           : null,
-        project: raw.projects ? { name: raw.projects.name, language: raw.projects.language } : undefined,
+        project: raw.projects
+          ? { name: raw.projects.name, language: raw.projects.language }
+          : undefined,
       });
 
       setLoading(false);
@@ -115,7 +130,6 @@ const SharedSessionView = () => {
     <DashboardLayout title={session.title}>
       <div className="space-y-5">
 
-        {/* Back */}
         <button onClick={() => navigate(-1)}
           className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition">
           <ArrowLeft size={14} /> Back
@@ -155,7 +169,6 @@ const SharedSessionView = () => {
           </div>
         </div>
 
-        {/* Error, stack trace, code — read only */}
         <div className="space-y-5">
           {session.error_message && (
             <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 sm:p-6">
@@ -191,7 +204,6 @@ const SharedSessionView = () => {
             </div>
           )}
 
-          {/* AI panel — read only, no save/analyze buttons */}
           {session.ai_analysis && (
             <AIDebugPanel
               session={session}
@@ -201,7 +213,6 @@ const SharedSessionView = () => {
             />
           )}
 
-          {/* Notes — read only */}
           {session.notes && (
             <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 sm:p-6">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Notes</p>
