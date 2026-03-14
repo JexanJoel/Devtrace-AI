@@ -10,7 +10,6 @@ export interface Share {
   resource_type: 'project' | 'session';
   resource_id: string;
   created_at: string;
-  // joined fields
   invitee_email?: string;
   invitee_name?: string;
   owner_email?: string;
@@ -18,17 +17,9 @@ export interface Share {
   resource_name?: string;
 }
 
-export interface ShareWithMeta extends Share {
-  invitee_email: string;
-  invitee_name: string;
-}
-
 const useShares = () => {
   const { user } = useAuthStore();
-
-  // Shares the current user has created (as owner)
   const [myShares, setMyShares] = useState<Share[]>([]);
-  // Shares where the current user is the invitee
   const [sharedWithMe, setSharedWithMe] = useState<Share[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -70,40 +61,36 @@ const useShares = () => {
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      // For each share, fetch resource name
       const enriched = await Promise.all(
         data.map(async (s: any) => {
           let resource_name = '';
-          let owner_email = '';
           let owner_name = '';
 
-          // Fetch owner profile
           const { data: ownerProfile } = await supabase
             .from('profiles')
             .select('name, email')
             .eq('id', s.owner_id)
-            .single();
-          owner_email = ownerProfile?.email ?? '';
-          owner_name = ownerProfile?.name ?? ownerProfile?.email ?? 'Someone';
+            .limit(1);
+          const op = ownerProfile?.[0];
+          owner_name = op?.name ?? op?.email ?? 'Someone';
 
-          // Fetch resource name
           if (s.resource_type === 'project') {
             const { data: proj } = await supabase
               .from('projects')
               .select('name')
               .eq('id', s.resource_id)
-              .single();
-            resource_name = proj?.name ?? 'Unnamed project';
+              .limit(1);
+            resource_name = proj?.[0]?.name ?? 'Unnamed project';
           } else {
             const { data: sess } = await supabase
               .from('debug_sessions')
               .select('title')
               .eq('id', s.resource_id)
-              .single();
-            resource_name = sess?.title ?? 'Unnamed session';
+              .limit(1);
+            resource_name = sess?.[0]?.title ?? 'Unnamed session';
           }
 
-          return { ...s, resource_name, owner_email, owner_name };
+          return { ...s, resource_name, owner_name };
         })
       );
       setSharedWithMe(enriched);
@@ -116,8 +103,10 @@ const useShares = () => {
     fetchSharedWithMe();
   }, [user?.id]);
 
-  // Look up a user by email — returns their id or null
-  const findUserByEmail = async (email: string): Promise<{ id: string; name: string; email: string } | null> => {
+  // Find a DevTrace user by email
+  const findUserByEmail = async (
+    email: string
+  ): Promise<{ id: string; name: string; email: string } | null> => {
     const cleaned = email.toLowerCase().trim();
     const { data, error } = await supabase
       .from('profiles')
@@ -128,7 +117,6 @@ const useShares = () => {
     return data[0];
   };
 
-  // Create a share
   const createShare = async (
     resourceType: 'project' | 'session',
     resourceId: string,
@@ -167,7 +155,6 @@ const useShares = () => {
     return true;
   };
 
-  // Revoke a share by share id
   const revokeShare = async (shareId: string): Promise<boolean> => {
     const { error } = await supabase.from('shares').delete().eq('id', shareId);
     if (error) { toast.error('Failed to revoke access'); return false; }
@@ -176,7 +163,6 @@ const useShares = () => {
     return true;
   };
 
-  // Fetch shares for a specific resource (for the modal to list existing shares)
   const getSharesForResource = async (
     resourceType: 'project' | 'session',
     resourceId: string
@@ -190,18 +176,18 @@ const useShares = () => {
       .eq('resource_id', resourceId);
     if (error || !data) return [];
 
-    // Enrich with invitee profile
     const enriched = await Promise.all(
       data.map(async (s: any) => {
         const { data: profile } = await supabase
           .from('profiles')
           .select('name, email')
           .eq('id', s.invitee_id)
-          .single();
+          .limit(1);
+        const p = profile?.[0];
         return {
           ...s,
-          invitee_email: profile?.email ?? '',
-          invitee_name: profile?.name ?? profile?.email ?? '',
+          invitee_email: p?.email ?? '',
+          invitee_name: p?.name ?? p?.email ?? '',
         };
       })
     );
