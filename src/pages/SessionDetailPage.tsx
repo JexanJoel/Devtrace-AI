@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Loader2, Trash2, Save,
   ChevronDown, Clock, FolderOpen,
-  CheckCircle, Download
+  CheckCircle, Download, Share2
 } from 'lucide-react';
 import DashboardLayout from '../components/dashboard/DashboardLayout';
 import { StatusBadge, SeverityBadge } from '../components/sessions/StatusBadge';
@@ -13,6 +13,7 @@ import type { Status } from '../hooks/useSessions';
 import useFixes from '../hooks/useFixes';
 import type { AIAnalysis } from '../lib/groqClient';
 import { exportSessionAsMarkdown } from '../hooks/exportUtils';
+import ShareModal from '../components/shared/ShareModal';
 import toast from 'react-hot-toast';
 
 const STATUS_OPTIONS: { value: Status; label: string }[] = [
@@ -40,6 +41,7 @@ const SessionDetailPage = () => {
   const [savingToLib, setSavingToLib] = useState(false);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [localStatus, setLocalStatus] = useState<Status | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const session = sessions.find(s => s.id === id) ?? null;
   const loading = sessions.length === 0 && !session;
@@ -132,18 +134,25 @@ const SessionDetailPage = () => {
     <DashboardLayout title={session.title}>
       <div className="space-y-5">
 
-        {/* Top bar — back + export */}
+        {/* Top bar — back + share + export */}
         <div className="flex items-center justify-between gap-3">
           <button onClick={() => navigate('/sessions')}
             className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition flex-shrink-0">
             <ArrowLeft size={14} />
             <span className="hidden xs:inline">All Sessions</span>
           </button>
-          <button onClick={handleExport}
-            className="flex items-center gap-1.5 border border-gray-200 dark:border-gray-700 hover:border-gray-300 text-gray-600 dark:text-gray-400 px-3 py-2 rounded-xl text-sm font-medium transition flex-shrink-0">
-            <Download size={14} />
-            <span className="hidden sm:inline">Export .md</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setShowShareModal(true)}
+              className="flex items-center gap-1.5 border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-xl text-sm font-medium transition flex-shrink-0">
+              <Share2 size={14} />
+              <span className="hidden sm:inline">Share</span>
+            </button>
+            <button onClick={handleExport}
+              className="flex items-center gap-1.5 border border-gray-200 dark:border-gray-700 hover:border-gray-300 text-gray-600 dark:text-gray-400 px-3 py-2 rounded-xl text-sm font-medium transition flex-shrink-0">
+              <Download size={14} />
+              <span className="hidden sm:inline">Export .md</span>
+            </button>
+          </div>
         </div>
 
         {/* Session header card */}
@@ -324,6 +333,15 @@ const SessionDetailPage = () => {
         </div>
       </div>
     </DashboardLayout>
+
+    {showShareModal && session && (
+      <ShareModal
+        resourceType="session"
+        resourceId={session.id}
+        resourceName={session.title}
+        onClose={() => setShowShareModal(false)}
+      />
+    )}
   );
 };
 
