@@ -119,9 +119,9 @@ const useShares = () => {
       .from('profiles')
       .select('id, name, email')
       .ilike('email', cleaned)
-      .single();
-    if (error || !data) return null;
-    return data;
+      .limit(1);
+    if (error || !data || data.length === 0) return null;
+    return data[0];
   };
 
   // Create a share
