@@ -13,6 +13,7 @@
 <td align="center"><a href="https://github.com/JexanJoel/DevTrace-AI"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white"/></a></td>
 <td align="center"><a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-f59e0b?style=for-the-badge"/></a></td>
 <td align="center"><a href="https://www.powersync.com/"><img src="https://img.shields.io/badge/PowerSync_AI_Hackathon_2026-6366f1?style=for-the-badge"/></a></td>
+<td align="center"><a href="https://github.com/sponsors/JexanJoel"><img src="https://img.shields.io/badge/💖%20Sponsor%20Me-e11d48?style=for-the-badge"/></a></td>
 </tr></table>
 
 <br/><br/>
@@ -626,6 +627,14 @@ DevTrace AI is submitted to the **PowerSync AI Hackathon 2026**.
 <tr><td>🏅 <b>Best Submission Using Supabase</b></td><td>Supabase drives auth (Email · GitHub · Google OAuth · magic link password reset · GitHub account linking), Postgres with RLS on all tables, Storage for avatars, and WAL replication feeding PowerSync</td></tr>
 <tr><td>🏅 <b>Best Local-First App</b></td><td>All reads from local SQLite via PowerSync's <code>useQuery()</code>, offline write queue with auto-sync on reconnect, and a live Sync Status page showing the full architecture and queue state in real time</td></tr>
 </table>
+
+---
+
+## Support
+
+If DevTrace AI helped you, you can support my open-source work here:
+
+- **GitHub Sponsors:** https://github.com/sponsors/JexanJoel
 
 ---
 
