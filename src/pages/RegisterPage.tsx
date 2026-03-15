@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import { Terminal, Github, Loader2, Zap, GitBranch, ShieldCheck, Bug } from 'lucide-react';
+import { Terminal, Github, Loader2, Zap, GitBranch, ShieldCheck, Bug, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const features = [
@@ -111,8 +111,29 @@ const RegisterPage = () => {
       </div>
 
       {/* Right Panel */}
-      <div className="w-full lg:w-[55%] flex items-center justify-center px-8 sm:px-16 bg-gray-50 min-h-screen">
+      <div className="relative w-full lg:w-[55%] flex items-center justify-center px-8 sm:px-16 bg-gray-50 min-h-screen">
+
+        {/* Back button — desktop */}
+        <div className="hidden lg:flex absolute top-8 left-8">
+          <Link
+            to="/"
+            className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition font-medium"
+          >
+            <ArrowLeft size={15} /> Back to home
+          </Link>
+        </div>
+
         <div className="w-full max-w-sm">
+          {/* Back button — mobile */}
+          <div className="lg:hidden flex justify-start mb-6">
+            <Link
+              to="/"
+              className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition font-medium"
+            >
+              <ArrowLeft size={15} /> Back to home
+            </Link>
+          </div>
+
           <div className="lg:hidden flex items-center justify-center gap-2 mb-10">
             <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
               <Terminal size={15} className="text-white" />

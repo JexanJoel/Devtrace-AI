@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import { Terminal, Github, Loader2, Bug, Sparkles, GitBranch, Shield } from 'lucide-react';
+import { Terminal, Github, Loader2, Bug, Sparkles, GitBranch, Shield, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const features = [
@@ -99,8 +99,29 @@ const LoginPage = () => {
       </div>
 
       {/* Right Panel */}
-      <div className="w-full lg:w-[55%] flex items-center justify-center px-6 sm:px-16 bg-gray-50 min-h-screen">
+      <div className="relative w-full lg:w-[55%] flex items-center justify-center px-6 sm:px-16 bg-gray-50 min-h-screen">
+
+        {/* Back button — desktop */}
+        <div className="hidden lg:flex absolute top-8 left-8">
+          <Link
+            to="/"
+            className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition font-medium"
+          >
+            <ArrowLeft size={15} /> Back to home
+          </Link>
+        </div>
+
         <div className="w-full max-w-sm">
+
+          {/* Back button — mobile */}
+          <div className="lg:hidden flex justify-start mb-6">
+            <Link
+              to="/"
+              className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition font-medium"
+            >
+              <ArrowLeft size={15} /> Back to home
+            </Link>
+          </div>
 
           <div className="lg:hidden flex items-center justify-center gap-2 mb-10">
             <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
@@ -116,7 +137,6 @@ const LoginPage = () => {
             </div>
 
             <div className="space-y-4">
-              {/* OAuth */}
               <div className="grid grid-cols-2 gap-3">
                 <button onClick={handleGitHub}
                   className="flex items-center justify-center gap-2 border-2 border-gray-100 hover:border-indigo-200 hover:bg-indigo-50 text-gray-700 rounded-xl py-2.5 transition text-sm font-medium">
@@ -134,7 +154,6 @@ const LoginPage = () => {
                 <hr className="flex-1 border-gray-100" />
               </div>
 
-              {/* Email + password */}
               <input type="email" placeholder="Email address" value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full border-2 border-gray-100 focus:border-indigo-400 text-gray-900 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 transition placeholder-gray-300"
@@ -146,7 +165,6 @@ const LoginPage = () => {
                   onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
                   className="w-full border-2 border-gray-100 focus:border-indigo-400 text-gray-900 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 transition placeholder-gray-300"
                 />
-                {/* Forgot password link — right aligned under password field */}
                 <div className="flex justify-end">
                   <Link
                     to="/forgot-password"
