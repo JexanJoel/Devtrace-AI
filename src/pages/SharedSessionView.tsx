@@ -188,9 +188,6 @@ const SharedSessionView = () => {
           <Eye size={15} className="text-amber-500 flex-shrink-0" />
           <p className="text-sm text-amber-700 dark:text-amber-300">
             <strong>Read only</strong> · Shared by <span className="font-semibold">{sharedBy}</span>
-            {isCollaborative && (
-              <span className="ml-2 font-medium text-indigo-600 dark:text-indigo-400">· Live session active</span>
-            )}
           </p>
         </div>
 
