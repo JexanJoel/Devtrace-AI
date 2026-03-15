@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Terminal, Bug, Sparkles, BookOpen,
   BarChart2, ArrowRight, Github,
-  Share2, Menu, X, Wifi, WifiOff,
+  Menu, X, Wifi, WifiOff,
   Database, Heart, FileText,
   CheckCircle, Library, Users, Dna, Zap, History, MessageSquare
 } from 'lucide-react';
