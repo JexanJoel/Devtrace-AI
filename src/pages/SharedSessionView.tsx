@@ -274,9 +274,9 @@ const SharedSessionView = () => {
             </div>
           )}
 
-          {/* Chat — pb-20 gives breathing room above the floating FAB on mobile */}
+          {/* Chat — pb-20 mobile breathing room, mr-16 desktop clears fixed FAB */}
           {showChat && (
-            <div className="pb-20 sm:pb-0">
+            <div className="pb-20 sm:pb-0 sm:mr-16">
               <SessionChat
                 messages={chatMessages}
                 onSend={sendMessage}
