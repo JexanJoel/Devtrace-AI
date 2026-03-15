@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import {
   Sparkles, Loader2, RotateCcw, BookOpen, ChevronRight,
-  CheckCircle, Circle, AlertTriangle, Info, Zap, Shield,
+  AlertTriangle, Info, Zap, Shield,
   MessageSquare, Send, ClipboardList, GitBranch, FlaskConical,
   FileText, FolderTree, Copy, Check, ChevronDown, ChevronUp
 } from 'lucide-react';

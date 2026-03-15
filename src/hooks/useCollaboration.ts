@@ -1,7 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { useQuery } from '@powersync/react';
 import { powerSync } from '../lib/powersync';
-import { supabase } from '../lib/supabaseClient';
 import { useAuthStore } from '../store/authStore';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -36,6 +35,16 @@ export interface ChatMessage {
   message: string;
   created_at: string;
 }
+
+// ── Helper: get display name + avatar from Supabase user object ───────────────
+// user_metadata lives on the raw Supabase User type as `any` — we cast safely
+const getUserMeta = (user: any) => {
+  const meta = user?.user_metadata ?? {};
+  const displayName: string =
+    meta?.full_name ?? meta?.name ?? user?.email ?? 'Anonymous';
+  const avatarUrl: string = meta?.avatar_url ?? '';
+  return { displayName, avatarUrl };
+};
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
@@ -79,11 +88,7 @@ const useCollaboration = (sessionId: string) => {
   const upsertPresence = useCallback(async () => {
     if (!user || !sessionId) return;
 
-    const displayName = user.user_metadata?.full_name
-      || user.user_metadata?.name
-      || user.email
-      || 'Anonymous';
-    const avatarUrl = user.user_metadata?.avatar_url ?? '';
+    const { displayName, avatarUrl } = getUserMeta(user);
     const now = new Date().toISOString();
 
     // Check if row already exists in local SQLite
@@ -138,11 +143,7 @@ const useCollaboration = (sessionId: string) => {
   const toggleChecklistItem = async (itemIndex: number, currentChecked: boolean) => {
     if (!user) return;
 
-    const displayName = user.user_metadata?.full_name
-      || user.user_metadata?.name
-      || user.email
-      || 'Anonymous';
-
+    const { displayName } = getUserMeta(user);
     const newChecked = !currentChecked;
     const now = new Date().toISOString();
 
@@ -187,11 +188,7 @@ const useCollaboration = (sessionId: string) => {
   const sendMessage = async (message: string) => {
     if (!user || !message.trim()) return;
 
-    const displayName = user.user_metadata?.full_name
-      || user.user_metadata?.name
-      || user.email
-      || 'Anonymous';
-    const avatarUrl = user.user_metadata?.avatar_url ?? '';
+    const { displayName, avatarUrl } = getUserMeta(user);
 
     await powerSync.execute(
       `INSERT INTO session_chat (id, session_id, user_id, display_name, avatar_url, message, created_at)
@@ -218,7 +215,7 @@ const useCollaboration = (sessionId: string) => {
     sendMessage,
 
     // Current user display name
-    currentUserName: user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || 'You',
+    currentUserName: getUserMeta(user).displayName || 'You',
   };
 };
 

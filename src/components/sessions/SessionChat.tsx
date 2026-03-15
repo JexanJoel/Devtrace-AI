@@ -6,7 +6,6 @@ interface Props {
   messages: ChatMessage[];
   onSend: (message: string) => Promise<void>;
   currentUserId: string;
-  sessionTitle: string;
 }
 
 const getInitial = (name: string) => (name ?? '?')[0].toUpperCase();
@@ -27,7 +26,7 @@ const formatTime = (iso: string) => {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
-const SessionChat = ({ messages, onSend, currentUserId, sessionTitle }: Props) => {
+const SessionChat = ({ messages, onSend, currentUserId }: Props) => {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);

@@ -210,6 +210,13 @@ const SharedSessionView = () => {
               onSaveAnalysis={async () => {}}
               onSaveToLibrary={async () => {}}
               savingToLib={false}
+              // Read-only view — collaboration features disabled
+              isChecked={() => false}
+              checkedBy={() => null}
+              onToggleChecklist={() => {}}
+              completedCount={0}
+              isCollaborative={false}
+              currentUserName=""
             />
           )}
 

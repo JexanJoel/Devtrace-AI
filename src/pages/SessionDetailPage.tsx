@@ -389,7 +389,7 @@ const SessionDetailPage = () => {
                     label: 'In session',
                     value: (
                       <div className="flex -space-x-1.5">
-                        {activeCollaborators.slice(0, 3).map((c, i) => (
+                        {activeCollaborators.slice(0, 3).map((c) => (
                           <div key={c.user_id} title={c.display_name}
                             className="w-6 h-6 rounded-full bg-indigo-500 border-2 border-white dark:border-gray-900 flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">
                             {c.avatar_url
