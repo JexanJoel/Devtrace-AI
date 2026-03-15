@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, Bug, BookOpen, User, Settings,
-  Terminal, LogOut, BarChart2, X, Sparkles, Database, Share2
+  Terminal, LogOut, BarChart2, X, Sparkles, Database, Share2, Dna
 } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import toast from 'react-hot-toast';
@@ -13,6 +13,7 @@ const NAV = [
   { to: '/fixes',       icon: <BookOpen size={18} />,        label: 'Fix Library' },
   { to: '/analytics',   icon: <BarChart2 size={18} />,       label: 'Analytics' },
   { to: '/ai-insights', icon: <Sparkles size={18} />,        label: 'AI Insights' },
+  { to: '/debug-dna',   icon: <Dna size={18} />,             label: 'Debug DNA' },
   { to: '/sync-status', icon: <Database size={18} />,        label: 'Sync Status' },
   { to: '/shared',      icon: <Share2 size={18} />,          label: 'Shared with Me' },
 ];

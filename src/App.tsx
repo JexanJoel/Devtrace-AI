@@ -27,6 +27,7 @@ import SyncStatusPage from './pages/SyncStatusPage';
 import SharedWithMePage from './pages/SharedWithMePage';
 import SharedProjectView from './pages/SharedProjectView';
 import SharedSessionView from './pages/SharedSessionView';
+import DebugDNAPage from './pages/DebugDNAPage';
 
 const App = () => {
   const { setUser, setSession, setLoading } = useAuthStore();
@@ -75,6 +76,7 @@ const App = () => {
               <Route path="/fixes"               element={<ProtectedRoute><FixLibraryPage /></ProtectedRoute>} />
               <Route path="/analytics"           element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
               <Route path="/ai-insights"         element={<ProtectedRoute><AIInsightsPage /></ProtectedRoute>} />
+              <Route path="/debug-dna"           element={<ProtectedRoute><DebugDNAPage /></ProtectedRoute>} />
               <Route path="/sync-status"         element={<ProtectedRoute><SyncStatusPage /></ProtectedRoute>} />
               <Route path="/shared"              element={<ProtectedRoute><SharedWithMePage /></ProtectedRoute>} />
               <Route path="/shared/project/:id"  element={<ProtectedRoute><SharedProjectView /></ProtectedRoute>} />
