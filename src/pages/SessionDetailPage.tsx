@@ -337,7 +337,6 @@ const SessionDetailPage = () => {
                 messages={chatMessages}
                 onSend={sendMessage}
                 currentUserId={user?.id ?? ''}
-                sessionTitle={session.title}
               />
             )}
           </div>
