@@ -1,5 +1,6 @@
 import { useQuery } from '@powersync/react';
 import { powerSync } from '../lib/powersync';
+import { supabase } from '../lib/supabaseClient';
 import { useAuthStore } from '../store/authStore';
 import { syncQueueAddItem, syncQueueUpdateItem } from '../store/useSyncQueue';
 import { v4 as uuidv4 } from 'uuid';
@@ -44,14 +45,17 @@ export interface CreateSessionInput {
   notes?: string;
 }
 
-// Exact columns that exist in the debug_sessions SQLite table.
-// Virtual JOIN fields (project, project_name, project_language) are stripped
-// before building any UPDATE query — passing them to PowerSync crashes the WASM layer.
-const UPDATABLE_COLUMNS = new Set([
+// Real SQLite columns that are safe to write through PowerSync's mutation queue.
+// ai_analysis and ai_fix are intentionally excluded — they are large blobs that
+// crash PowerSync's WASM crud reader. They go direct to Supabase instead.
+const POWERSYNC_COLUMNS = new Set([
   'project_id', 'title', 'error_message', 'stack_trace', 'code_snippet',
-  'expected_behavior', 'environment', 'severity', 'status',
-  'ai_fix', 'ai_analysis', 'notes', 'updated_at',
+  'expected_behavior', 'environment', 'severity', 'status', 'notes', 'updated_at',
 ]);
+
+// ai_analysis and ai_fix are written directly to Supabase (bypassing PowerSync
+// mutation queue) then synced back down via WAL — same end result, no WASM crash.
+const SUPABASE_DIRECT_COLUMNS = new Set(['ai_analysis', 'ai_fix']);
 
 const useSessions = (projectId?: string) => {
   const { user } = useAuthStore();
@@ -82,6 +86,7 @@ const useSessions = (projectId?: string) => {
       : undefined,
   }));
 
+  // ── getSession ────────────────────────────────────────────────────────────
   const getSession = async (id: string): Promise<DebugSession | null> => {
     const results = await powerSync.getAll<any>(
       `SELECT ds.*, p.name as project_name, p.language as project_language
@@ -103,6 +108,7 @@ const useSessions = (projectId?: string) => {
     } as DebugSession;
   };
 
+  // ── createSession ─────────────────────────────────────────────────────────
   const createSession = async (data: CreateSessionInput) => {
     if (!user) return null;
     const id = uuidv4();
@@ -148,6 +154,7 @@ const useSessions = (projectId?: string) => {
     }
   };
 
+  // ── updateSession ─────────────────────────────────────────────────────────
   const updateSession = async (id: string, data: Partial<DebugSession>) => {
     const qid = `update_session_${id}_${Date.now()}`;
     const session = sessions.find(s => s.id === id);
@@ -164,30 +171,42 @@ const useSessions = (projectId?: string) => {
     syncQueueAddItem({ id: qid, action: 'update_session', label, status: 'syncing' });
 
     try {
-      // Only include real SQLite columns — strip virtual JOIN fields
-      const payload: Record<string, any> = { updated_at: new Date().toISOString() };
+      const now = new Date().toISOString();
 
+      // ── Path A: small fields → PowerSync mutation queue ──────────────────
+      const psPayload: Record<string, any> = { updated_at: now };
       for (const [key, value] of Object.entries(data)) {
-        if (!UPDATABLE_COLUMNS.has(key)) continue;
-        payload[key] = key === 'ai_analysis'
-          ? (value ? JSON.stringify(value) : null)
-          : (value ?? null);
+        if (POWERSYNC_COLUMNS.has(key)) {
+          psPayload[key] = value ?? null;
+        }
       }
 
-      const keys = Object.keys(payload);
-      // Guard: if only updated_at, nothing meaningful to write
-      if (keys.length <= 1) {
-        syncQueueUpdateItem(qid, { status: 'done' });
-        return true;
+      if (Object.keys(psPayload).length > 1) {
+        const keys = Object.keys(psPayload);
+        const setClauses = keys.map(k => `${k} = ?`).join(', ');
+        const values = keys.map(k => psPayload[k]);
+        await powerSync.execute(
+          `UPDATE debug_sessions SET ${setClauses} WHERE id = ?`,
+          [...values, id]
+        );
       }
 
-      const setClauses = keys.map(k => `${k} = ?`).join(', ');
-      const values = keys.map(k => payload[k]);
-
-      await powerSync.execute(
-        `UPDATE debug_sessions SET ${setClauses} WHERE id = ?`,
-        [...values, id]
-      );
+      // ── Path B: large blob fields → direct Supabase, syncs back via WAL ──
+      const hasDirectFields = Object.keys(data).some(k => SUPABASE_DIRECT_COLUMNS.has(k));
+      if (hasDirectFields) {
+        const directPayload: Record<string, any> = { updated_at: now };
+        if (data.ai_analysis !== undefined) {
+          directPayload.ai_analysis = data.ai_analysis ?? null;
+        }
+        if (data.ai_fix !== undefined) {
+          directPayload.ai_fix = data.ai_fix ?? null;
+        }
+        const { error } = await supabase
+          .from('debug_sessions')
+          .update(directPayload)
+          .eq('id', id);
+        if (error) throw error;
+      }
 
       syncQueueUpdateItem(qid, { status: 'done' });
       return true;
@@ -198,6 +217,7 @@ const useSessions = (projectId?: string) => {
     }
   };
 
+  // ── deleteSession ─────────────────────────────────────────────────────────
   const deleteSession = async (id: string) => {
     const qid = `delete_session_${id}`;
     const session = sessions.find(s => s.id === id);
