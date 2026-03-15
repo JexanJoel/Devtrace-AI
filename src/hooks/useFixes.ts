@@ -28,12 +28,6 @@ export interface CreateFixInput {
   tags?: string[];
 }
 
-// Real columns in the fixes SQLite table
-const UPDATABLE_COLUMNS = new Set([
-  'session_id', 'project_id', 'title', 'error_pattern',
-  'fix_content', 'language', 'tags', 'use_count',
-]);
-
 const useFixes = () => {
   const { user } = useAuthStore();
   const uid = user?.id ?? '';

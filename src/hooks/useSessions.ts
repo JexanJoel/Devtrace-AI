@@ -44,11 +44,19 @@ export interface CreateSessionInput {
   notes?: string;
 }
 
+// Exact columns that exist in the debug_sessions SQLite table.
+// Virtual JOIN fields (project, project_name, project_language) are stripped
+// before building any UPDATE query — passing them to PowerSync crashes the WASM layer.
+const UPDATABLE_COLUMNS = new Set([
+  'project_id', 'title', 'error_message', 'stack_trace', 'code_snippet',
+  'expected_behavior', 'environment', 'severity', 'status',
+  'ai_fix', 'ai_analysis', 'notes', 'updated_at',
+]);
+
 const useSessions = (projectId?: string) => {
   const { user } = useAuthStore();
   const uid = user?.id ?? '';
 
-  // ── Reads: always from local SQLite via PowerSync ─────────────────────────
   const query = projectId
     ? `SELECT ds.*, p.name as project_name, p.language as project_language
        FROM debug_sessions ds
@@ -64,7 +72,6 @@ const useSessions = (projectId?: string) => {
 
   const { data: rawSessions = [] } = useQuery<DebugSession>(query, params);
 
-  // Parse ai_analysis JSONB (stored as text in SQLite)
   const sessions = rawSessions.map(s => ({
     ...s,
     ai_analysis: s.ai_analysis
@@ -75,7 +82,6 @@ const useSessions = (projectId?: string) => {
       : undefined,
   }));
 
-  // ── getSession ────────────────────────────────────────────────────────────
   const getSession = async (id: string): Promise<DebugSession | null> => {
     const results = await powerSync.getAll<any>(
       `SELECT ds.*, p.name as project_name, p.language as project_language
@@ -97,10 +103,6 @@ const useSessions = (projectId?: string) => {
     } as DebugSession;
   };
 
-  // ── createSession ─────────────────────────────────────────────────────────
-  // Write goes to local SQLite via powerSync.execute().
-  // PowerSync queues it and uploads to Supabase automatically —
-  // online instantly, offline on reconnect. No localStorage needed.
   const createSession = async (data: CreateSessionInput) => {
     if (!user) return null;
     const id = uuidv4();
@@ -122,8 +124,7 @@ const useSessions = (projectId?: string) => {
           notes, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          id,
-          user.id,
+          id, user.id,
           data.project_id ?? null,
           data.title,
           data.error_message ?? null,
@@ -134,14 +135,11 @@ const useSessions = (projectId?: string) => {
           data.severity ?? 'medium',
           data.status ?? 'open',
           data.notes ?? null,
-          now,
-          now,
+          now, now,
         ]
       );
 
       syncQueueUpdateItem(qid, { status: 'done' });
-
-      // Return the newly inserted row so callers can navigate to it immediately
       return await getSession(id);
     } catch (err) {
       console.error('createSession error:', err);
@@ -150,7 +148,6 @@ const useSessions = (projectId?: string) => {
     }
   };
 
-  // ── updateSession ─────────────────────────────────────────────────────────
   const updateSession = async (id: string, data: Partial<DebugSession>) => {
     const qid = `update_session_${id}_${Date.now()}`;
     const session = sessions.find(s => s.id === id);
@@ -167,17 +164,25 @@ const useSessions = (projectId?: string) => {
     syncQueueAddItem({ id: qid, action: 'update_session', label, status: 'syncing' });
 
     try {
-      const fields = { ...data, updated_at: new Date().toISOString() };
+      // Only include real SQLite columns — strip virtual JOIN fields
+      const payload: Record<string, any> = { updated_at: new Date().toISOString() };
 
-      // ai_analysis must be serialised to text for SQLite
-      if (fields.ai_analysis !== undefined) {
-        (fields as any).ai_analysis =
-          fields.ai_analysis ? JSON.stringify(fields.ai_analysis) : null;
+      for (const [key, value] of Object.entries(data)) {
+        if (!UPDATABLE_COLUMNS.has(key)) continue;
+        payload[key] = key === 'ai_analysis'
+          ? (value ? JSON.stringify(value) : null)
+          : (value ?? null);
       }
 
-      const keys = Object.keys(fields).filter(k => k !== 'id');
+      const keys = Object.keys(payload);
+      // Guard: if only updated_at, nothing meaningful to write
+      if (keys.length <= 1) {
+        syncQueueUpdateItem(qid, { status: 'done' });
+        return true;
+      }
+
       const setClauses = keys.map(k => `${k} = ?`).join(', ');
-      const values = keys.map(k => (fields as any)[k]);
+      const values = keys.map(k => payload[k]);
 
       await powerSync.execute(
         `UPDATE debug_sessions SET ${setClauses} WHERE id = ?`,
@@ -193,7 +198,6 @@ const useSessions = (projectId?: string) => {
     }
   };
 
-  // ── deleteSession ─────────────────────────────────────────────────────────
   const deleteSession = async (id: string) => {
     const qid = `delete_session_${id}`;
     const session = sessions.find(s => s.id === id);
@@ -205,10 +209,7 @@ const useSessions = (projectId?: string) => {
     });
 
     try {
-      await powerSync.execute(
-        `DELETE FROM debug_sessions WHERE id = ?`,
-        [id]
-      );
+      await powerSync.execute(`DELETE FROM debug_sessions WHERE id = ?`, [id]);
       syncQueueUpdateItem(qid, { status: 'done' });
       return true;
     } catch (err) {
