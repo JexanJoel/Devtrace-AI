@@ -15,7 +15,6 @@ const COLORS = [
   'bg-amber-500', 'bg-emerald-500', 'bg-blue-500',
 ];
 
-// Consistent color per user
 const colorForUser = (userId: string) => {
   const hash = userId.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
   return COLORS[hash % COLORS.length];
@@ -29,21 +28,19 @@ const formatTime = (iso: string) => {
 const SessionChat = ({ messages, onSend, currentUserId }: Props) => {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isMounted = useRef(false);
 
-  // Skip scroll on initial mount — only scroll for new messages
   useEffect(() => {
-    if (!isMounted.current) {
-      isMounted.current = true;
-      // Scroll to bottom silently on first open without affecting page scroll
-      bottomRef.current?.scrollIntoView({ block: 'nearest' });
-      return;
-    }
-
     const container = containerRef.current;
     if (!container) return;
+
+    if (!isMounted.current) {
+      isMounted.current = true;
+      // Scroll within the container only — never touches page scroll position
+      container.scrollTop = container.scrollHeight;
+      return;
+    }
 
     const lastMessage = messages[messages.length - 1];
     const isMyMessage = lastMessage?.user_id === currentUserId;
@@ -51,7 +48,7 @@ const SessionChat = ({ messages, onSend, currentUserId }: Props) => {
     const isNearBottom = distanceFromBottom < 100;
 
     if (isMyMessage || isNearBottom) {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      container.scrollTop = container.scrollHeight;
     }
   }, [messages]);
 
@@ -92,23 +89,15 @@ const SessionChat = ({ messages, onSend, currentUserId }: Props) => {
 
             return (
               <div key={msg.id} className={`flex gap-2.5 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
-
-                {/* Avatar */}
                 <div className={`flex-shrink-0 ${showAvatar ? 'visible' : 'invisible'}`}>
                   {msg.avatar_url ? (
-                    <img
-                      src={msg.avatar_url}
-                      alt={msg.display_name}
-                      className="w-7 h-7 rounded-full object-cover"
-                    />
+                    <img src={msg.avatar_url} alt={msg.display_name} className="w-7 h-7 rounded-full object-cover" />
                   ) : (
                     <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold ${colorForUser(msg.user_id)}`}>
                       {getInitial(msg.display_name)}
                     </div>
                   )}
                 </div>
-
-                {/* Bubble */}
                 <div className={`max-w-[75%] sm:max-w-[65%] space-y-0.5 ${isMe ? 'items-end' : 'items-start'} flex flex-col`}>
                   {showAvatar && (
                     <span className={`text-xs text-gray-400 px-1 ${isMe ? 'text-right' : 'text-left'}`}>
@@ -130,11 +119,10 @@ const SessionChat = ({ messages, onSend, currentUserId }: Props) => {
             );
           })
         )}
-        <div ref={bottomRef} />
       </div>
 
-      {/* Input — pr-20 on mobile clears the floating action button */}
-      <div className="flex gap-2 p-3 pr-20 sm:pr-3 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
+      {/* Input row — stacked on mobile so send button sits above the floating FAB */}
+      <div className="flex flex-col gap-2 p-3 border-t border-gray-100 dark:border-gray-800 flex-shrink-0 sm:flex-row sm:gap-2">
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
@@ -145,12 +133,10 @@ const SessionChat = ({ messages, onSend, currentUserId }: Props) => {
         <button
           onClick={handleSend}
           disabled={!input.trim() || sending}
-          className="flex items-center justify-center w-10 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition disabled:opacity-40 flex-shrink-0"
+          className="flex items-center justify-center gap-2 w-full sm:w-10 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition disabled:opacity-40 flex-shrink-0 text-sm font-medium"
         >
-          {sending
-            ? <Loader2 size={14} className="animate-spin" />
-            : <Send size={14} />
-          }
+          {sending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+          <span className="sm:hidden">Send</span>
         </button>
       </div>
     </div>

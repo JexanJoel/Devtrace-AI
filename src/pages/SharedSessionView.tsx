@@ -28,7 +28,6 @@ const SharedSessionView = () => {
   const [notFound, setNotFound] = useState(false);
   const [showChat, setShowChat] = useState(false);
 
-  // ── Collaboration — presence heartbeat + chat (checklist display only) ────
   const {
     activeCollaborators,
     otherCollaborators,
@@ -42,8 +41,7 @@ const SharedSessionView = () => {
 
   const hasInitialized = useRef(false);
 
-  // Auto-open chat only when a collaborator joins AFTER mount
-  // not on initial load where stale presence rows may still exist
+  // Auto-open chat only when someone joins AFTER mount — not on refresh
   useEffect(() => {
     if (!hasInitialized.current) {
       hasInitialized.current = true;
@@ -161,7 +159,6 @@ const SharedSessionView = () => {
             <ArrowLeft size={14} /> Back
           </button>
 
-          {/* Chat toggle — always visible so collaborator can reach out */}
           <button
             onClick={() => setShowChat(v => !v)}
             className={`flex items-center gap-1.5 px-2.5 py-2 sm:px-3 rounded-xl text-sm font-medium transition relative ${
@@ -180,7 +177,6 @@ const SharedSessionView = () => {
           </button>
         </div>
 
-        {/* Collaboration banner — appears when owner opens the same session */}
         {otherCollaborators.length > 0 && (
           <CollaborationBanner
             collaborators={activeCollaborators}
@@ -188,7 +184,6 @@ const SharedSessionView = () => {
           />
         )}
 
-        {/* Read-only banner */}
         <div className="flex items-center gap-2.5 p-3.5 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-xl">
           <Eye size={15} className="text-amber-500 flex-shrink-0" />
           <p className="text-sm text-amber-700 dark:text-amber-300">
@@ -199,7 +194,6 @@ const SharedSessionView = () => {
           </p>
         </div>
 
-        {/* Session header */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-6 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <StatusBadge status={session.status} />
@@ -222,7 +216,6 @@ const SharedSessionView = () => {
           </div>
         </div>
 
-        {/* Content */}
         <div className="space-y-5 min-w-0">
 
           {session.error_message && (
@@ -265,7 +258,6 @@ const SharedSessionView = () => {
               onSaveAnalysis={async () => {}}
               onSaveToLibrary={async () => {}}
               savingToLib={false}
-              // Checklist shows live synced state but toggling is disabled
               isChecked={isChecked}
               checkedBy={checkedBy}
               onToggleChecklist={() => {}}
@@ -282,13 +274,15 @@ const SharedSessionView = () => {
             </div>
           )}
 
-          {/* Chat — full read/write for collaborators */}
+          {/* Chat — pb-20 gives breathing room above the floating FAB on mobile */}
           {showChat && (
-            <SessionChat
-              messages={chatMessages}
-              onSend={sendMessage}
-              currentUserId={user?.id ?? ''}
-            />
+            <div className="pb-20 sm:pb-0">
+              <SessionChat
+                messages={chatMessages}
+                onSend={sendMessage}
+                currentUserId={user?.id ?? ''}
+              />
+            </div>
           )}
 
         </div>

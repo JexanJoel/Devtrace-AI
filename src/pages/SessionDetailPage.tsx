@@ -337,13 +337,15 @@ const SessionDetailPage = () => {
               currentUserName={currentUserName}
             />
 
-            {/* Team chat — shown when collaborative or manually toggled */}
+            {/* Team chat — pb-20 gives breathing room above floating FAB on mobile */}
             {showChat && (
-              <SessionChat
-                messages={chatMessages}
-                onSend={sendMessage}
-                currentUserId={user?.id ?? ''}
-              />
+              <div className="pb-20 sm:pb-0">
+                <SessionChat
+                  messages={chatMessages}
+                  onSend={sendMessage}
+                  currentUserId={user?.id ?? ''}
+                />
+              </div>
             )}
           </div>
 
