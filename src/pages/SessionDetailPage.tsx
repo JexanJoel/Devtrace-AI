@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Loader2, Trash2, Save,
@@ -71,8 +71,14 @@ const SessionDetailPage = () => {
     if (session) setNotes(session.notes ?? '');
   }, [session?.id]);
 
-  // Auto-open chat when a collaborator joins
+  const hasInitialized = useRef(false);
+
+  // Auto-open chat only when a collaborator joins AFTER mount
   useEffect(() => {
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      return;
+    }
     if (isCollaborative && !showChat) setShowChat(true);
   }, [isCollaborative]);
 

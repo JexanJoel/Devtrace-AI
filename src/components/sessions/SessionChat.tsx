@@ -126,8 +126,8 @@ const SessionChat = ({ messages, onSend, currentUserId }: Props) => {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
-      <div className="flex gap-2 p-3 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
+      {/* Input — pr-16 on mobile clears the floating action button */}
+      <div className="flex gap-2 p-3 pr-16 sm:pr-3 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
         <input
           value={input}
           onChange={e => setInput(e.target.value)}

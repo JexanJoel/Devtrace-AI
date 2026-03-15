@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2, Eye, Clock, FolderOpen, MessageSquare } from 'lucide-react';
 import DashboardLayout from '../components/dashboard/DashboardLayout';
@@ -40,8 +40,15 @@ const SharedSessionView = () => {
     completedCount,
   } = useCollaboration(id ?? '');
 
-  // Auto-open chat when owner joins
+  const hasInitialized = useRef(false);
+
+  // Auto-open chat only when a collaborator joins AFTER mount
+  // not on initial load where stale presence rows may still exist
   useEffect(() => {
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      return;
+    }
     if (isCollaborative && !showChat) setShowChat(true);
   }, [isCollaborative]);
 
