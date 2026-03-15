@@ -33,12 +33,11 @@ DevTrace AI is your team's **permanent debugging memory** - log bugs, get instan
 | 🔍 | Every bug gets a permanent structured record |
 | 🤖 | Full AI breakdown - root cause, fixes, timeline |
 | 🧬 | Debug DNA - your personal error fingerprint |
-| 🔁 | Similar Sessions - instantly finds bugs you've seen before |
+| 🧠 | **Hybrid Local-First RAG** - Vector search meets Structured SQL |
+| 🔁 | Similar Sessions - fuzzily finds bugs you've seen before |
 | 👥 | Session Collaboration - shared checklist, presence, team chat |
 | 📋 | Project Collaboration - activity feed, project chat, project presence |
-| 🧬 | Offline AI Memory - synthesizes guidance from local history |
-| 💾 | Saved as JSONB - persists across reloads |
-| 📶 | Fully offline via PowerSync local SQLite |
+| 📶 | Fully offline via PowerSync local SQLite (11 tables) |
 | 🔗 | Share projects and sessions with teammates |
 
 </div>
@@ -51,12 +50,12 @@ DevTrace AI is your team's **permanent debugging memory** - log bugs, get instan
 
 ```
 1. You paste an error          ->  Log a debug session (error, stack trace, code, severity)
-2. Click "Analyze Bug"         ->  Groq + Llama 3.3 70B returns a full structured analysis
-3. Read the 8 tab breakdown    ->  Overview, Fixes, Timeline, Checklist, Chat, Tests, Logs, Structure
-4. See similar past bugs       ->  "You've seen this before" card queries local SQLite instantly
-5. Invite a teammate           ->  They join the session - presence, checklist, and chat sync live
-6. Watch the activity feed     ->  Every session event logged to project feed, visible to all collaborators
-7. Save what worked            ->  Fix goes to your Fix Library, tagged and searchable forever
+2. Hybrid Search triggers       ->  `transformers.js` generates on-device embeddings
+3. Query Local SQLite           ->  Fuzzy vector similarity + metadata filtering (Project, Env)
+4. Click "Analyze Bug"         ->  Groq + Llama 3.3 70B returns a full structured analysis
+5. Actionable Assets           ->  Download `.test.ts` (Vitest) or export to GitHub Issue
+6. Invite a teammate           ->  They join the session - presence, checklist, and chat sync live
+7. Watch the activity feed     ->  Every session event logged to project feed, visible to all collaborators
 8. Generate your Debug DNA     ->  Supabase Edge Function analyzes your patterns + Groq writes your fingerprint
 ```
 
@@ -241,6 +240,27 @@ Click any match -> navigate to that session to see how you fixed it
 **Why this matters:** The tool gets smarter the more you use it. After logging 10-20 sessions, recurring error patterns start surfacing automatically.
 
 ---
+
+## Hybrid Local-First RAG - Structured + Fuzzy Search
+
+DevTrace AI implements a sophisticated **Retrieval-Augmented Generation** layer that runs entirely on the edge. It combines traditional SQL filtering with modern vector similarity search.
+
+- **On-Device Embeddings**: Uses `transformers.js` (Hugging Face) to generate high-dimensional vectors for error messages directly in the browser.
+- **SQLite Vector Store**: PowerSync keeps the embeddings synced and available in local SQLite.
+- **Scoring Engine**: A custom similarity function calculates Cosine Similarity scores between your current error and 100% of your local history.
+- **Semantic Badges**: Matches are marked with confidence percentages (e.g., "94% Semantic Match") to distinguish between keyword overlap and conceptual similarity.
+
+```typescript
+// Local Hybrid Query logic
+const embeddings = await generateEmbeddings(errorMessage);
+const results = await powerSync.getAll(
+  `SELECT *, cosine_similarity(embedding, ?) as score 
+   FROM debug_sessions 
+   WHERE project_id = ? AND score > 0.7 
+   ORDER BY score DESC`,
+  [embeddings, projectId]
+);
+```
 
 ## Debug DNA - Your Personal Error Fingerprint
 
@@ -469,9 +489,10 @@ await powerSync.execute(`INSERT INTO project_chat ...`, [...]);
 
 - **Session Tracking** - Log errors with stack trace, code snippet, expected behavior, environment, and severity
 - **AI Debug Panel** - 8-tab full breakdown via Groq + Llama 3.3 70B server-side, saved permanently as JSONB
-- **AI Regression Suite** - Download `.test.ts` reproduction files directly from the AI analysis
-- **GitHub Issue Export** - One-click export of debug sessions to GitHub issues with full context
-- **Similar Sessions** - Finds past bugs with matching error patterns from local SQLite - zero network, works offline
+- **Hybrid Local-First RAG** - Combines `transformers.js` vector similarity with structured SQL metadata filtering.
+- **AI Regression Suite** - Download `.test.ts` reproduction files directly from the AI analysis (Vitest compatible).
+- **GitHub Issue Export** - One-click export of debug sessions to GitHub issues with full context, root cause, and fixes.
+- **Similar Sessions** - Finds past bugs with matching patterns from local SQLite - zero network, works offline.
 - **Follow-up Chat** - Context-aware AI chat inside every session
 - **Fix Library** - Save working fixes, filter by language, copy in one click, track use count
 - **Export as Markdown** - Export any debug session as a `.md` file

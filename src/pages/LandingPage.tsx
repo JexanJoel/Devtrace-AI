@@ -6,7 +6,7 @@ import {
   Menu, X, Wifi, WifiOff,
   Database, Heart, FileText,
   CheckCircle, Library, Users, Dna, Zap, History,
-  MessageSquare, Activity, FolderOpen, FlaskConical
+  MessageSquare, Activity, FolderOpen, FlaskConical, Brain
 } from 'lucide-react';
 
 /* ─── Marquee data ─────────────────────────────────────────────── */
@@ -38,9 +38,9 @@ const FEATURES = [
     color: 'teal', tag: 'New',
   },
   {
-    icon: <Database size={22} />,
-    title: 'Offline AI Memory',
-    desc: 'No internet? No problem. DevTrace synthesizes guidance from your local history, retrieving past AI analyses to help you fix bugs even when you are disconnected.',
+    icon: <Brain size={22} />,
+    title: 'Hybrid Local-First RAG',
+    desc: 'PowerSync meets transformers.js. Search your history using on-device vector similarity + Structured SQL. Finding the fix is now semantic, not just keyword-based.',
     color: 'amber', tag: 'Innovation',
   },
   {
@@ -244,6 +244,7 @@ const LandingPage = () => {
           <div className="flex flex-wrap items-center justify-center gap-2 mb-8 sm:mb-12 max-w-3xl mx-auto">
             {[
               { icon: <Sparkles size={12} />, text: 'Groq + Llama 3.3 70B', color: 'bg-indigo-50 border-indigo-100 text-indigo-700' },
+              { icon: <Brain size={12} />,    text: 'Hybrid Local-RAG',     color: 'bg-amber-50 border-amber-100 text-amber-700' },
               { icon: <WifiOff size={12} />,  text: 'Works offline',        color: 'bg-orange-50 border-orange-100 text-orange-700' },
               { icon: <Users size={12} />,    text: 'Live Collaboration',   color: 'bg-teal-50 border-teal-100 text-teal-700' },
               { icon: <Activity size={12} />, text: 'Activity Feed',        color: 'bg-cyan-50 border-cyan-100 text-cyan-700' },
@@ -298,11 +299,13 @@ const LandingPage = () => {
                   <p className="text-gray-500 text-xs mt-0.5">at ProductList.jsx:45 · severity: high</p>
                 </div>
               </div>
-              <div className="border-t border-gray-800 pt-3 flex items-start gap-3">
-                <span className="text-amber-400 flex-shrink-0">◈</span>
-                <div>
-                  <p className="text-amber-300">Similar sessions found — 2 matches from history</p>
-                  <p className="text-gray-400 text-xs mt-1">Queried local SQLite · zero network · instant</p>
+              <div className="border-l-2 border-amber-500/30 ml-1.5 pl-4 space-y-2">
+                <div className="flex items-start gap-3">
+                  <span className="text-amber-400 flex-shrink-0">🧠</span>
+                  <div>
+                    <p className="text-amber-300">Hybrid Search: 94% Semantic Match</p>
+                    <p className="text-gray-400 text-xs mt-1">Found "Auth re-hydration bug" in 2025 history (local RAG)</p>
+                  </div>
                 </div>
               </div>
               <div className="border-t border-gray-800 pt-3 flex items-start gap-3">
@@ -313,17 +316,10 @@ const LandingPage = () => {
                 </div>
               </div>
               <div className="border-t border-gray-800 pt-3 flex items-start gap-3">
-                <span className="text-cyan-400 flex-shrink-0">▶</span>
-                <div>
-                  <p className="text-cyan-300">Project activity · Sarah resolved "Auth token expired"</p>
-                  <p className="text-gray-400 text-xs mt-1">Activity feed · synced to all collaborators · click to view</p>
-                </div>
-              </div>
-              <div className="border-t border-gray-800 pt-3 flex items-start gap-3">
                 <span className="text-indigo-400 flex-shrink-0">⚡</span>
                 <div>
-                  <p className="text-indigo-300">AI Analysis · 92% confidence · 8 tabs</p>
-                  <p className="text-gray-400 text-xs mt-1">Root cause · 3 fixes · Timeline · Checklist · Chat · Tests</p>
+                  <p className="text-indigo-300">Analyze Bug {'->'} AI Regression Suite ready</p>
+                  <p className="text-gray-400 text-xs mt-1">Download .test.ts · Export to GitHub · 8-tab breakdown</p>
                 </div>
               </div>
               <div className="border-t border-gray-800 pt-3 flex items-center justify-between">
