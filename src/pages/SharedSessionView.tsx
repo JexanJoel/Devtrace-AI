@@ -144,7 +144,7 @@ const SharedSessionView = () => {
   );
 
   return (
-    <DashboardLayout title={session.title}>
+    <DashboardLayout title="Shared Session">
       <div className="space-y-5 overflow-x-hidden">
 
         {/* Top bar */}
