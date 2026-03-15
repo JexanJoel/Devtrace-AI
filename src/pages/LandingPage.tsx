@@ -38,6 +38,12 @@ const FEATURES = [
     color: 'teal', tag: 'New',
   },
   {
+    icon: <Database size={22} />,
+    title: 'Offline AI Memory',
+    desc: 'No internet? No problem. DevTrace synthesizes guidance from your local history, retrieving past AI analyses to help you fix bugs even when you are disconnected.',
+    color: 'amber', tag: 'Innovation',
+  },
+  {
     icon: <Activity size={22} />,
     title: 'Project Activity Feed',
     desc: 'Every session created, resolved, or analyzed appears in a live activity feed visible to all project collaborators. Click any event to jump straight to that session.',
@@ -78,8 +84,8 @@ const FEATURES = [
 const COLOR_MAP: Record<string, { bg: string; icon: string; tag: string; border: string; glow: string }> = {
   indigo: { bg: 'bg-indigo-50',  icon: 'text-indigo-600',  tag: 'bg-indigo-600 text-white',  border: 'hover:border-indigo-300', glow: 'hover:shadow-indigo-100' },
   teal:   { bg: 'bg-teal-50',    icon: 'text-teal-600',    tag: 'bg-teal-500 text-white',    border: 'hover:border-teal-300',   glow: 'hover:shadow-teal-100'   },
-  cyan:   { bg: 'bg-cyan-50',    icon: 'text-cyan-600',    tag: 'bg-cyan-500 text-white',    border: 'hover:border-cyan-300',   glow: 'hover:shadow-cyan-100'   },
   amber:  { bg: 'bg-amber-50',   icon: 'text-amber-600',   tag: 'bg-amber-500 text-white',   border: 'hover:border-amber-300',  glow: 'hover:shadow-amber-100'  },
+  cyan:   { bg: 'bg-cyan-50',    icon: 'text-cyan-600',    tag: 'bg-cyan-500 text-white',    border: 'hover:border-cyan-300',   glow: 'hover:shadow-cyan-100'   },
   orange: { bg: 'bg-orange-50',  icon: 'text-orange-600',  tag: 'bg-orange-500 text-white',  border: 'hover:border-orange-300', glow: 'hover:shadow-orange-100' },
   violet: { bg: 'bg-violet-50',  icon: 'text-violet-600',  tag: 'bg-violet-600 text-white',  border: 'hover:border-violet-300', glow: 'hover:shadow-violet-100' },
   red:    { bg: 'bg-red-50',     icon: 'text-red-500',     tag: 'bg-red-500 text-white',     border: 'hover:border-red-300',    glow: 'hover:shadow-red-100'    },

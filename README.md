@@ -36,6 +36,7 @@ DevTrace AI is your team's **permanent debugging memory** - log bugs, get instan
 | 🔁 | Similar Sessions - instantly finds bugs you've seen before |
 | 👥 | Session Collaboration - shared checklist, presence, team chat |
 | 📋 | Project Collaboration - activity feed, project chat, project presence |
+| 🧬 | Offline AI Memory - synthesizes guidance from local history |
 | 💾 | Saved as JSONB - persists across reloads |
 | 📶 | Fully offline via PowerSync local SQLite |
 | 🔗 | Share projects and sessions with teammates |
@@ -257,6 +258,36 @@ Groq + Llama 3.3 70B generates personalized narrative
          |
 Debug DNA page renders + export as Markdown
 ```
+
+---
+
+## Offline AI Memory - Debugging without Internet
+
+DevTrace AI features a unique **retrieval-augmented offline assistance layer**. When you are disconnected, the app doesn't just go "dumb." It utilizes your local PowerSync SQLite database as a knowledge base to synthesize guidance for new bugs.
+
+```
+Offline? Log a new bug
+         |
+useOfflineMemory hook extracts tokens from the error
+         |
+Retrieval: Query local debug_sessions for similar past errors
+         |
+Knowledge Extraction: Parse ai_analysis JSON from top matches
+         |
+Synthesis: Aggregate root causes, fixes, checklists, and tests
+         |
+"Offline AI Memory Assist" card renders — marked as "Innovation"
+         |
+Evidence linked: "Based on 3 similar sessions in your history"
+```
+
+### Synthesis Logic
+
+The offline engine performs a multi-layer aggregation entirely on-device:
+1. **Scoring**: Ranks past sessions by token overlap in error messages.
+2. **Voting**: If 3 sessions suggest the same root cause (e.g., "undefined data access"), it is surfaced as the primary likely cause.
+3. **Merging**: Best previous fixes and checklist items are combined and deduplicated.
+4. **Transparency**: The result is clearly labeled as an offline suggestion to maintain trust.
 
 ---
 
