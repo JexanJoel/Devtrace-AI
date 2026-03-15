@@ -89,7 +89,8 @@ Every session gets a full structured breakdown powered by **Groq + Llama 3.3 70B
 - 🕐 **Timeline** - Visual step-by-step of how the crash happened from component mount to error throw
 - ✅ **Checklist** - Shared interactive checklist - syncs live across all collaborators via PowerSync
 - 💬 **Followup** - Context-aware AI chat - click suggested questions or type your own
-- 🧪 **Tests** - AI-generated reproduction steps and test cases to verify the fix works
+- 🧪 **Tests** - AI-generated reproduction steps and test cases. Includes **"Download Reproduction Test"** — generates a `.test.ts` file (Vitest) instantly to turn suggestions into actionable assets.
+- 🐙 **GitHub Export** - One-click export of any session to a perfectly formatted GitHub Issue (root cause, fix, steps).
 - 📋 **Logs** - Paste raw console or server logs - AI strips noise and surfaces what matters
 - 🏗️ **Structure** - Paste your file tree - AI reviews architecture and flags problems
 
@@ -468,6 +469,8 @@ await powerSync.execute(`INSERT INTO project_chat ...`, [...]);
 
 - **Session Tracking** - Log errors with stack trace, code snippet, expected behavior, environment, and severity
 - **AI Debug Panel** - 8-tab full breakdown via Groq + Llama 3.3 70B server-side, saved permanently as JSONB
+- **AI Regression Suite** - Download `.test.ts` reproduction files directly from the AI analysis
+- **GitHub Issue Export** - One-click export of debug sessions to GitHub issues with full context
 - **Similar Sessions** - Finds past bugs with matching error patterns from local SQLite - zero network, works offline
 - **Follow-up Chat** - Context-aware AI chat inside every session
 - **Fix Library** - Save working fixes, filter by language, copy in one click, track use count

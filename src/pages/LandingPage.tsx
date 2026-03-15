@@ -6,7 +6,7 @@ import {
   Menu, X, Wifi, WifiOff,
   Database, Heart, FileText,
   CheckCircle, Library, Users, Dna, Zap, History,
-  MessageSquare, Activity, FolderOpen
+  MessageSquare, Activity, FolderOpen, FlaskConical
 } from 'lucide-react';
 
 /* ─── Marquee data ─────────────────────────────────────────────── */
@@ -79,6 +79,18 @@ const FEATURES = [
     desc: 'Project health scores, resolution rates, AI confidence trends, error pattern breakdowns — all computed locally from SQLite with zero server round-trips.',
     color: 'blue', tag: null,
   },
+  {
+    icon: <FlaskConical size={22} />,
+    title: 'AI Regression Suite',
+    desc: 'Instantly download AI-generated .test.ts reproduction files. Turn every bug analysis into an actionable test asset to ensure the bug never returns.',
+    color: 'indigo', tag: 'Actionable',
+  },
+  {
+    icon: <Github size={22} />,
+    title: 'GitHub Issue Export',
+    desc: 'One-click export of debug sessions to GitHub issues. Automatically includes root cause, suggested fix, and reproduction steps in a perfect template.',
+    color: 'gray', tag: 'Workflow',
+  },
 ];
 
 const COLOR_MAP: Record<string, { bg: string; icon: string; tag: string; border: string; glow: string }> = {
@@ -91,6 +103,7 @@ const COLOR_MAP: Record<string, { bg: string; icon: string; tag: string; border:
   red:    { bg: 'bg-red-50',     icon: 'text-red-500',     tag: 'bg-red-500 text-white',     border: 'hover:border-red-300',    glow: 'hover:shadow-red-100'    },
   green:  { bg: 'bg-green-50',   icon: 'text-green-600',   tag: 'bg-green-600 text-white',   border: 'hover:border-green-300',  glow: 'hover:shadow-green-100'  },
   blue:   { bg: 'bg-blue-50',    icon: 'text-blue-600',    tag: 'bg-blue-600 text-white',    border: 'hover:border-blue-300',   glow: 'hover:shadow-blue-100'   },
+  gray:   { bg: 'bg-gray-50',    icon: 'text-gray-600',    tag: 'bg-gray-600 text-white',    border: 'hover:border-gray-300',   glow: 'hover:shadow-gray-100'   },
 };
 
 /* ─── Steps ─────────────────────────────────────────────────────── */
