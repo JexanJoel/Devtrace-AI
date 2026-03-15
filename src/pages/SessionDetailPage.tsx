@@ -132,7 +132,7 @@ const SessionDetailPage = () => {
 
   return (
     <>
-    <DashboardLayout title={session.title}>
+    <DashboardLayout title="Session">
       {/* overflow-hidden on the root prevents any child from blowing out the width */}
       <div className="space-y-5 overflow-x-hidden">
 
