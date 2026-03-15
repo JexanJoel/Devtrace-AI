@@ -116,24 +116,6 @@ Category AI should detect: PowerSync
 Best fix AI should suggest: Implement uploadData function in PowerSyncDatabase config
 
 ───────────────────────────────────────────────────────────────
-DEMO RECORDING ORDER (recommended flow)
-───────────────────────────────────────────────────────────────
-1. Start screen recording
-2. Open DevTrace AI → Dashboard (show the stats)
-3. Click Debug Sessions → New Session
-4. Paste Error #1 (React State) — show the modal fields
-5. Open the session → click Analyze Bug
-6. Walk through tabs: Overview → Fixes → Timeline → Checklist
-7. Click Follow-up tab → click a suggested question → show AI chat
-8. Click Save to Library
-9. Create Error #2 (Supabase RLS) — run analysis, show category badge changes
-10. Create Error #3 (PowerSync) — run analysis, show PowerSync category
-11. Go to Fix Library → click a fix card → show expand modal
-12. End on Dashboard showing session count went up
-
-Total estimated video length: 3-4 minutes
-
-───────────────────────────────────────────────────────────────
 LOGS TAB DEMO (paste into Logs tab during recording)
 ───────────────────────────────────────────────────────────────
 [vite] connecting...
