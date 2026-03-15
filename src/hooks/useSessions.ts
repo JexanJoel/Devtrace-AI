@@ -1,11 +1,8 @@
 import { useQuery } from '@powersync/react';
 import { powerSync } from '../lib/powersync';
-import { supabase } from '../lib/supabaseClient';
 import { useAuthStore } from '../store/authStore';
-import { usePendingQueue } from './usePendingQueue';
 import { syncQueueAddItem, syncQueueUpdateItem } from '../store/useSyncQueue';
 import { v4 as uuidv4 } from 'uuid';
-import { useOnlineStatus } from './useOnlineStatus';
 import type { AIAnalysis } from '../lib/groqClient';
 
 export type Status = 'open' | 'in_progress' | 'resolved';
@@ -29,7 +26,6 @@ export interface DebugSession {
   notes?: string;
   created_at: string;
   updated_at: string;
-  _pending?: boolean;
   project?: { name: string; language?: string };
   project_name?: string;
   project_language?: string;
@@ -51,9 +47,8 @@ export interface CreateSessionInput {
 const useSessions = (projectId?: string) => {
   const { user } = useAuthStore();
   const uid = user?.id ?? '';
-  const { pending, addPending, removePending } = usePendingQueue<DebugSession>('sessions');
-  const isOnline = useOnlineStatus();
 
+  // ── Reads: always from local SQLite via PowerSync ─────────────────────────
   const query = projectId
     ? `SELECT ds.*, p.name as project_name, p.language as project_language
        FROM debug_sessions ds
@@ -69,101 +64,158 @@ const useSessions = (projectId?: string) => {
 
   const { data: rawSessions = [] } = useQuery<DebugSession>(query, params);
 
-  const syncedSessions = rawSessions.map(s => ({
+  // Parse ai_analysis JSONB (stored as text in SQLite)
+  const sessions = rawSessions.map(s => ({
     ...s,
     ai_analysis: s.ai_analysis
       ? (typeof s.ai_analysis === 'string' ? JSON.parse(s.ai_analysis) : s.ai_analysis)
       : null,
-    project: s.project_name ? { name: s.project_name, language: s.project_language ?? undefined } : undefined,
+    project: s.project_name
+      ? { name: s.project_name, language: s.project_language ?? undefined }
+      : undefined,
   }));
 
-  const syncedIds = new Set(syncedSessions.map(s => s.id));
-  const pendingOnly = pending.filter(s =>
-    !syncedIds.has(s.id) && (!projectId || s.project_id === projectId)
-  );
-
-  const sessions = [...pendingOnly, ...syncedSessions]
-    .filter((s, i, arr) => arr.findIndex(x => x.id === s.id) === i)
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
+  // ── getSession ────────────────────────────────────────────────────────────
   const getSession = async (id: string): Promise<DebugSession | null> => {
-    const p = pending.find(s => s.id === id);
-    if (p) return p;
     const results = await powerSync.getAll<any>(
       `SELECT ds.*, p.name as project_name, p.language as project_language
        FROM debug_sessions ds
        LEFT JOIN projects p ON ds.project_id = p.id
-       WHERE ds.id = ? LIMIT 1`, [id]
+       WHERE ds.id = ? LIMIT 1`,
+      [id]
     );
     if (!results.length) return null;
     const s = results[0];
     return {
       ...s,
-      ai_analysis: s.ai_analysis ? (typeof s.ai_analysis === 'string' ? JSON.parse(s.ai_analysis) : s.ai_analysis) : null,
-      project: s.project_name ? { name: s.project_name, language: s.project_language } : undefined,
+      ai_analysis: s.ai_analysis
+        ? (typeof s.ai_analysis === 'string' ? JSON.parse(s.ai_analysis) : s.ai_analysis)
+        : null,
+      project: s.project_name
+        ? { name: s.project_name, language: s.project_language }
+        : undefined,
     } as DebugSession;
   };
 
+  // ── createSession ─────────────────────────────────────────────────────────
+  // Write goes to local SQLite via powerSync.execute().
+  // PowerSync queues it and uploads to Supabase automatically —
+  // online instantly, offline on reconnect. No localStorage needed.
   const createSession = async (data: CreateSessionInput) => {
     if (!user) return null;
     const id = uuidv4();
     const qid = `create_session_${id}`;
     const now = new Date().toISOString();
-    const row: DebugSession = {
-      id, user_id: user.id,
-      severity: data.severity ?? 'medium',
-      status: data.status ?? 'open',
-      title: data.title,
-      project_id: data.project_id,
-      error_message: data.error_message,
-      stack_trace: data.stack_trace,
-      code_snippet: data.code_snippet,
-      expected_behavior: data.expected_behavior,
-      environment: data.environment ?? 'development',
-      notes: data.notes,
-      created_at: now, updated_at: now, _pending: true,
-    };
 
-    addPending(row);
-    syncQueueAddItem({ id: qid, action: 'create_session', label: `Create session "${data.title}"`, status: 'pending' });
-    await new Promise(r => setTimeout(r, 80));
-    syncQueueUpdateItem(qid, { status: 'syncing' });
-
-    const { error } = await supabase.from('debug_sessions').insert({
-      id, user_id: user.id, status: row.status, severity: row.severity,
-      created_at: now, updated_at: now, ...data,
+    syncQueueAddItem({
+      id: qid,
+      action: 'create_session',
+      label: `Create session "${data.title}"`,
+      status: 'syncing',
     });
 
-    if (!error) { removePending(id); syncQueueUpdateItem(qid, { status: 'done' }); }
-    else { syncQueueUpdateItem(qid, { status: isOnline ? 'error' : 'pending' }); }
-    return row;
+    try {
+      await powerSync.execute(
+        `INSERT INTO debug_sessions (
+          id, user_id, project_id, title, error_message, stack_trace,
+          code_snippet, expected_behavior, environment, severity, status,
+          notes, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          id,
+          user.id,
+          data.project_id ?? null,
+          data.title,
+          data.error_message ?? null,
+          data.stack_trace ?? null,
+          data.code_snippet ?? null,
+          data.expected_behavior ?? null,
+          data.environment ?? 'development',
+          data.severity ?? 'medium',
+          data.status ?? 'open',
+          data.notes ?? null,
+          now,
+          now,
+        ]
+      );
+
+      syncQueueUpdateItem(qid, { status: 'done' });
+
+      // Return the newly inserted row so callers can navigate to it immediately
+      return await getSession(id);
+    } catch (err) {
+      console.error('createSession error:', err);
+      syncQueueUpdateItem(qid, { status: 'error' });
+      return null;
+    }
   };
 
+  // ── updateSession ─────────────────────────────────────────────────────────
   const updateSession = async (id: string, data: Partial<DebugSession>) => {
     const qid = `update_session_${id}_${Date.now()}`;
     const session = sessions.find(s => s.id === id);
     const label = data.status
       ? `Mark "${session?.title ?? 'session'}" as ${data.status.replace('_', ' ')}`
-      : data.notes !== undefined ? `Update notes on "${session?.title ?? 'session'}"`
-      : data.ai_fix ? `Save AI fix for "${session?.title ?? 'session'}"`
-      : data.ai_analysis ? `Save AI analysis for "${session?.title ?? 'session'}"`
-      : `Update "${session?.title ?? 'session'}"`;
+      : data.notes !== undefined
+        ? `Update notes on "${session?.title ?? 'session'}"`
+        : data.ai_fix
+          ? `Save AI fix for "${session?.title ?? 'session'}"`
+          : data.ai_analysis
+            ? `Save AI analysis for "${session?.title ?? 'session'}"`
+            : `Update "${session?.title ?? 'session'}"`;
 
     syncQueueAddItem({ id: qid, action: 'update_session', label, status: 'syncing' });
-    const { error } = await supabase.from('debug_sessions')
-      .update({ ...data, updated_at: new Date().toISOString() }).eq('id', id);
-    syncQueueUpdateItem(qid, { status: error ? 'error' : 'done' });
-    return !error;
+
+    try {
+      const fields = { ...data, updated_at: new Date().toISOString() };
+
+      // ai_analysis must be serialised to text for SQLite
+      if (fields.ai_analysis !== undefined) {
+        (fields as any).ai_analysis =
+          fields.ai_analysis ? JSON.stringify(fields.ai_analysis) : null;
+      }
+
+      const keys = Object.keys(fields).filter(k => k !== 'id');
+      const setClauses = keys.map(k => `${k} = ?`).join(', ');
+      const values = keys.map(k => (fields as any)[k]);
+
+      await powerSync.execute(
+        `UPDATE debug_sessions SET ${setClauses} WHERE id = ?`,
+        [...values, id]
+      );
+
+      syncQueueUpdateItem(qid, { status: 'done' });
+      return true;
+    } catch (err) {
+      console.error('updateSession error:', err);
+      syncQueueUpdateItem(qid, { status: 'error' });
+      return false;
+    }
   };
 
+  // ── deleteSession ─────────────────────────────────────────────────────────
   const deleteSession = async (id: string) => {
     const qid = `delete_session_${id}`;
     const session = sessions.find(s => s.id === id);
-    syncQueueAddItem({ id: qid, action: 'delete_session', label: `Delete "${session?.title ?? 'session'}"`, status: 'syncing' });
-    removePending(id);
-    const { error } = await supabase.from('debug_sessions').delete().eq('id', id);
-    syncQueueUpdateItem(qid, { status: error ? 'error' : 'done' });
-    return !error;
+    syncQueueAddItem({
+      id: qid,
+      action: 'delete_session',
+      label: `Delete "${session?.title ?? 'session'}"`,
+      status: 'syncing',
+    });
+
+    try {
+      await powerSync.execute(
+        `DELETE FROM debug_sessions WHERE id = ?`,
+        [id]
+      );
+      syncQueueUpdateItem(qid, { status: 'done' });
+      return true;
+    } catch (err) {
+      console.error('deleteSession error:', err);
+      syncQueueUpdateItem(qid, { status: 'error' });
+      return false;
+    }
   };
 
   return { sessions, loading: false, getSession, createSession, updateSession, deleteSession };
