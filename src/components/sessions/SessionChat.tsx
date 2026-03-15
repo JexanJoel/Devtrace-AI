@@ -30,9 +30,22 @@ const SessionChat = ({ messages, onSend, currentUserId }: Props) => {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
+  // Only auto-scroll when the current user sends a message,
+  // or when the user is already near the bottom (within 100px)
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = containerRef.current;
+    if (!container) return;
+
+    const lastMessage = messages[messages.length - 1];
+    const isMyMessage = lastMessage?.user_id === currentUserId;
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    const isNearBottom = distanceFromBottom < 100;
+
+    if (isMyMessage || isNearBottom) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
   const handleSend = async () => {
@@ -58,7 +71,7 @@ const SessionChat = ({ messages, onSend, currentUserId }: Props) => {
       </div>
 
       {/* Message list */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-72 min-h-[120px]">
+      <div ref={containerRef} className="flex-1 overflow-y-auto p-4 space-y-3 max-h-72 min-h-[120px]">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-20 text-center">
             <MessageSquare size={20} className="text-gray-200 dark:text-gray-700 mb-1.5" />
