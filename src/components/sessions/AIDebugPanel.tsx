@@ -239,7 +239,7 @@ ${analysis.verify_fix}
   const hasError = !!session.error_message;
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 h-full flex flex-col overflow-hidden animate-fade-in">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 flex flex-col animate-fade-in shadow-sm">
 
       <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100 dark:border-gray-800 flex-wrap gap-3 glass dark:glass-dark">
         <div className="flex items-center gap-2 sm:gap-3">
@@ -316,7 +316,7 @@ ${analysis.verify_fix}
 
       {hasError && !analyzing && analysis && (
         <>
-          <div className="flex gap-0.5 px-2 sm:px-4 pt-3 pb-0 overflow-x-auto border-b border-gray-50 dark:border-gray-800/50 custom-scrollbar">
+          <div className="flex flex-nowrap gap-0.5 px-2 sm:px-4 pt-3 pb-0 overflow-x-auto border-b border-gray-50 dark:border-gray-800/50 custom-scrollbar scroll-smooth">
             {TABS.map(t => (
               <button key={t.key} onClick={() => setTab(t.key)}
                 className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 rounded-t-xl text-[11px] uppercase tracking-wider font-bold transition whitespace-nowrap border-b-2 ${
@@ -329,7 +329,7 @@ ${analysis.verify_fix}
             ))}
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-6 relative">
+          <div className="flex-1 min-h-0 p-4 sm:p-6 relative">
             <div key={tab} className="animate-slide-up space-y-6">
               {tab === 'overview' && (
                 <div className="space-y-6">

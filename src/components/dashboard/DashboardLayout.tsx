@@ -40,7 +40,7 @@ const DashboardLayout = ({ children, title }: Props) => {
       </div>
 
       {/* Main content — takes all remaining width */}
-      <div className="flex flex-col flex-1 lg:ml-60 w-0 min-h-screen">
+      <div className="flex flex-col flex-1 lg:ml-60 min-w-0 min-h-screen">
         <div className="sticky top-0 z-30">
           <Topbar title={title} onMenuClick={() => setSidebarOpen(true)} />
         </div>
