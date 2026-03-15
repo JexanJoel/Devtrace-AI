@@ -17,10 +17,10 @@ export const StatusBadge = ({ status }: StatusProps) => {
     resolved: 'Resolved',
   };
   return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${map[status]}`}>
-      <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-        status === 'open' ? 'bg-red-500' :
-        status === 'in_progress' ? 'bg-yellow-500' : 'bg-green-500'
+    <span className={`inline-flex items-center px-3 py-1 rounded-xl text-[11px] font-bold border shadow-sm ${map[status]}`}>
+      <span className={`w-1.5 h-1.5 rounded-full mr-2 ${
+        status === 'open' ? 'bg-red-500 animate-pulse' :
+        status === 'in_progress' ? 'bg-yellow-500' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]'
       }`} />
       {labels[status]}
     </span>
@@ -35,7 +35,7 @@ export const SeverityBadge = ({ severity }: SeverityProps) => {
     critical: 'bg-red-50 text-red-700 border-red-200',
   };
   return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border capitalize ${map[severity]}`}>
+    <span className={`inline-flex items-center px-3 py-1 rounded-xl text-[10px] uppercase tracking-wider font-black border shadow-sm ${map[severity]}`}>
       {severity}
     </span>
   );

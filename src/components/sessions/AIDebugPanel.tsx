@@ -80,7 +80,6 @@ interface Props {
   onSaveAnalysis: (analysis: AIAnalysis) => Promise<void>;
   onSaveToLibrary: () => Promise<void>;
   savingToLib: boolean;
-  // Collaboration props — passed from SessionDetailPage
   isChecked: (index: number) => boolean;
   checkedBy: (index: number) => string | null;
   onToggleChecklist: (index: number, currentChecked: boolean) => void;
@@ -174,12 +173,12 @@ const AIDebugPanel = ({
   const hasError = !!session.error_message;
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 h-full flex flex-col overflow-hidden animate-fade-in">
 
-      <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800 flex-wrap gap-3">
+      <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800 flex-wrap gap-3 glass-dark">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-indigo-50 dark:bg-indigo-950 rounded-xl flex items-center justify-center">
-            <Sparkles size={15} className="text-indigo-600" />
+          <div className="w-8 h-8 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
+            <Sparkles size={15} className="text-indigo-600 animate-pulse" />
           </div>
           <div>
             <h3 className="font-bold text-gray-900 dark:text-white text-sm">AI Debug Panel</h3>
@@ -196,7 +195,7 @@ const AIDebugPanel = ({
             </button>
           )}
           <button onClick={handleAnalyze} disabled={analyzing || !hasError}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed">
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-indigo-100 dark:shadow-none hover:scale-105 active:scale-95">
             {analyzing
               ? <><Loader2 size={13} className="animate-spin" /> Analyzing...</>
               : analysis ? <><RotateCcw size={13} /> Re-analyze</> : <><Sparkles size={13} /> Analyze Bug</>
@@ -206,315 +205,344 @@ const AIDebugPanel = ({
       </div>
 
       {!hasError && (
-        <div className="p-8 text-center">
-          <AlertTriangle size={24} className="text-gray-300 mx-auto mb-2" />
+        <div className="p-8 text-center flex-1 flex flex-col items-center justify-center">
+          <AlertTriangle size={32} className="text-gray-300 mb-2" />
           <p className="text-gray-400 text-sm">Add an error message to enable AI analysis</p>
         </div>
       )}
 
       {analyzing && (
-        <div className="p-10 text-center space-y-3">
-          <Loader2 size={28} className="animate-spin text-indigo-500 mx-auto" />
+        <div className="p-10 text-center space-y-3 flex-1 flex flex-col items-center justify-center">
+          <div className="relative">
+             <Loader2 size={40} className="animate-spin text-indigo-500" />
+             <Sparkles size={16} className="absolute inset-0 m-auto text-indigo-300 animate-pulse" />
+          </div>
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Analyzing your bug...</p>
           <p className="text-xs text-gray-400">Groq AI is examining error, stack trace, and code context</p>
         </div>
       )}
 
       {hasError && !analyzing && !analysis && (
-        <div className="p-8 text-center">
-          <Sparkles size={24} className="text-gray-300 mx-auto mb-2" />
-          <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">Ready to analyze</p>
-          <p className="text-gray-400 text-xs">Click "Analyze Bug" to get a full AI breakdown</p>
+        <div className="p-10 text-center space-y-6 flex-1 flex flex-col items-center justify-center">
+          <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/30 rounded-3xl flex items-center justify-center animate-float">
+            <Sparkles size={40} className="text-indigo-600" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 text-glow">Ready to Analyze</h3>
+            <p className="text-gray-500 max-w-sm">Get a deep breakdown of this bug using Groq + Llama 3.3 70B.</p>
+          </div>
+          <button
+            onClick={handleAnalyze}
+            disabled={analyzing}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3 rounded-2xl transition shadow-lg shadow-indigo-200 dark:shadow-none hover:scale-105"
+          >
+            <Sparkles size={18} /> Analyze Bug
+          </button>
         </div>
       )}
 
       {hasError && !analyzing && analysis && (
         <>
-          <div className="flex gap-0.5 px-4 pt-3 pb-0 overflow-x-auto">
+          <div className="flex gap-0.5 px-4 pt-3 pb-0 overflow-x-auto border-b border-gray-50 dark:border-gray-800/50">
             {TABS.map(t => (
               <button key={t.key} onClick={() => setTab(t.key)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-xs font-medium transition whitespace-nowrap border-b-2 ${
+                className={`flex items-center gap-1.5 px-4 py-2.5 rounded-t-xl text-[11px] uppercase tracking-wider font-bold transition whitespace-nowrap border-b-2 ${
                   tab === t.key
-                    ? 'text-indigo-600 border-indigo-500 bg-indigo-50 dark:bg-indigo-950'
-                    : 'text-gray-500 border-transparent hover:text-gray-700 dark:hover:text-gray-300'
+                    ? 'text-indigo-600 border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/50'
+                    : 'text-gray-400 border-transparent hover:text-gray-600 dark:hover:text-gray-200'
                 }`}>
                 {t.icon} {t.label}
               </button>
             ))}
           </div>
 
-          <div className="p-5 space-y-4">
-
-            {tab === 'overview' && (
-              <div className="space-y-4">
-                <ConfidenceMeter value={analysis.confidence} />
-                <div className="bg-blue-50 dark:bg-blue-950 border border-blue-100 dark:border-blue-900 rounded-xl p-4">
-                  <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1">Plain English</p>
-                  <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">{analysis.plain_english}</p>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-                    <p className="text-xs font-semibold text-gray-500 mb-1.5">Root Cause</p>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">{analysis.root_cause}</p>
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-6 relative">
+            <div key={tab} className="animate-slide-up space-y-6">
+              {tab === 'overview' && (
+                <div className="space-y-6">
+                  <ConfidenceMeter value={analysis.confidence} />
+                  <div className="bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/50 rounded-2xl p-5 shadow-sm">
+                    <p className="text-[10px] uppercase tracking-[0.2em] font-black text-indigo-500 mb-2">Plain English Breakdown</p>
+                    <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed font-medium">{analysis.plain_english}</p>
                   </div>
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-                    <p className="text-xs font-semibold text-gray-500 mb-1.5">Symptom vs Cause</p>
-                    <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">{analysis.symptom_vs_cause}</p>
-                  </div>
-                </div>
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-                  <p className="text-xs font-semibold text-gray-500 mb-1.5">Why this category: <span className="text-indigo-500">{CATEGORY_STYLES[analysis.category]?.label}</span></p>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">{analysis.category_reason}</p>
-                </div>
-                {analysis.files_to_check.length > 0 && (
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500 mb-2">Files to inspect</p>
-                    <div className="flex flex-wrap gap-2">
-                      {analysis.files_to_check.map((f, i) => (
-                        <span key={i} className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2.5 py-1 rounded-lg font-mono border border-gray-200 dark:border-gray-700">{f}</span>
-                      ))}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-5 border border-gray-100 dark:border-gray-800">
+                      <p className="text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-2">Root Cause</p>
+                      <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">{analysis.root_cause}</p>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-5 border border-gray-100 dark:border-gray-800">
+                      <p className="text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-2">Symptom vs Cause</p>
+                      <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">{analysis.symptom_vs_cause}</p>
                     </div>
                   </div>
-                )}
-                <div className="bg-green-50 dark:bg-green-950 border border-green-100 dark:border-green-900 rounded-xl p-4">
-                  <p className="text-xs font-semibold text-green-600 dark:text-green-400 mb-1">How to verify fix</p>
-                  <p className="text-sm text-gray-800 dark:text-gray-200">{analysis.verify_fix}</p>
-                </div>
-              </div>
-            )}
-
-            {tab === 'fixes' && (
-              <div className="space-y-3">
-                <p className="text-xs text-gray-400">Best fix recommended: <span className="font-semibold text-indigo-600">Option {analysis.best_fix_index + 1}</span></p>
-                {analysis.fixes.map((fix, i) => (
-                  <div key={i} className={`rounded-xl border-2 overflow-hidden transition ${i === analysis.best_fix_index ? 'border-indigo-300 dark:border-indigo-700' : 'border-gray-100 dark:border-gray-800'}`}>
-                    <button onClick={() => setExpandedFix(expandedFix === i ? null : i)}
-                      className={`w-full flex items-center justify-between p-4 text-left ${i === analysis.best_fix_index ? 'bg-indigo-50 dark:bg-indigo-950' : 'bg-gray-50 dark:bg-gray-800'}`}>
-                      <div className="flex items-center gap-3">
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-lg border ${
-                          fix.type === 'quick_patch' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-                          fix.type === 'proper_fix' ? 'bg-green-100 text-green-700 border-green-200' :
-                          'bg-purple-100 text-purple-700 border-purple-200'
-                        }`}>
-                          {fix.type === 'quick_patch' ? 'Quick Patch' : fix.type === 'proper_fix' ? 'Proper Fix' : 'Workaround'}
-                        </span>
-                        <span className="text-sm font-semibold text-gray-900 dark:text-white">{fix.title}</span>
-                        {i === analysis.best_fix_index && <span className="text-xs bg-indigo-600 text-white px-2 py-0.5 rounded-full">⭐ Best</span>}
-                      </div>
-                      {expandedFix === i ? <ChevronUp size={15} className="text-gray-400" /> : <ChevronDown size={15} className="text-gray-400" />}
-                    </button>
-                    {expandedFix === i && (
-                      <div className="p-4 space-y-3 bg-white dark:bg-gray-900">
-                        <p className="text-sm text-gray-700 dark:text-gray-300">{fix.explanation}</p>
-                        <CodeBlock code={fix.code} />
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="bg-green-50 dark:bg-green-950 rounded-lg p-3">
-                            <p className="text-xs font-semibold text-green-600 mb-1">✓ Pros</p>
-                            <p className="text-xs text-gray-700 dark:text-gray-300">{fix.pros}</p>
-                          </div>
-                          <div className="bg-orange-50 dark:bg-orange-950 rounded-lg p-3">
-                            <p className="text-xs font-semibold text-orange-600 mb-1">⚠ Cons</p>
-                            <p className="text-xs text-gray-700 dark:text-gray-300">{fix.cons}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-5 border border-gray-100 dark:border-gray-800">
+                    <p className="text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-2">Architectural Reason</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                      This was categorized as <CategoryBadge category={analysis.category} /> because {analysis.category_reason}
+                    </p>
                   </div>
-                ))}
-              </div>
-            )}
-
-            {tab === 'timeline' && (
-              <div className="space-y-2">
-                <p className="text-xs text-gray-400 mb-3">How the crash happened step by step</p>
-                {analysis.timeline.map((step, i) => (
-                  <div key={i} className="flex gap-3">
-                    <div className="flex flex-col items-center">
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                        i === analysis.timeline.length - 1
-                          ? 'bg-red-100 text-red-600 border-2 border-red-300'
-                          : 'bg-indigo-100 text-indigo-600 border-2 border-indigo-200'
-                      }`}>{i + 1}</div>
-                      {i < analysis.timeline.length - 1 && <div className="w-0.5 h-6 bg-gray-200 dark:bg-gray-700 mt-1" />}
-                    </div>
-                    <div className={`flex-1 pb-3 ${i === analysis.timeline.length - 1 ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-700 dark:text-gray-300'}`}>
-                      <p className="text-sm">{step.replace(/^\d+\.\s*/, '')}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* ── CHECKLIST — now collaborative ──────────────────────────── */}
-            {tab === 'checklist' && (
-              <CollaborativeChecklist
-                items={analysis.checklist}
-                isChecked={isChecked}
-                checkedBy={checkedBy}
-                onToggle={onToggleChecklist}
-                completedCount={completedCount}
-                isCollaborative={isCollaborative}
-                currentUserName={currentUserName}
-              />
-            )}
-
-            {tab === 'followup' && (
-              <div className="space-y-3">
-                {chatHistory.length === 0 && analysis.follow_up_questions.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-xs text-gray-400">AI wants to know more. Click a question or type your own:</p>
-                    {analysis.follow_up_questions.map((q, i) => (
-                      <button key={i} onClick={() => setChatInput(q)}
-                        className="w-full text-left text-sm bg-indigo-50 dark:bg-indigo-950 border border-indigo-100 dark:border-indigo-900 text-indigo-700 dark:text-indigo-300 px-4 py-2.5 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900 transition flex items-center gap-2">
-                        <ChevronRight size={13} /> {q}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {chatHistory.length > 0 && (
-                  <div className="space-y-3 max-h-72 overflow-y-auto">
-                    {chatHistory.map((msg, i) => (
-                      <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${
-                          msg.role === 'user'
-                            ? 'bg-indigo-600 text-white rounded-br-sm'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-bl-sm'
-                        }`}>{msg.content}</div>
-                      </div>
-                    ))}
-                    {chatLoading && (
-                      <div className="flex justify-start">
-                        <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl rounded-bl-sm px-4 py-2.5">
-                          <Loader2 size={14} className="animate-spin text-gray-400" />
-                        </div>
-                      </div>
-                    )}
-                    <div ref={chatBottomRef} />
-                  </div>
-                )}
-                <div className="flex gap-2 mt-2">
-                  <input value={chatInput} onChange={e => setChatInput(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSendChat()}
-                    placeholder="Ask a follow-up question..."
-                    className="flex-1 border-2 border-gray-100 dark:border-gray-700 focus:border-indigo-400 text-gray-900 dark:text-white dark:bg-gray-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition placeholder-gray-300" />
-                  <button onClick={handleSendChat} disabled={!chatInput.trim() || chatLoading}
-                    className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition disabled:opacity-40">
-                    <Send size={14} />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {tab === 'tests' && (
-              <div className="space-y-4">
-                <div>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Reproduction Steps</p>
-                  <div className="space-y-2">
-                    {analysis.reproduction_steps.map((step, i) => (
-                      <div key={i} className="flex gap-3 bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
-                        <span className="w-5 h-5 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">{step.replace(/^\d+\.\s*/, '')}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Test Cases</p>
-                  <div className="space-y-2">
-                    {analysis.test_cases.map((tc, i) => (
-                      <div key={i} className="flex gap-3 bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
-                        <FlaskConical size={14} className="text-green-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-gray-700 dark:text-gray-300">{tc}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {tab === 'logs' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Paste raw logs</label>
-                  <textarea value={rawLogs} onChange={e => setRawLogs(e.target.value)} rows={7}
-                    placeholder="Paste your console output, server logs, or network logs here..."
-                    className="w-full border-2 border-gray-100 dark:border-gray-700 focus:border-indigo-400 text-gray-900 dark:text-white dark:bg-gray-800 rounded-xl px-4 py-3 text-xs font-mono focus:outline-none transition placeholder-gray-300 resize-none" />
-                  <button onClick={handleAnalyzeLogs} disabled={analyzingLogs || !rawLogs.trim()}
-                    className="mt-2 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition disabled:opacity-40">
-                    {analyzingLogs ? <><Loader2 size={13} className="animate-spin" /> Analyzing logs...</> : <><FileText size={13} /> Analyze Logs</>}
-                  </button>
-                </div>
-                {logAnalysis && (
-                  <div className="space-y-3">
-                    <div className="bg-red-50 dark:bg-red-950 border border-red-100 dark:border-red-900 rounded-xl p-4">
-                      <p className="text-xs font-semibold text-red-600 mb-1">Root Cause from Logs</p>
-                      <p className="text-sm text-gray-800 dark:text-gray-200">{logAnalysis.root_cause}</p>
-                    </div>
+                  {analysis.files_to_check.length > 0 && (
                     <div>
-                      <p className="text-xs font-semibold text-gray-500 mb-2">Important Lines</p>
-                      {logAnalysis.important_lines?.map((l: any, i: number) => (
-                        <div key={i} className="bg-gray-900 rounded-xl p-3 mb-2">
-                          <p className="text-xs text-yellow-300 font-mono mb-1">{l.line}</p>
-                          <p className="text-xs text-gray-400">{l.reason}</p>
+                      <p className="text-[10px] uppercase tracking-wider font-bold text-gray-400 mb-2">Files to Inspect</p>
+                      <div className="flex flex-wrap gap-2">
+                        {analysis.files_to_check.map((f, i) => (
+                          <span key={i} className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-xl font-mono border border-gray-200 dark:border-gray-700 hover:border-indigo-300 transition-colors cursor-default">{f}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <div className="bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-100 dark:border-emerald-900/50 rounded-2xl p-5">
+                    <p className="text-[10px] uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400 mb-2">Verification Strategy</p>
+                    <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">{analysis.verify_fix}</p>
+                  </div>
+                </div>
+              )}
+
+              {tab === 'fixes' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs text-gray-400">Recommended fix: <span className="font-bold text-indigo-600">Option {analysis.best_fix_index + 1}</span></p>
+                    <button onClick={onSaveToLibrary} className="text-[10px] font-bold text-indigo-500 uppercase flex items-center gap-1 hover:underline">
+                      <Save size={10} /> Add to fix library
+                    </button>
+                  </div>
+                  {analysis.fixes.map((fix, i) => (
+                    <div key={i} className={`rounded-2xl border-2 overflow-hidden transition-all duration-300 ${i === analysis.best_fix_index ? 'border-indigo-400/50 shadow-lg shadow-indigo-100/50' : 'border-gray-100 dark:border-gray-800'}`}>
+                      <button onClick={() => setExpandedFix(expandedFix === i ? null : i)}
+                        className={`w-full flex items-center justify-between p-5 text-left transition-colors ${i === analysis.best_fix_index ? 'bg-indigo-50/50 dark:bg-indigo-950/50' : 'bg-gray-50/50 dark:bg-gray-800/50'}`}>
+                        <div className="flex items-center gap-4">
+                          <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border ${
+                            fix.type === 'quick_patch' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                            fix.type === 'proper_fix' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' :
+                            'bg-violet-100 text-violet-700 border-violet-200'
+                          }`}>
+                            {fix.type.replace('_', ' ')}
+                          </span>
+                          <span className="text-sm font-bold text-gray-900 dark:text-white leading-tight">{fix.title}</span>
+                          {i === analysis.best_fix_index && <span className="text-[10px] bg-indigo-600 text-white px-2 py-0.5 rounded-full font-bold">OPTIMAL</span>}
+                        </div>
+                        <div className={`transition-transform duration-300 ${expandedFix === i ? 'rotate-180' : ''}`}>
+                          <ChevronDown size={18} className="text-gray-400" />
+                        </div>
+                      </button>
+                      {expandedFix === i && (
+                        <div className="p-5 space-y-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 animate-slide-up">
+                          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">{fix.explanation}</p>
+                          <CodeBlock code={fix.code} />
+                          <div className="grid grid-cols-2 gap-4 mt-2">
+                            <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl p-4 border border-emerald-100 dark:border-emerald-900/30">
+                              <p className="text-[10px] font-bold text-emerald-600 uppercase mb-1.5 flex items-center gap-1.5"><CheckCircle size={10} /> Trade-offs: Pros</p>
+                              <p className="text-[11px] text-gray-700 dark:text-gray-300 leading-relaxed font-semibold">{fix.pros}</p>
+                            </div>
+                            <div className="bg-orange-50 dark:bg-orange-950/30 rounded-2xl p-4 border border-orange-100 dark:border-orange-900/30">
+                              <p className="text-[10px] font-bold text-orange-600 uppercase mb-1.5 flex items-center gap-1.5"><AlertTriangle size={10} /> Trade-offs: Cons</p>
+                              <p className="text-[11px] text-gray-700 dark:text-gray-300 leading-relaxed font-semibold">{fix.cons}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {tab === 'timeline' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-xs text-gray-400">Sequence of events leading to the failure</p>
+                    <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/50 px-2 py-1 rounded-lg">Step-by-Step</span>
+                  </div>
+                  <div className="relative pl-2">
+                    <div className="absolute left-[20px] top-6 bottom-6 w-0.5 bg-gradient-to-b from-indigo-200 to-red-200 dark:from-indigo-900 dark:to-red-900" />
+                    {analysis.timeline.map((step, i) => (
+                      <div key={i} className="flex gap-6 mb-6 last:mb-0 relative group">
+                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-xs font-black flex-shrink-0 z-10 transition-all duration-300 group-hover:scale-110 ${
+                          i === analysis.timeline.length - 1
+                            ? 'bg-red-500 text-white shadow-lg shadow-red-200 ring-4 ring-red-100 dark:ring-red-900/30'
+                            : 'bg-white dark:bg-gray-800 text-indigo-600 border-2 border-indigo-100 dark:border-indigo-900'
+                        }`}>
+                          {i === analysis.timeline.length - 1 ? '!' : i + 1}
+                        </div>
+                        <div className={`flex-1 pt-1 ${i === analysis.timeline.length - 1 ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                          <p className={`text-sm leading-relaxed ${i === analysis.timeline.length - 1 ? 'font-bold' : 'font-medium'}`}>
+                            {step.replace(/^\d+\.\s*/, '')}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {tab === 'checklist' && (
+                <div className="space-y-4">
+                  <CollaborativeChecklist
+                    sessionId={session.id}
+                    suggestedTasks={analysis.checklist}
+                    isChecked={isChecked}
+                    checkedBy={checkedBy}
+                    onToggle={onToggleChecklist}
+                  />
+                </div>
+              )}
+
+              {tab === 'followup' && (
+                <div className="space-y-4">
+                  {chatHistory.length === 0 && analysis.follow_up_questions.length > 0 && (
+                    <div className="space-y-3">
+                      <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest mb-1">Recommended Follow-ups</p>
+                      {analysis.follow_up_questions.map((q, i) => (
+                        <button key={i} onClick={() => setChatInput(q)}
+                          className="w-full text-left text-sm bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-100/50 dark:border-indigo-900/50 text-indigo-700 dark:text-indigo-300 px-5 py-3 rounded-2xl hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-all flex items-center gap-3 group">
+                          <ChevronRight size={14} className="text-indigo-400 group-hover:translate-x-1 transition-transform" /> 
+                          <span className="font-semibold">{q}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {chatHistory.length > 0 && (
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                      {chatHistory.map((msg, i) => (
+                        <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`max-w-[85%] rounded-3xl px-5 py-3 text-sm font-medium shadow-sm transition-all hover:shadow-md ${
+                            msg.role === 'user'
+                              ? 'bg-indigo-600 text-white rounded-br-sm'
+                              : 'glass-dark text-gray-800 dark:text-gray-200 rounded-bl-sm border border-gray-100 dark:border-gray-800'
+                          }`}>{msg.content}</div>
+                        </div>
+                      ))}
+                      {chatLoading && (
+                        <div className="flex justify-start">
+                          <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" />
+                            <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:0.2s]" />
+                            <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:0.4s]" />
+                          </div>
+                        </div>
+                      )}
+                      <div ref={chatBottomRef} />
+                    </div>
+                  )}
+                  <div className="flex gap-2 sticky bottom-0 bg-white dark:bg-gray-900 pt-2 border-t border-gray-50 dark:border-gray-800">
+                    <input value={chatInput} onChange={e => setChatInput(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSendChat()}
+                      placeholder="Ask a follow-up question..."
+                      className="flex-1 glass dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 focus:border-indigo-400 text-gray-900 dark:text-white rounded-2xl px-6 py-3 text-sm font-semibold focus:outline-none transition shadow-sm" />
+                    <button onClick={handleSendChat} disabled={!chatInput.trim() || chatLoading}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white w-12 h-12 flex items-center justify-center rounded-2xl transition-all shadow-lg shadow-indigo-200 hover:scale-110 active:scale-95 disabled:opacity-40">
+                      <Send size={18} />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {tab === 'tests' && (
+                <div className="space-y-6">
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest mb-3">Failure Reproduction Steps</p>
+                    <div className="space-y-2">
+                      {analysis.reproduction_steps.map((step, i) => (
+                        <div key={i} className="flex gap-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
+                          <span className="w-6 h-6 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-lg text-xs font-black flex items-center justify-center flex-shrink-0">{i + 1}</span>
+                          <p className="text-sm text-gray-700 dark:text-gray-300 font-medium leading-relaxed">{step.replace(/^\d+\.\s*/, '')}</p>
                         </div>
                       ))}
                     </div>
-                    <div className="bg-indigo-50 dark:bg-indigo-950 rounded-xl p-4">
-                      <p className="text-xs font-semibold text-indigo-600 mb-1">Next Action</p>
-                      <p className="text-sm text-gray-800 dark:text-gray-200">{logAnalysis.next_action}</p>
-                    </div>
-                    <ConfidenceMeter value={logAnalysis.confidence} />
                   </div>
-                )}
-              </div>
-            )}
-
-            {tab === 'structure' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Paste your file tree</label>
-                  <textarea value={fileTree} onChange={e => setFileTree(e.target.value)} rows={7}
-                    placeholder={"src/\n  components/\n    auth/\n    dashboard/\n  hooks/\n  pages/\n  store/\n  lib/"}
-                    className="w-full border-2 border-gray-100 dark:border-gray-700 focus:border-indigo-400 text-gray-900 dark:text-white dark:bg-gray-800 rounded-xl px-4 py-3 text-xs font-mono focus:outline-none transition placeholder-gray-300 resize-none" />
-                  <button onClick={handleAnalyzeStructure} disabled={analyzingStructure || !fileTree.trim()}
-                    className="mt-2 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition disabled:opacity-40">
-                    {analyzingStructure ? <><Loader2 size={13} className="animate-spin" /> Analyzing...</> : <><FolderTree size={13} /> Analyze Structure</>}
-                  </button>
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest mb-3">Validation Test Cases</p>
+                    <div className="grid grid-cols-1 gap-2">
+                      {analysis.test_cases.map((tc, i) => (
+                        <div key={i} className="flex gap-4 bg-emerald-50/50 dark:bg-emerald-950/30 rounded-2xl p-4 border border-emerald-100 dark:border-emerald-900/30 group hover:border-emerald-400 transition-colors">
+                          <div className="w-6 h-6 bg-emerald-100 dark:bg-emerald-900 text-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                             <FlaskConical size={14} />
+                          </div>
+                          <p className="text-sm text-gray-700 dark:text-gray-300 font-semibold">{tc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-                {structureAnalysis && (
-                  <div className="space-y-3">
-                    <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-                      <p className="text-xs font-semibold text-gray-500 mb-1">Architecture Summary</p>
-                      <p className="text-sm text-gray-800 dark:text-gray-200">{structureAnalysis.architecture_summary}</p>
-                    </div>
-                    {structureAnalysis.issues?.length > 0 && (
-                      <div>
-                        <p className="text-xs font-semibold text-gray-500 mb-2">Issues Found</p>
-                        {structureAnalysis.issues.map((issue: any, i: number) => (
-                          <div key={i} className="bg-red-50 dark:bg-red-950 border border-red-100 dark:border-red-900 rounded-xl p-3 mb-2">
-                            <p className="text-xs font-mono text-red-600 mb-1">{issue.path}</p>
-                            <p className="text-xs text-gray-700 dark:text-gray-300 mb-1">{issue.problem}</p>
-                            <p className="text-xs text-green-600">→ {issue.suggestion}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    {structureAnalysis.improvements?.length > 0 && (
-                      <div>
-                        <p className="text-xs font-semibold text-gray-500 mb-2">Improvements</p>
-                        {structureAnalysis.improvements.map((imp: string, i: number) => (
-                          <div key={i} className="flex gap-2 bg-green-50 dark:bg-green-950 rounded-lg p-2.5 mb-1.5">
-                            <Shield size={13} className="text-green-500 flex-shrink-0 mt-0.5" />
-                            <p className="text-xs text-gray-700 dark:text-gray-300">{imp}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+              )}
 
+              {tab === 'logs' && (
+                <div className="space-y-6">
+                  <div className="glass-dark rounded-3xl p-6 border border-gray-100 dark:border-gray-800">
+                    <label className="text-[10px] uppercase font-bold text-gray-400 tracking-widest mb-3 block">Raw Log Parser</label>
+                    <textarea value={rawLogs} onChange={e => setRawLogs(e.target.value)} rows={8}
+                      placeholder="Paste terminal output, browser console, or server logs..."
+                      className="w-full bg-gray-900 text-yellow-300 rounded-2xl px-5 py-4 text-xs font-mono focus:outline-none transition border-2 border-transparent focus:border-indigo-500/50 placeholder-gray-600 resize-none custom-scrollbar" />
+                    <button onClick={handleAnalyzeLogs} disabled={analyzingLogs || !rawLogs.trim()}
+                      className="mt-4 w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-2xl font-bold transition shadow-lg shadow-indigo-100 hover:scale-[1.02] disabled:opacity-40">
+                      {analyzingLogs ? <><Loader2 size={16} className="animate-spin" /> Deep Diving into Logs...</> : <><FileText size={16} /> Analyze Logs</>}
+                    </button>
+                  </div>
+                  {logAnalysis && (
+                    <div className="animate-slide-up space-y-6">
+                      <div className="bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900/50 rounded-2xl p-5">
+                        <p className="text-[10px] uppercase font-bold text-red-600 mb-2 tracking-widest">Crucial Log Insight</p>
+                        <p className="text-sm text-gray-800 dark:text-gray-200 font-bold leading-relaxed shadow-text">{logAnalysis.root_cause}</p>
+                      </div>
+                      <div className="space-y-3">
+                        <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Evidence Found</p>
+                        {logAnalysis.important_lines?.map((l: any, i: number) => (
+                          <div key={i} className="bg-gray-900 rounded-2xl p-5 border border-indigo-900/30 group hover:border-indigo-500 transition-colors">
+                            <p className="text-xs text-yellow-400 font-mono mb-2 break-all">{l.line}</p>
+                            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-800">
+                               <Info size={11} className="text-indigo-400" />
+                               <p className="text-[11px] text-gray-400 font-medium italic">{l.reason}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="bg-indigo-600 rounded-2xl p-5 text-white shadow-xl shadow-indigo-100">
+                        <p className="text-[10px] uppercase font-bold opacity-70 mb-2 tracking-widest">Next Recommended Step</p>
+                        <p className="text-sm font-bold leading-relaxed">{logAnalysis.next_action}</p>
+                      </div>
+                      <ConfidenceMeter value={logAnalysis.confidence} />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {tab === 'structure' && (
+                <div className="space-y-6">
+                  <div className="glass-dark rounded-3xl p-6 border border-gray-100 dark:border-gray-800">
+                    <label className="text-[10px] uppercase font-bold text-gray-400 tracking-widest mb-3 block">Architecture Analyzer</label>
+                    <textarea value={fileTree} onChange={e => setFileTree(e.target.value)} rows={6}
+                      placeholder={"src/\n  components/\n  hooks/"}
+                      className="w-full bg-gray-900 text-emerald-400 rounded-2xl px-5 py-4 text-xs font-mono focus:outline-none border-2 border-transparent focus:border-indigo-500/50 placeholder-gray-600 resize-none" />
+                    <button onClick={handleAnalyzeStructure} disabled={analyzingStructure || !fileTree.trim()}
+                      className="mt-4 w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-2xl font-bold transition shadow-lg shadow-indigo-100 hover:scale-[1.02] disabled:opacity-40">
+                      {analyzingStructure ? <><Loader2 size={16} className="animate-spin" /> Scanning Folders...</> : <><FolderTree size={16} /> Map Project Memory</>}
+                    </button>
+                  </div>
+                  {structureAnalysis && (
+                    <div className="animate-slide-up space-y-6">
+                      <div className="bg-indigo-50 dark:bg-indigo-950/50 rounded-2xl p-5 border border-indigo-100 dark:border-indigo-900/50 shadow-sm">
+                        <p className="text-[10px] uppercase font-bold text-indigo-600 mb-2 tracking-widest">Architecture DNA</p>
+                        <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed font-bold">{structureAnalysis.architecture_summary}</p>
+                      </div>
+                      <div className="space-y-3">
+                        <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Potential Fragility</p>
+                        {structureAnalysis.issues?.map((issue: any, i: number) => (
+                          <div key={i} className="bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/30 rounded-2xl p-5 group hover:border-red-500 transition-colors">
+                            <div className="flex items-center gap-2 mb-2">
+                               <AlertTriangle size={12} className="text-red-500" />
+                               <p className="text-xs font-black text-red-600 font-mono truncate">{issue.path}</p>
+                            </div>
+                            <p className="text-xs text-gray-700 dark:text-gray-300 font-bold mb-3">{issue.problem}</p>
+                            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-emerald-100 dark:border-emerald-900 group-hover:bg-emerald-50 transition-colors">
+                               <p className="text-xs text-emerald-600 font-black">Recommendation: <span className="text-gray-900 dark:text-gray-100 font-bold">{issue.suggestion}</span></p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </>
       )}

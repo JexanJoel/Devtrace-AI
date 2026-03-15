@@ -50,7 +50,8 @@ const ProjectCard = ({ project, sessions = [] }: Props) => {
 
   return (
     <div onClick={() => navigate(`/projects/${project.id}`)}
-      className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 hover:border-indigo-200 hover:shadow-md transition cursor-pointer group">
+      className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6 hover:border-indigo-400/50 hover:shadow-[0_20px_40px_-15px_rgba(79,70,229,0.1)] hover:-translate-y-1.5 transition-all duration-300 cursor-pointer group relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-1 h-0 group-hover:h-full bg-gradient-to-b from-indigo-600 to-indigo-400 transition-all duration-500" />
 
       {/* Top row — name + health badge */}
       <div className="flex items-start justify-between mb-3 gap-2">

@@ -184,7 +184,7 @@ const LandingPage = () => {
     <div className="min-h-screen bg-white font-sans">
 
       {/* ── Navbar ── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
+      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-100/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -241,9 +241,9 @@ const LandingPage = () => {
               </span>
             ))}
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-gray-900 tracking-tight leading-[1.1] mb-6 sm:mb-8">
-            Your team's permanent<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-indigo-400">debugging memory.</span>
+          <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black text-gray-900 tracking-tighter leading-[0.9] mb-8">
+            <span className="whitespace-nowrap">Your team's permanent</span><br className="sm:hidden" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-indigo-400 whitespace-nowrap"> debugging memory.</span>
           </h1>
           <p className="text-lg sm:text-xl text-gray-500 max-w-2xl mx-auto mb-10 sm:mb-12 leading-relaxed px-4">
             Log bugs, get full AI analysis, and debug with teammates in real time. 
