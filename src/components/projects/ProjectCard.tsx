@@ -33,6 +33,10 @@ const ProjectCard = ({ project, sessions = [] }: Props) => {
 
   const health = computeHealthScore(sessions);
 
+  // Compute live counts from actual session rows — never trust stale cached columns
+  const errorCount = sessions.filter(s => s.error_message).length;
+  const sessionCount = sessions.length;
+
   const timeAgo = (date: string) => {
     const diff = Date.now() - new Date(date).getTime();
     const mins = Math.floor(diff / 60000);
@@ -69,7 +73,6 @@ const ProjectCard = ({ project, sessions = [] }: Props) => {
             <span className="font-medium opacity-70 hidden sm:inline">{health.label}</span>
           </div>
 
-          {/* Tooltip */}
           {showTooltip && (
             <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-20 p-3"
               onClick={(e) => e.stopPropagation()}>
@@ -77,12 +80,9 @@ const ProjectCard = ({ project, sessions = [] }: Props) => {
                 <p className="text-xs font-bold text-gray-900 dark:text-white">Project Health</p>
                 <span className={`text-xs font-bold ${health.color}`}>{health.score}/100</span>
               </div>
-
-              {/* Score bar */}
               <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full mb-3 overflow-hidden">
                 <div className={`h-full rounded-full transition-all ${health.bar}`} style={{ width: `${health.score}%` }} />
               </div>
-
               {health.deductions.length === 0 && health.bonus === 0 ? (
                 <p className="text-xs text-green-600 font-medium">✓ No issues found</p>
               ) : (
@@ -130,15 +130,15 @@ const ProjectCard = ({ project, sessions = [] }: Props) => {
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Stats — live from session rows, not stale cached columns */}
       <div className="flex items-center gap-4 mb-4">
         <div className="flex items-center gap-1.5 text-xs text-gray-500">
           <Bug size={13} className="text-red-400" />
-          <span>{project.error_count} errors</span>
+          <span>{errorCount} errors</span>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-gray-500">
           <ExternalLink size={13} className="text-blue-400" />
-          <span>{project.session_count} sessions</span>
+          <span>{sessionCount} sessions</span>
         </div>
       </div>
 
