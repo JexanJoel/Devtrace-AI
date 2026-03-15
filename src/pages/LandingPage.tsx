@@ -227,8 +227,8 @@ const LandingPage = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-indigo-50/60 via-white to-white pointer-events-none" />
         <div className="absolute top-20 left-1/2 -translate-x-1/2 w-64 sm:w-[800px] h-64 sm:h-[800px] bg-indigo-200 opacity-20 rounded-full blur-3xl pointer-events-none" />
         
-        <div className="relative max-w-5xl mx-auto">
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-8 sm:mb-12 max-w-3xl mx-auto">
+        <div className="relative max-w-4xl mx-auto">
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-8 sm:mb-10 max-w-3xl mx-auto">
             {[
               { icon: <Sparkles size={12} />, text: 'Groq + Llama 3.3 70B', color: 'bg-indigo-50 border-indigo-100 text-indigo-700' },
               { icon: <WifiOff size={12} />,  text: 'Works offline',        color: 'bg-orange-50 border-orange-100 text-orange-700' },
@@ -243,7 +243,7 @@ const LandingPage = () => {
             ))}
           </div>
 
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-black text-gray-900 tracking-tighter leading-[1.1] mb-8">
+          <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black text-gray-900 tracking-tighter leading-[0.9] mb-8">
             Your team's permanent <br className="sm:hidden" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-indigo-400">debugging memory.</span>
           </h1>
@@ -541,12 +541,12 @@ const LandingPage = () => {
             <span className="inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
               <Zap size={12} /> Everything included
             </span>
-            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 tracking-tight">Everything you need to debug seriously</h2>
+            <h2 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-4 tracking-tight">Everything you need to debug seriously</h2>
             <p className="text-gray-400 text-base sm:text-lg max-w-xl mx-auto">
               Not just a fix generator — a complete team debugging platform that gets smarter over time
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
             {FEATURES.map((f, i) => {
               const c = COLOR_MAP[f.color];
               return (
@@ -588,7 +588,7 @@ const LandingPage = () => {
       <section className="py-16 sm:py-24 px-4 sm:px-6 bg-gray-50">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 tracking-tight">How it works</h2>
+            <h2 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-4 tracking-tight">How it works</h2>
             <p className="text-gray-400 text-base sm:text-lg">From error to fix — and beyond</p>
           </div>
           <div className="relative">
