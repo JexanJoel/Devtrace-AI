@@ -251,21 +251,20 @@ ${analysis.verify_fix}
             <p className="text-[10px] text-gray-400 hidden sm:block">Powered by Groq · Llama 3.3 70B</p>
           </div>
           {analysis && <div className="hidden xs:block"><CategoryBadge category={analysis.category} /></div>}
-          <span className="text-[10px] font-bold bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-lg border border-indigo-100 dark:border-indigo-800/50 hidden md:inline-block">PowerSync</span>
         </div>
         <div className="flex items-center gap-2">
           {analysis && (
-            <button onClick={onSaveToLibrary} disabled={savingToLib}
-              className="flex items-center gap-1.5 border border-indigo-200 dark:border-indigo-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold px-2.5 py-1.5 sm:px-3 rounded-xl transition disabled:opacity-40">
-              {savingToLib ? <Loader2 size={12} className="animate-spin" /> : <BookOpen size={12} />}
-              <span className="hidden sm:inline">Save</span>
+            <button onClick={handleExportGitHub}
+              className="flex items-center gap-1.5 bg-gray-900 hover:bg-black text-white text-xs font-bold px-3 py-1.5 rounded-xl transition shadow-lg hover:scale-105 active:scale-95">
+              <Github size={13} />
+              <span>Export to GitHub</span>
             </button>
           )}
           {analysis && (
-            <button onClick={handleExportGitHub}
-              className="flex items-center gap-1.5 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-semibold px-2.5 py-1.5 sm:px-3 rounded-xl transition shadow-sm">
-              <Github size={13} />
-              <span className="hidden sm:inline">GitHub</span>
+            <button onClick={onSaveToLibrary} disabled={savingToLib}
+              className="flex items-center gap-1.5 border border-indigo-200 dark:border-indigo-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold px-3 py-1.5 rounded-xl transition disabled:opacity-40">
+              {savingToLib ? <Loader2 size={12} className="animate-spin" /> : <BookOpen size={12} />}
+              <span className="hidden xs:inline">Save</span>
             </button>
           )}
           <button onClick={handleAnalyze} disabled={analyzing || !hasError}
@@ -514,11 +513,14 @@ ${analysis.verify_fix}
 
               {tab === 'tests' && (
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Failure Reproduction Steps</p>
+                  <div className="flex items-center justify-between bg-indigo-50/50 dark:bg-indigo-950/20 px-4 py-3 rounded-2xl border border-indigo-100/50 dark:border-indigo-900/30">
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Failure Reproduction Steps</p>
+                      <p className="text-[10px] text-gray-500 mt-0.5">Automated test suite generation powered by Llama 3.3</p>
+                    </div>
                     <button onClick={handleDownloadTest}
-                      className="flex items-center gap-2 text-[10px] font-black uppercase text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-all">
-                      <Download size={11} /> Download .test.ts
+                      className="flex items-center gap-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-xl transition-all shadow-md hover:scale-105 active:scale-95">
+                      <Download size={14} /> Download .test.ts
                     </button>
                   </div>
                     <div className="space-y-2">
