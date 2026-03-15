@@ -2,21 +2,24 @@
 
 <br/>
 
-<img src="https://img.shields.io/badge/⌨️-DevTrace_AI-4f46e5?style=for-the-badge&labelColor=1e1b4b&color=4f46e5" height="36"/>
+<img src="https://img.shields.io/badge/⌨️-DevTrace_AI-4f46e5?style=for-the-badge&labelColor=1e1b4b&color=4f46e5" height="40"/>
 
-<h2>AI powered team debugging assistant</h2>
+<h1>DevTrace AI</h1>
+<h3>AI-Powered Team Debugging Assistant</h3>
 
 <br/>
 
-<table><tr>
-<td align="center"><a href="https://dev-trace-ai.vercel.app"><img src="https://img.shields.io/badge/🚀%20Live%20Demo-4f46e5?style=for-the-badge&logoColor=white"/></a></td>
-<td align="center"><a href="https://github.com/JexanJoel/DevTrace-AI"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white"/></a></td>
-<td align="center"><a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-f59e0b?style=for-the-badge"/></a></td>
-<td align="center"><a href="https://www.powersync.com/"><img src="https://img.shields.io/badge/PowerSync_AI_Hackathon_2026-6366f1?style=for-the-badge"/></a></td>
-<td align="center"><a href="https://github.com/sponsors/JexanJoel"><img src="https://img.shields.io/badge/💖%20Sponsor%20Me-e11d48?style=for-the-badge"/></a></td>
-</tr></table>
+<table>
+  <tr>
+    <td align="center"><a href="https://dev-trace-ai.vercel.app"><img src="https://img.shields.io/badge/🚀%20Live%20Demo-4f46e5?style=for-the-badge&logoColor=white"/></a></td>
+    <td align="center"><a href="https://github.com/JexanJoel/DevTrace-AI"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white"/></a></td>
+    <td align="center"><a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-f59e0b?style=for-the-badge"/></a></td>
+    <td align="center"><a href="https://www.powersync.com/"><img src="https://img.shields.io/badge/PowerSync_AI_Hackathon_2026-6366f1?style=for-the-badge"/></a></td>
+    <td align="center"><a href="https://github.com/sponsors/JexanJoel"><img src="https://img.shields.io/badge/💖%20Sponsor%20Me-e11d48?style=for-the-badge"/></a></td>
+  </tr>
+</table>
 
-<br/><br/>
+<br/>
 
 </div>
 
@@ -48,10 +51,10 @@ DevTrace AI is your team's **permanent debugging memory** - log bugs, get instan
 
 ## How It Works
 
-```
+```text
 1. You paste an error          ->  Log a debug session (error, stack trace, code, severity)
-2. Hybrid Search triggers       ->  `transformers.js` generates on-device embeddings
-3. Query Local SQLite           ->  Fuzzy vector similarity + metadata filtering (Project, Env)
+2. Hybrid Search triggers      ->  `transformers.js` generates on-device embeddings
+3. Query Local SQLite          ->  Fuzzy vector similarity + metadata filtering (Project, Env)
 4. Click "Analyze Bug"         ->  Groq + Llama 3.3 70B returns a full structured analysis
 5. Actionable Assets           ->  Download `.test.ts` (Vitest) or export to GitHub Issue
 6. Invite a teammate           ->  They join the session - presence, checklist, and chat sync live
@@ -65,7 +68,7 @@ All **reads** come from a local SQLite database (PowerSync). Zero network latenc
 
 All **writes** go through PowerSync's mutation queue - written to local SQLite first, then uploaded to Supabase automatically. Large blobs like `ai_analysis` bypass the mutation queue and go direct to Supabase, then sync back down via WAL.
 
-```
+```text
 WRITE (small fields)  ->  powerSync.execute()  ->  Local SQLite  ->  PowerSync uploads  ->  Supabase Postgres
                                                                                                  |
 WRITE (ai_analysis)   ->  supabase.update()    ->  Supabase Postgres                            |
@@ -99,7 +102,7 @@ Every session gets a full structured breakdown powered by **Groq + Llama 3.3 70B
 
 DevTrace AI turns a debug session into a **shared live workspace**. When a teammate opens a session you've shared, you both see each other's presence, share a synced checklist, and can chat in real time - all powered by PowerSync with zero backend code.
 
-```
+```text
 Owner opens session
          |
 Teammate opens the shared session
@@ -159,7 +162,7 @@ await powerSync.execute(
 
 Collaboration extends beyond individual sessions to the **entire project**. When a project is shared, all collaborators see each other's presence at the project level, can chat about the project as a whole, and watch a live activity feed showing every action taken by any team member.
 
-```
+```text
 Owner opens project
          |
 Teammate opens the shared project
@@ -220,7 +223,7 @@ When a teammate opens a project via **Shared with Me**, they have full access to
 
 When you open a debug session, DevTrace AI automatically searches your entire debug history for similar bugs - **without any network request**. It queries local SQLite directly via PowerSync, so results appear instantly even offline.
 
-```
+```text
 Open a session with an error message
          |
 SimilarSessionsCard extracts meaningful tokens
@@ -266,7 +269,7 @@ const results = await powerSync.getAll(
 
 DevTrace AI builds a **personalized analysis of your debugging patterns** using a Supabase Edge Function + Groq.
 
-```
+```text
 User clicks "Generate My DNA"
          |
 Supabase Edge Function (debug-dna)
@@ -286,7 +289,7 @@ Debug DNA page renders + export as Markdown
 
 DevTrace AI features a unique **retrieval-augmented offline assistance layer**. When you are disconnected, the app doesn't just go "dumb." It utilizes your local PowerSync SQLite database as a knowledge base to synthesize guidance for new bugs.
 
-```
+```text
 Offline? Log a new bug
          |
 useOfflineMemory hook extracts tokens from the error
@@ -606,11 +609,16 @@ npm install
 -- Profiles
 create table profiles (
   id uuid references auth.users on delete cascade primary key,
-  name text, email text, github_username text,
-  github_connected boolean default false, avatar_url text,
-  onboarded boolean default false, dark_mode boolean default false,
+  name text,
+  email text,
+  github_username text,
+  github_connected boolean default false,
+  avatar_url text,
+  onboarded boolean default false,
+  dark_mode boolean default false,
   created_at timestamp with time zone default timezone('utc', now())
 );
+
 create or replace function public.handle_new_user() returns trigger as $$
 begin
   insert into public.profiles (id, email)
@@ -619,7 +627,9 @@ begin
   return new;
 end;
 $$ language plpgsql security definer;
+
 create trigger on_auth_user_created after insert on auth.users for each row execute procedure public.handle_new_user();
+
 alter table profiles enable row level security;
 create policy "Users can view own profile" on profiles for select using (auth.uid() = id);
 create policy "Users can update own profile" on profiles for update using (auth.uid() = id);
@@ -629,11 +639,16 @@ create policy "Users can look up other profiles" on profiles for select using (t
 create table projects (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users on delete cascade,
-  name text not null, description text, language text, github_url text,
-  error_count int default 0, session_count int default 0,
+  name text not null,
+  description text,
+  language text,
+  github_url text,
+  error_count int default 0,
+  session_count int default 0,
   created_at timestamp with time zone default timezone('utc', now()),
   updated_at timestamp with time zone default timezone('utc', now())
 );
+
 alter table projects enable row level security;
 create policy "Users can view own projects"   on projects for select using (auth.uid() = user_id);
 create policy "Users can create projects"     on projects for insert with check (auth.uid() = user_id);
@@ -648,13 +663,21 @@ create table debug_sessions (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users on delete cascade,
   project_id uuid references projects on delete cascade,
-  title text not null, error_message text, stack_trace text,
-  code_snippet text, expected_behavior text,
-  environment text default 'development', severity text default 'medium',
-  status text default 'open', ai_fix text, ai_analysis jsonb, notes text,
+  title text not null,
+  error_message text,
+  stack_trace text,
+  code_snippet text,
+  expected_behavior text,
+  environment text default 'development',
+  severity text default 'medium',
+  status text default 'open',
+  ai_fix text,
+  ai_analysis jsonb,
+  notes text,
   created_at timestamp with time zone default timezone('utc', now()),
   updated_at timestamp with time zone default timezone('utc', now())
 );
+
 alter table debug_sessions enable row level security;
 create policy "Users can view own sessions"   on debug_sessions for select using (auth.uid() = user_id);
 create policy "Users can create sessions"     on debug_sessions for insert with check (auth.uid() = user_id);
@@ -673,10 +696,15 @@ create table fixes (
   user_id uuid references auth.users on delete cascade,
   session_id uuid references debug_sessions on delete set null,
   project_id uuid references projects on delete set null,
-  title text not null, error_pattern text, fix_content text not null,
-  language text, tags text[], use_count int default 0,
+  title text not null,
+  error_pattern text,
+  fix_content text not null,
+  language text,
+  tags text[],
+  use_count int default 0,
   created_at timestamp with time zone default timezone('utc', now())
 );
+
 alter table fixes enable row level security;
 create policy "Users can view own fixes"   on fixes for select using (auth.uid() = user_id);
 create policy "Users can create fixes"     on fixes for insert with check (auth.uid() = user_id);
@@ -689,9 +717,11 @@ create table shares (
   owner_id uuid references auth.users on delete cascade,
   invitee_id uuid references auth.users on delete cascade,
   resource_type text not null check (resource_type in ('project', 'session')),
-  resource_id uuid not null, created_at timestamptz default now(),
+  resource_id uuid not null,
+  created_at timestamptz default now(),
   unique(invitee_id, resource_type, resource_id)
 );
+
 alter table shares enable row level security;
 create policy "Owners can manage shares"       on shares for all    using (owner_id = auth.uid());
 create policy "Invitees can view their shares" on shares for select using (invitee_id = auth.uid());
@@ -700,6 +730,7 @@ create policy "Invitees can view their shares" on shares for select using (invit
 create or replace function update_updated_at() returns trigger as $$
 begin new.updated_at = timezone('utc', now()); return new; end;
 $$ language plpgsql;
+
 create trigger projects_updated_at before update on projects for each row execute procedure update_updated_at();
 create trigger sessions_updated_at before update on debug_sessions for each row execute procedure update_updated_at();
 
@@ -718,11 +749,13 @@ create table if not exists session_presence (
   id uuid default gen_random_uuid() primary key,
   session_id uuid references debug_sessions on delete cascade not null,
   user_id uuid references auth.users on delete cascade not null,
-  display_name text, avatar_url text,
+  display_name text,
+  avatar_url text,
   last_seen_at timestamp with time zone default now(),
   joined_at timestamp with time zone default now(),
   unique(session_id, user_id)
 );
+
 alter table session_presence enable row level security;
 create policy "Session participants can view presence" on session_presence for select using (
   auth.uid() = user_id
@@ -738,9 +771,11 @@ create table if not exists session_checklist (
   item_index integer not null,
   checked boolean default false,
   checked_by uuid references auth.users on delete set null,
-  checked_by_name text, checked_at timestamp with time zone,
+  checked_by_name text,
+  checked_at timestamp with time zone,
   unique(session_id, item_index)
 );
+
 alter table session_checklist enable row level security;
 create policy "Session participants can view checklist" on session_checklist for select using (
   exists (select 1 from debug_sessions where debug_sessions.id = session_checklist.session_id and debug_sessions.user_id = auth.uid())
@@ -761,9 +796,12 @@ create table if not exists session_chat (
   id uuid default gen_random_uuid() primary key,
   session_id uuid references debug_sessions on delete cascade not null,
   user_id uuid references auth.users on delete cascade not null,
-  display_name text, avatar_url text, message text not null,
+  display_name text,
+  avatar_url text,
+  message text not null,
   created_at timestamp with time zone default now()
 );
+
 alter table session_chat enable row level security;
 create policy "Session participants can view chat" on session_chat for select using (
   exists (select 1 from debug_sessions where debug_sessions.id = session_chat.session_id and debug_sessions.user_id = auth.uid())
@@ -792,11 +830,13 @@ create table if not exists project_presence (
   id uuid default gen_random_uuid() primary key,
   project_id uuid references projects on delete cascade not null,
   user_id uuid references auth.users on delete cascade not null,
-  display_name text, avatar_url text,
+  display_name text,
+  avatar_url text,
   last_seen_at timestamp with time zone default now(),
   joined_at timestamp with time zone default now(),
   unique(project_id, user_id)
 );
+
 alter table project_presence enable row level security;
 create policy "Project participants can view presence" on project_presence for select using (
   auth.uid() = user_id
@@ -810,12 +850,15 @@ create table if not exists project_activity (
   id uuid default gen_random_uuid() primary key,
   project_id uuid references projects on delete cascade not null,
   user_id uuid references auth.users on delete cascade not null,
-  display_name text, avatar_url text,
+  display_name text,
+  avatar_url text,
   event_type text not null,
   session_id uuid references debug_sessions on delete cascade,
-  session_title text, metadata jsonb,
+  session_title text,
+  metadata jsonb,
   created_at timestamp with time zone default now()
 );
+
 alter table project_activity enable row level security;
 create policy "Project participants can view activity" on project_activity for select using (
   exists (select 1 from projects where projects.id = project_activity.project_id and projects.user_id = auth.uid())
@@ -833,9 +876,12 @@ create table if not exists project_chat (
   id uuid default gen_random_uuid() primary key,
   project_id uuid references projects on delete cascade not null,
   user_id uuid references auth.users on delete cascade not null,
-  display_name text, avatar_url text, message text not null,
+  display_name text,
+  avatar_url text,
+  message text not null,
   created_at timestamp with time zone default now()
 );
+
 alter table project_chat enable row level security;
 create policy "Project participants can view chat" on project_chat for select using (
   exists (select 1 from projects where projects.id = project_chat.project_id and projects.user_id = auth.uid())
@@ -1002,9 +1048,9 @@ DevTrace AI is submitted to the **PowerSync AI Hackathon 2026**.
 
 ---
 
-## License
+## License & Conduct
 
-MIT - free to use, fork, and build on.
+[MIT License](LICENSE) | [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ---
 
