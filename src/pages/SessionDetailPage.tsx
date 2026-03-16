@@ -13,6 +13,7 @@ import SimilarSessionsCard from '../components/sessions/SimilarSessionsCard';
 import CollaborationBanner from '../components/sessions/CollaborationBanner';
 import SessionChat from '../components/sessions/SessionChat';
 import OfflineAssistCard from '../components/sessions/OfflineAssistCard';
+import MastraAgentPanel from '../components/sessions/MastraAgentPanel';
 import useSessions from '../hooks/useSessions';
 import useCollaboration from '../hooks/useCollaboration';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
@@ -45,7 +46,6 @@ const SessionDetailPage = () => {
   const { sessions, updateSession, deleteSession } = useSessions();
   const { createFix } = useFixes();
 
-  // Collaboration — all three concerns in one hook
   const {
     activeCollaborators,
     otherCollaborators,
@@ -74,24 +74,20 @@ const SessionDetailPage = () => {
   const [hasLoaded, setHasLoaded] = useState(false);
 
   const session = useMemo(() => sessions.find(s => s.id === id) ?? null, [sessions, id]);
-  
+
   useEffect(() => {
-    if (sessions.length > 0 || session) {
-      setHasLoaded(true);
-    }
+    if (sessions.length > 0 || session) setHasLoaded(true);
   }, [sessions, session]);
 
   const loading = !hasLoaded;
 
   useEffect(() => {
     if (session) setNotes(session.notes ?? '');
-    // Reset offline guidance when session changes
     setShowOfflineAssist(false);
   }, [session?.id]);
 
   const hasInitialized = useRef(false);
 
-  // Auto-open chat only when a collaborator joins AFTER mount
   useEffect(() => {
     if (!hasInitialized.current) {
       hasInitialized.current = true;
@@ -188,340 +184,348 @@ const SessionDetailPage = () => {
 
   return (
     <>
-    <DashboardLayout title="Session">
-      <div className="space-y-5 overflow-x-hidden">
+      <DashboardLayout title="Session">
+        <div className="space-y-5 overflow-x-hidden">
 
-        {/* Top bar */}
-        <div className="flex items-center justify-between gap-2 min-w-0">
-          <button
-            onClick={() => navigate('/sessions')}
-            className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition flex-shrink-0"
-          >
-            <ArrowLeft size={14} />
-            <span className="hidden xs:inline">All Sessions</span>
-          </button>
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-            {/* Chat toggle — shown when collaborative */}
-            {isCollaborative && (
+          {/* Top bar */}
+          <div className="flex items-center justify-between gap-2 min-w-0">
+            <button
+              onClick={() => navigate('/sessions')}
+              className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition flex-shrink-0"
+            >
+              <ArrowLeft size={14} />
+              <span className="hidden xs:inline">All Sessions</span>
+            </button>
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+              {isCollaborative && (
+                <button
+                  onClick={() => setShowChat(v => !v)}
+                  className={`flex items-center gap-1.5 px-2.5 py-2 sm:px-3 rounded-xl text-sm font-medium transition relative ${
+                    showChat
+                      ? 'bg-indigo-600 text-white'
+                      : 'border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950 text-indigo-600'
+                  }`}
+                >
+                  <MessageSquare size={14} />
+                  <span className="hidden sm:inline">Chat</span>
+                  {chatMessages.length > 0 && !showChat && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                      {chatMessages.length > 9 ? '9+' : chatMessages.length}
+                    </span>
+                  )}
+                </button>
+              )}
               <button
-                onClick={() => setShowChat(v => !v)}
-                className={`flex items-center gap-1.5 px-2.5 py-2 sm:px-3 rounded-xl text-sm font-medium transition relative ${
-                  showChat
-                    ? 'bg-indigo-600 text-white'
-                    : 'border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950 text-indigo-600'
-                }`}
+                onClick={() => setShowShareModal(true)}
+                className="flex items-center gap-1.5 border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-600 dark:text-indigo-400 px-2.5 py-2 sm:px-3 rounded-xl text-sm font-medium transition"
               >
-                <MessageSquare size={14} />
-                <span className="hidden sm:inline">Chat</span>
-                {chatMessages.length > 0 && !showChat && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                    {chatMessages.length > 9 ? '9+' : chatMessages.length}
+                <Share2 size={14} />
+                <span className="hidden sm:inline">Share</span>
+              </button>
+              <button
+                onClick={handleExport}
+                className="flex items-center gap-1.5 border border-gray-200 dark:border-gray-700 hover:border-gray-300 text-gray-600 dark:text-gray-400 px-2.5 py-2 sm:px-3 rounded-xl text-sm font-medium transition"
+              >
+                <Download size={14} />
+                <span className="hidden sm:inline">Export .md</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Collaboration banner */}
+          {otherCollaborators.length > 0 && (
+            <CollaborationBanner
+              collaborators={activeCollaborators}
+              currentUserId={user?.id ?? ''}
+            />
+          )}
+
+          {/* Session header card */}
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-6 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
+                <StatusBadge status={effectiveStatus} />
+                <SeverityBadge severity={session.severity} />
+                {session.environment && (
+                  <span className={`text-[10px] sm:text-xs px-2 sm:px-2.5 py-1 rounded-lg border font-bold sm:font-medium capitalize flex-shrink-0 ${ENV_COLORS[session.environment] ?? 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                    {session.environment}
                   </span>
                 )}
-              </button>
-            )}
-            <button
-              onClick={() => setShowShareModal(true)}
-              className="flex items-center gap-1.5 border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-600 dark:text-indigo-400 px-2.5 py-2 sm:px-3 rounded-xl text-sm font-medium transition"
-            >
-              <Share2 size={14} />
-              <span className="hidden sm:inline">Share</span>
-            </button>
-            <button
-              onClick={handleExport}
-              className="flex items-center gap-1.5 border border-gray-200 dark:border-gray-700 hover:border-gray-300 text-gray-600 dark:text-gray-400 px-2.5 py-2 sm:px-3 rounded-xl text-sm font-medium transition"
-            >
-              <Download size={14} />
-              <span className="hidden sm:inline">Export .md</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Collaboration banner — appears when others are in the session */}
-        {otherCollaborators.length > 0 && (
-          <CollaborationBanner
-            collaborators={activeCollaborators}
-            currentUserId={user?.id ?? ''}
-          />
-        )}
-
-        {/* Session header card */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-6 min-w-0">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
-              <StatusBadge status={effectiveStatus} />
-              <SeverityBadge severity={session.severity} />
-              {session.environment && (
-                <span className={`text-[10px] sm:text-xs px-2 sm:px-2.5 py-1 rounded-lg border font-bold sm:font-medium capitalize flex-shrink-0 ${ENV_COLORS[session.environment] ?? 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-                  {session.environment}
-                </span>
-              )}
-              {session.project && (
-                <div className="flex items-center gap-1 text-xs text-gray-400 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 max-w-[120px] min-w-0">
-                  <FolderOpen size={11} className="flex-shrink-0" />
-                  <span className="truncate">{session.project.name}</span>
-                </div>
-              )}
-              <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-gray-400 flex-shrink-0">
-                <Clock size={11} />
-                <span className="hidden sm:inline">
-                  {new Date(session.created_at).toLocaleDateString()} at{' '}
-                  {new Date(session.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
-                <span className="sm:hidden">{new Date(session.created_at).toLocaleDateString()} · {new Date(session.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-              </div>
-            </div>
-
-            <div className="relative flex-shrink-0">
-              <button
-                onClick={() => setShowStatusMenu(!showStatusMenu)}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-700 hover:border-indigo-300 text-gray-600 dark:text-gray-400 px-3 py-2 rounded-xl text-sm font-medium transition whitespace-nowrap"
-              >
-                Change Status <ChevronDown size={14} />
-              </button>
-              {showStatusMenu && (
-                <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-10 overflow-hidden min-w-[160px]">
-                  {STATUS_OPTIONS.map((opt) => (
-                    <button key={opt.value} onClick={() => handleStatusChange(opt.value)}
-                      className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition flex items-center gap-2 ${
-                        effectiveStatus === opt.value
-                          ? 'text-indigo-600 font-medium bg-indigo-50 dark:bg-indigo-950'
-                          : 'text-gray-700 dark:text-gray-300'
-                      }`}>
-                      {effectiveStatus === opt.value && <CheckCircle size={13} />}
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Body */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 min-w-0">
-
-          {/* Main content */}
-          <div className="lg:col-span-2 space-y-5 min-w-0">
-
-            {session.error_message && (
-              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-6 min-w-0">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Error Message</p>
-                <div className="bg-red-50 dark:bg-red-950 border border-red-100 dark:border-red-900 rounded-xl p-4 font-mono text-xs sm:text-sm text-red-800 dark:text-red-300 whitespace-pre-wrap break-all overflow-x-auto max-w-full">
-                  {session.error_message}
-                </div>
-              </div>
-            )}
-
-            {session.stack_trace && (
-              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-6 min-w-0">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Stack Trace</p>
-                <div className="bg-gray-900 rounded-xl p-4 font-mono text-xs text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-48 overflow-y-auto max-w-full">
-                  {session.stack_trace}
-                </div>
-              </div>
-            )}
-
-            {session.code_snippet && (
-              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-6 min-w-0">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Related Code</p>
-                <div className="bg-gray-900 rounded-xl p-4 font-mono text-xs text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-48 overflow-y-auto max-w-full">
-                  {session.code_snippet}
-                </div>
-              </div>
-            )}
-
-            {session.expected_behavior && (
-              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-5 min-w-0">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Expected Behavior</p>
-                <p className="text-sm text-gray-700 dark:text-gray-300 break-words">{session.expected_behavior}</p>
-              </div>
-            )}
-
-            {/* Similar sessions */}
-            {session.error_message && user && (
-              <SimilarSessionsCard
-                currentSessionId={session.id}
-                errorMessage={session.error_message}
-                userId={user.id}
-              />
-            )}
-
-            {/* AI Debug Panel with collaborative checklist */}
-            <AIDebugPanel
-              session={session}
-              onSaveAnalysis={handleSaveAnalysis}
-              onSaveToLibrary={handleSaveToLibrary}
-              savingToLib={savingToLib}
-              isChecked={isChecked}
-              checkedBy={checkedBy}
-              onToggleChecklist={toggleChecklistItem}
-              completedCount={completedCount}
-              isCollaborative={isCollaborative}
-              currentUserName={currentUserName}
-            />
-
-            {/* Offline AI Memory Assist */}
-            {!session.ai_analysis && !isOnline && session.error_message && (
-              <div className="space-y-4">
-                {!showOfflineAssist ? (
-                  <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-900 rounded-2xl p-6 text-center animate-fade-in">
-                    <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <WifiOff size={24} className="text-amber-600" />
-                    </div>
-                    <h3 className="font-bold text-gray-900 dark:text-white mb-2">You're currently offline</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 max-w-sm mx-auto">
-                      Fresh AI analysis requires an internet connection. However, we can synthesize guidance from your local debugging history.
-                    </p>
-                    <button 
-                      onClick={handleRunOfflineAssist}
-                      className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold px-6 py-2.5 rounded-xl transition shadow-sm hover:shadow-md"
-                    >
-                      <Sparkles size={16} />
-                      Run Offline Memory Assist
-                    </button>
+                {session.project && (
+                  <div className="flex items-center gap-1 text-xs text-gray-400 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 max-w-[120px] min-w-0">
+                    <FolderOpen size={11} className="flex-shrink-0" />
+                    <span className="truncate">{session.project.name}</span>
                   </div>
-                ) : (
-                  <>
-                    {loadingOffline ? (
-                      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-10 text-center space-y-3">
-                        <Loader2 size={28} className="animate-spin text-amber-500 mx-auto" />
-                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Scanning local memory...</p>
-                        <p className="text-xs text-gray-400">Retrieving similar sessions and synthesizing previous AI insights</p>
-                      </div>
-                    ) : offlineGuidance ? (
-                      <OfflineAssistCard 
-                        guidance={offlineGuidance} 
-                        onViewSession={(sid) => navigate(`/sessions/${sid}`)}
-                        onReconnect={() => toast.success('Checking connection...')}
-                      />
-                    ) : (
-                      <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-8 text-center">
-                        <Info size={24} className="text-gray-300 mx-auto mb-2" />
-                        <p className="text-gray-500 text-sm">No similar sessions found in local history to provide offline guidance.</p>
-                      </div>
-                    )}
-                  </>
+                )}
+                <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-gray-400 flex-shrink-0">
+                  <Clock size={11} />
+                  <span className="hidden sm:inline">
+                    {new Date(session.created_at).toLocaleDateString()} at{' '}
+                    {new Date(session.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  <span className="sm:hidden">
+                    {new Date(session.created_at).toLocaleDateString()} · {new Date(session.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+              </div>
+
+              <div className="relative flex-shrink-0">
+                <button
+                  onClick={() => setShowStatusMenu(!showStatusMenu)}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-700 hover:border-indigo-300 text-gray-600 dark:text-gray-400 px-3 py-2 rounded-xl text-sm font-medium transition whitespace-nowrap"
+                >
+                  Change Status <ChevronDown size={14} />
+                </button>
+                {showStatusMenu && (
+                  <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-10 overflow-hidden min-w-[160px]">
+                    {STATUS_OPTIONS.map((opt) => (
+                      <button key={opt.value} onClick={() => handleStatusChange(opt.value)}
+                        className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition flex items-center gap-2 ${
+                          effectiveStatus === opt.value
+                            ? 'text-indigo-600 font-medium bg-indigo-50 dark:bg-indigo-950'
+                            : 'text-gray-700 dark:text-gray-300'
+                        }`}>
+                        {effectiveStatus === opt.value && <CheckCircle size={13} />}
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
-            )}
-
-            {/* Team chat — pb-20 gives breathing room above floating FAB on mobile */}
-            {showChat && (
-              <div className="pb-20 sm:pb-0">
-                <SessionChat
-                  messages={chatMessages}
-                  onSend={sendMessage}
-                  currentUserId={user?.id ?? ''}
-                />
-              </div>
-            )}
+            </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-5">
+          {/* Body */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 min-w-0">
 
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-5">
-              <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-3">Notes</h3>
-              <textarea
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                placeholder="Add your debugging notes, observations, or next steps..."
-                rows={5}
-                className="w-full border-2 border-gray-100 dark:border-gray-700 focus:border-indigo-400 text-gray-900 dark:text-white dark:bg-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 transition placeholder-gray-300 resize-none"
-              />
-              <button
-                onClick={handleSaveNotes}
-                disabled={savingNotes || notes === (session.notes ?? '')}
-                className="mt-3 w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition disabled:opacity-40"
-              >
-                {savingNotes ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                {savingNotes ? 'Saving...' : 'Save Notes'}
-              </button>
-            </div>
+            {/* Main content */}
+            <div className="lg:col-span-2 space-y-5 min-w-0">
 
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-5">
-              <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-4">Session Info</h3>
-              <div className="space-y-2">
-                {[
-                  { label: 'Status',      value: <StatusBadge status={effectiveStatus} /> },
-                  { label: 'Severity',    value: <SeverityBadge severity={session.severity} /> },
-                  { label: 'Environment', value: (
-                    <span className={`text-xs px-2 py-0.5 rounded-lg border font-medium capitalize ${ENV_COLORS[session.environment ?? 'development'] ?? ''}`}>
-                      {session.environment ?? 'development'}
-                    </span>
-                  )},
-                  { label: 'Project', value: (
-                    <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[100px] text-right block">
-                      {session.project?.name ?? '—'}
-                    </span>
-                  )},
-                  { label: 'Created', value: (
-                    <span className="text-sm text-gray-700 dark:text-gray-300">
-                      {new Date(session.created_at).toLocaleDateString()}
-                    </span>
-                  )},
-                  ...(activeCollaborators.length > 0 ? [{
-                    label: 'In session',
-                    value: (
-                      <div className="flex -space-x-1.5">
-                        {activeCollaborators.slice(0, 3).map((c) => (
-                          <div key={c.user_id} title={c.display_name}
-                            className="w-6 h-6 rounded-full bg-indigo-500 border-2 border-white dark:border-gray-900 flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">
-                            {c.avatar_url
-                              ? <img src={c.avatar_url} className="w-full h-full rounded-full object-cover" />
-                              : c.display_name[0].toUpperCase()
-                            }
-                          </div>
-                        ))}
-                        {activeCollaborators.length > 3 && (
-                          <div className="w-6 h-6 rounded-full bg-gray-400 border-2 border-white dark:border-gray-900 flex items-center justify-center text-white text-[9px] font-bold">
-                            +{activeCollaborators.length - 3}
-                          </div>
-                        )}
-                      </div>
-                    ),
-                  }] : []),
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center justify-between py-1.5 border-b border-gray-50 dark:border-gray-800 last:border-0 gap-2 min-w-0">
-                    <span className="text-xs text-gray-400 flex-shrink-0">{item.label}</span>
-                    <div className="flex-shrink-0 min-w-0">{item.value}</div>
+              {session.error_message && (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-6 min-w-0">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Error Message</p>
+                  <div className="bg-red-50 dark:bg-red-950 border border-red-100 dark:border-red-900 rounded-xl p-4 font-mono text-xs sm:text-sm text-red-800 dark:text-red-300 whitespace-pre-wrap break-all overflow-x-auto max-w-full">
+                    {session.error_message}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
+
+              {session.stack_trace && (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-6 min-w-0">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Stack Trace</p>
+                  <div className="bg-gray-900 rounded-xl p-4 font-mono text-xs text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-48 overflow-y-auto max-w-full">
+                    {session.stack_trace}
+                  </div>
+                </div>
+              )}
+
+              {session.code_snippet && (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-6 min-w-0">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Related Code</p>
+                  <div className="bg-gray-900 rounded-xl p-4 font-mono text-xs text-gray-300 whitespace-pre-wrap overflow-x-auto max-h-48 overflow-y-auto max-w-full">
+                    {session.code_snippet}
+                  </div>
+                </div>
+              )}
+
+              {session.expected_behavior && (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-5 min-w-0">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Expected Behavior</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 break-words">{session.expected_behavior}</p>
+                </div>
+              )}
+
+              {/* Similar sessions */}
+              {session.error_message && user && (
+                <SimilarSessionsCard
+                  currentSessionId={session.id}
+                  errorMessage={session.error_message}
+                  userId={user.id}
+                />
+              )}
+
+              {/* AI Debug Panel with collaborative checklist */}
+              <AIDebugPanel
+                session={session}
+                onSaveAnalysis={handleSaveAnalysis}
+                onSaveToLibrary={handleSaveToLibrary}
+                savingToLib={savingToLib}
+                isChecked={isChecked}
+                checkedBy={checkedBy}
+                onToggleChecklist={toggleChecklistItem}
+                completedCount={completedCount}
+                isCollaborative={isCollaborative}
+                currentUserName={currentUserName}
+              />
+
+              {/* ── Mastra Deep Analysis ─────────────────────────────────────
+                  Only shown online — offline has its own assist card below    */}
+              {session.error_message && isOnline && (
+                <MastraAgentPanel session={session} />
+              )}
+
+              {/* Offline AI Memory Assist */}
+              {!session.ai_analysis && !isOnline && session.error_message && (
+                <div className="space-y-4">
+                  {!showOfflineAssist ? (
+                    <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-900 rounded-2xl p-6 text-center animate-fade-in">
+                      <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <WifiOff size={24} className="text-amber-600" />
+                      </div>
+                      <h3 className="font-bold text-gray-900 dark:text-white mb-2">You're currently offline</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 max-w-sm mx-auto">
+                        Fresh AI analysis requires an internet connection. However, we can synthesize guidance from your local debugging history.
+                      </p>
+                      <button
+                        onClick={handleRunOfflineAssist}
+                        className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold px-6 py-2.5 rounded-xl transition shadow-sm hover:shadow-md"
+                      >
+                        <Sparkles size={16} />
+                        Run Offline Memory Assist
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      {loadingOffline ? (
+                        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-10 text-center space-y-3">
+                          <Loader2 size={28} className="animate-spin text-amber-500 mx-auto" />
+                          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Scanning local memory...</p>
+                          <p className="text-xs text-gray-400">Retrieving similar sessions and synthesizing previous AI insights</p>
+                        </div>
+                      ) : offlineGuidance ? (
+                        <OfflineAssistCard
+                          guidance={offlineGuidance}
+                          onViewSession={(sid) => navigate(`/sessions/${sid}`)}
+                          onReconnect={() => toast.success('Checking connection...')}
+                        />
+                      ) : (
+                        <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl p-8 text-center">
+                          <Info size={24} className="text-gray-300 mx-auto mb-2" />
+                          <p className="text-gray-500 text-sm">No similar sessions found in local history to provide offline guidance.</p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Team chat */}
+              {showChat && (
+                <div className="pb-20 sm:pb-0">
+                  <SessionChat
+                    messages={chatMessages}
+                    onSend={sendMessage}
+                    currentUserId={user?.id ?? ''}
+                  />
+                </div>
+              )}
+
             </div>
 
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-red-100 dark:border-red-900 p-4 sm:p-6">
-              <h3 className="font-bold text-red-600 mb-4">Danger Zone</h3>
-              <div className="p-4 bg-red-50 dark:bg-red-950 rounded-xl space-y-3">
-                <div>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">Delete Session</p>
-                  <p className="text-xs text-gray-400 mt-0.5">Permanently delete this session and all its data.</p>
-                </div>
+            {/* Sidebar */}
+            <div className="space-y-5">
+
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-5">
+                <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-3">Notes</h3>
+                <textarea
+                  value={notes}
+                  onChange={e => setNotes(e.target.value)}
+                  placeholder="Add your debugging notes, observations, or next steps..."
+                  rows={5}
+                  className="w-full border-2 border-gray-100 dark:border-gray-700 focus:border-indigo-400 text-gray-900 dark:text-white dark:bg-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 transition placeholder-gray-300 resize-none"
+                />
                 <button
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-xl text-sm transition disabled:opacity-50 w-full justify-center"
+                  onClick={handleSaveNotes}
+                  disabled={savingNotes || notes === (session.notes ?? '')}
+                  className="mt-3 w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition disabled:opacity-40"
                 >
-                  {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                  {deleting ? 'Deleting...' : 'Delete Session'}
+                  {savingNotes ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                  {savingNotes ? 'Saving...' : 'Save Notes'}
                 </button>
               </div>
-            </div>
 
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-5">
+                <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-4">Session Info</h3>
+                <div className="space-y-2">
+                  {[
+                    { label: 'Status',      value: <StatusBadge status={effectiveStatus} /> },
+                    { label: 'Severity',    value: <SeverityBadge severity={session.severity} /> },
+                    { label: 'Environment', value: (
+                      <span className={`text-xs px-2 py-0.5 rounded-lg border font-medium capitalize ${ENV_COLORS[session.environment ?? 'development'] ?? ''}`}>
+                        {session.environment ?? 'development'}
+                      </span>
+                    )},
+                    { label: 'Project', value: (
+                      <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[100px] text-right block">
+                        {session.project?.name ?? '—'}
+                      </span>
+                    )},
+                    { label: 'Created', value: (
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                        {new Date(session.created_at).toLocaleDateString()}
+                      </span>
+                    )},
+                    ...(activeCollaborators.length > 0 ? [{
+                      label: 'In session',
+                      value: (
+                        <div className="flex -space-x-1.5">
+                          {activeCollaborators.slice(0, 3).map((c) => (
+                            <div key={c.user_id} title={c.display_name}
+                              className="w-6 h-6 rounded-full bg-indigo-500 border-2 border-white dark:border-gray-900 flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">
+                              {c.avatar_url
+                                ? <img src={c.avatar_url} className="w-full h-full rounded-full object-cover" />
+                                : c.display_name[0].toUpperCase()
+                              }
+                            </div>
+                          ))}
+                          {activeCollaborators.length > 3 && (
+                            <div className="w-6 h-6 rounded-full bg-gray-400 border-2 border-white dark:border-gray-900 flex items-center justify-center text-white text-[9px] font-bold">
+                              +{activeCollaborators.length - 3}
+                            </div>
+                          )}
+                        </div>
+                      ),
+                    }] : []),
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center justify-between py-1.5 border-b border-gray-50 dark:border-gray-800 last:border-0 gap-2 min-w-0">
+                      <span className="text-xs text-gray-400 flex-shrink-0">{item.label}</span>
+                      <div className="flex-shrink-0 min-w-0">{item.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-red-100 dark:border-red-900 p-4 sm:p-6">
+                <h3 className="font-bold text-red-600 mb-4">Danger Zone</h3>
+                <div className="p-4 bg-red-50 dark:bg-red-950 rounded-xl space-y-3">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">Delete Session</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Permanently delete this session and all its data.</p>
+                  </div>
+                  <button
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-xl text-sm transition disabled:opacity-50 w-full justify-center"
+                  >
+                    {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                    {deleting ? 'Deleting...' : 'Delete Session'}
+                  </button>
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
-      </div>
-    </DashboardLayout>
+      </DashboardLayout>
 
-    {showShareModal && session && (
-      <ShareModal
-        resourceType="session"
-        resourceId={session.id}
-        resourceName={session.title}
-        onClose={() => setShowShareModal(false)}
-      />
-    )}
+      {showShareModal && session && (
+        <ShareModal
+          resourceType="session"
+          resourceId={session.id}
+          resourceName={session.title}
+          onClose={() => setShowShareModal(false)}
+        />
+      )}
     </>
   );
 };

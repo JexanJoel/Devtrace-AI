@@ -11,6 +11,7 @@ import GitHubStatsCard from '../components/github/GitHubStatsCard';
 import ShareModal from '../components/shared/ShareModal';
 import ProjectActivityFeed from '../components/projects/ProjectActivityFeed';
 import ProjectChat from '../components/projects/ProjectChat';
+import MastraProjectPanel from '../components/projects/MastraProjectPanel';
 import useProjects from '../hooks/useProjects';
 import useSessions from '../hooks/useSessions';
 import useProjectCollaboration from '../hooks/useProjectCollaboration';
@@ -88,7 +89,6 @@ const ProjectDetailPage = () => {
     }
   }, [project?.id]);
 
-  // Auto-open chat only when a collaborator joins AFTER mount
   useEffect(() => {
     if (!hasInitialized.current) {
       hasInitialized.current = true;
@@ -279,7 +279,7 @@ const ProjectDetailPage = () => {
           )}
         </div>
 
-        {/* Tabs — now includes Activity */}
+        {/* Tabs */}
         <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-fit">
           {([
             { key: 'overview',  label: 'Overview',  icon: <BarChart2 size={14} /> },
@@ -300,7 +300,7 @@ const ProjectDetailPage = () => {
           ))}
         </div>
 
-        {/* Overview tab */}
+        {/* ── Overview tab ─────────────────────────────────────────────────── */}
         {tab === 'overview' && (
           <div className="space-y-5">
             {project.github_url && <GitHubStatsCard githubUrl={project.github_url} />}
@@ -316,6 +316,7 @@ const ProjectDetailPage = () => {
               </div>
             )}
 
+            {/* Sessions list */}
             <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 sm:p-6">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="font-bold text-gray-900 dark:text-white">Debug Sessions</h3>
@@ -377,10 +378,21 @@ const ProjectDetailPage = () => {
                 </div>
               )}
             </div>
+
+            {/* ── Mastra Project Analysis ──────────────────────────────────
+                Only shown when there are sessions to analyze              */}
+            {sessions.length > 0 && (
+              <MastraProjectPanel
+                projectName={project.name}
+                projectLanguage={project.language ?? undefined}
+                sessions={sessions}
+              />
+            )}
+
           </div>
         )}
 
-        {/* Activity tab */}
+        {/* ── Activity tab ─────────────────────────────────────────────────── */}
         {tab === 'activity' && (
           <div className="space-y-5">
             <ProjectActivityFeed
@@ -388,7 +400,6 @@ const ProjectDetailPage = () => {
               getActivityLabel={getActivityLabel}
               getActivityIcon={getActivityIcon}
             />
-            {/* Also show chat in activity tab */}
             <div className="pb-20 sm:pb-0 sm:mr-16">
               <ProjectChat
                 messages={chatMessages}
@@ -399,7 +410,7 @@ const ProjectDetailPage = () => {
           </div>
         )}
 
-        {/* Settings tab */}
+        {/* ── Settings tab ─────────────────────────────────────────────────── */}
         {tab === 'settings' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
@@ -446,6 +457,7 @@ const ProjectDetailPage = () => {
             </div>
           </div>
         )}
+
       </div>
 
       {showModal && (
