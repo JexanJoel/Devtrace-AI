@@ -333,7 +333,7 @@ const MastraAgentPanel = ({ session }: Props) => {
           <div>
             <p className="text-gray-800 dark:text-gray-200 text-sm font-bold mb-1">Mastra Session Debugger</p>
             <p className="text-gray-400 text-xs max-w-sm mx-auto leading-relaxed">
-              Goes deeper than standard AI analysis. Identifies the exact broken line, generates a before/after diff fix, and flags related risks that might surface after applying it.
+              Goes deeper than standard AI analysis.
             </p>
           </div>
           <div className="flex items-center justify-center gap-4 text-[11px] text-gray-400">
