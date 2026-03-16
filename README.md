@@ -28,26 +28,26 @@
 
 ## What is DevTrace AI?
 
-DevTrace AI is your team's **permanent debugging memory** — log bugs, get instant AI analysis, save what works, and debug with teammates in real time at both session and project level. Works offline. Remembers everything.
+DevTrace AI is your team's **permanent debugging memory** - log bugs, get instant AI analysis, save what works, and debug with teammates in real time at both session and project level. Works offline. Remembers everything.
 
 <div align="center">
 
 | | |
 |:--|:--|
 | 🔍 | Every bug gets a permanent structured record |
-| 🤖 | Full AI breakdown — root cause, fixes, timeline, 8-tab panel |
-| 🧬 | Debug DNA — your personal error fingerprint |
-| 🧠 | Hybrid Local-First RAG — semantic vector search + structured SQL, entirely on-device |
-| 🔁 | Similar Sessions — instantly finds bugs you've seen before |
-| 👥 | Session Collaboration — shared checklist, presence, team chat |
-| 📋 | Project Collaboration — activity feed, project chat, project presence |
-| 🤖 | Mastra AI Agents — Session Debugger + Project Analyzer via Mastra Cloud |
+| 🤖 | Full AI breakdown - root cause, fixes, timeline, 8-tab panel |
+| 🧬 | Debug DNA - your personal error fingerprint |
+| 🧠 | Hybrid Local-First RAG - semantic vector search + structured SQL, entirely on-device |
+| 🔁 | Similar Sessions - instantly finds bugs you've seen before |
+| 👥 | Session Collaboration - shared checklist, presence, team chat |
+| 📋 | Project Collaboration - activity feed, project chat, project presence |
+| 🤖 | Mastra AI Agents - Session Debugger + Project Analyzer via Mastra Cloud |
 | 📶 | Fully offline via PowerSync local SQLite (11 tables, 5 sync buckets) |
 | 🔗 | Share projects and sessions with teammates |
 
 </div>
 
-**The core problem it solves:** Debugging is slow and scattered. You repeat the same mistakes, forget what fixed what, and lose context every time you close a tab. DevTrace AI is your team's permanent debugging memory — and it works even when the internet doesn't.
+**The core problem it solves:** Debugging is slow and scattered. You repeat the same mistakes, forget what fixed what, and lose context every time you close a tab. DevTrace AI is your team's permanent debugging memory - and it works even when the internet doesn't.
 
 ---
 
@@ -60,17 +60,17 @@ DevTrace AI is your team's **permanent debugging memory** — log bugs, get inst
 4. Click "Analyze Bug"         ->  Groq + Llama 3.3 70B returns full structured analysis server-side
 5. Read the 8-tab breakdown    ->  Overview, Fixes, Timeline, Checklist, Chat, Tests, Logs, Structure
 6. Run Mastra Deep Analysis    ->  Session Debugger agent reasons through stack trace, returns diff fix
-7. Invite a teammate           ->  They join the session — presence, checklist, and chat sync live
+7. Invite a teammate           ->  They join the session - presence, checklist, and chat sync live
 8. Watch the activity feed     ->  Every session event logged to project feed, visible to all collaborators
 9. Save what worked            ->  Fix goes to Fix Library, tagged and searchable forever
 10. Generate Debug DNA         ->  Supabase Edge Function analyzes your patterns + Groq writes fingerprint
 ```
 
-### Read vs Write — the data flow
+### Read vs Write - the data flow
 
-All **reads** come from a local SQLite database (PowerSync). Zero network latency — instant.
+All **reads** come from a local SQLite database (PowerSync). Zero network latency - instant.
 
-All **writes** go through PowerSync's mutation queue — written to local SQLite first, then uploaded to Supabase automatically. Large blobs like `ai_analysis` bypass the mutation queue and go direct to Supabase, then sync back down via WAL.
+All **writes** go through PowerSync's mutation queue - written to local SQLite first, then uploaded to Supabase automatically. Large blobs like `ai_analysis` bypass the mutation queue and go direct to Supabase, then sync back down via WAL.
 
 ```
 WRITE (small fields)  ->  powerSync.execute()  ->  Local SQLite  ->  PowerSync uploads  ->  Supabase Postgres
@@ -86,26 +86,26 @@ Offline? `powerSync.execute()` writes to local SQLite and queues the upload auto
 
 ---
 
-## The AI Debug Panel — 8 Tabs Per Bug
+## The AI Debug Panel - 8 Tabs Per Bug
 
-Every session gets a full structured breakdown powered by **Groq + Llama 3.3 70B** — called server-side via a Supabase Edge Function. The Groq API key is never exposed to the browser. The complete analysis is saved as JSONB in Supabase — persists across reloads, no re-analyzing needed.
+Every session gets a full structured breakdown powered by **Groq + Llama 3.3 70B** - called server-side via a Supabase Edge Function. The Groq API key is never exposed to the browser. The complete analysis is saved as JSONB in Supabase - persists across reloads, no re-analyzing needed.
 
-- 🔍 **Overview** — Plain English explanation, root cause, symptom vs cause, category badge, confidence score, files to check
-- ⚡ **Fixes** — 3 options (quick patch, proper fix, workaround) each with full code & pros/cons
-- 🕐 **Timeline** — Visual step-by-step of how the crash happened from component mount to error throw
-- ✅ **Checklist** — Shared interactive checklist — syncs live across all collaborators via PowerSync
-- 💬 **Followup** — Context-aware AI chat — click suggested questions or type your own
-- 🧪 **Tests** — AI-generated reproduction steps and test cases to verify the fix works
-- 📋 **Logs** — Paste raw console or server logs — AI strips noise and surfaces what matters
-- 🏗️ **Structure** — Paste your file tree — AI reviews architecture and flags problems
+- 🔍 **Overview** - Plain English explanation, root cause, symptom vs cause, category badge, confidence score, files to check
+- ⚡ **Fixes** - 3 options (quick patch, proper fix, workaround) each with full code & pros/cons
+- 🕐 **Timeline** - Visual step-by-step of how the crash happened from component mount to error throw
+- ✅ **Checklist** - Shared interactive checklist - syncs live across all collaborators via PowerSync
+- 💬 **Followup** - Context-aware AI chat - click suggested questions or type your own
+- 🧪 **Tests** - AI-generated reproduction steps and test cases to verify the fix works
+- 📋 **Logs** - Paste raw console or server logs - AI strips noise and surfaces what matters
+- 🏗️ **Structure** - Paste your file tree - AI reviews architecture and flags problems
 
-The entire analysis is rate-limited at **20 AI requests per user per hour** via a `rate_limits` table in Supabase — enforced server-side in the Edge Function before any Groq call is made.
+The entire analysis is rate-limited at **20 AI requests per user per hour** via a `rate_limits` table in Supabase - enforced server-side in the Edge Function before any Groq call is made.
 
 ---
 
 ## Mastra AI Agent Layer
 
-DevTrace AI adds a second AI layer on top of standard analysis — two specialized **Mastra Cloud agents** that go deeper than the standard 8-tab panel.
+DevTrace AI adds a second AI layer on top of standard analysis - two specialized **Mastra Cloud agents** that go deeper than the standard 8-tab panel.
 
 ```
 Client clicks "Run Deep Analysis"
@@ -116,7 +116,7 @@ Supabase Edge Function proxies to Mastra Cloud
          |
 Session Debugger or Project Analyzer agent reasons through the data
          |
-Structured JSON response returned — diff-format fix, risk analysis, recommendations
+Structured JSON response returned - diff-format fix, risk analysis, recommendations
          |
 Rich UI renders sections: root cause, before/after diff, verification steps, risks
 ```
@@ -135,7 +135,7 @@ Rich UI renders sections: root cause, before/after diff, verification steps, ris
 - Identifies **systemic architectural issues** causing multiple errors
 - Provides a health verdict: Excellent / Good / Needs Attention / Critical
 - Generates prioritized recommendations: Immediate / Short-term / Long-term
-- Analyzes resolution trends — what gets fixed quickly, what lingers, and why
+- Analyzes resolution trends - what gets fixed quickly, what lingers, and why
 
 Both agents are called via a JWT-verified Supabase Edge Function. The Mastra API key never reaches the browser.
 
@@ -143,7 +143,7 @@ Both agents are called via a JWT-verified Supabase Edge Function. The Mastra API
 
 ## Hybrid Local-First RAG
 
-DevTrace AI implements a sophisticated **Retrieval-Augmented Generation** layer that runs entirely on the edge — no server, no network, no latency.
+DevTrace AI implements a sophisticated **Retrieval-Augmented Generation** layer that runs entirely on the edge - no server, no network, no latency.
 
 ```
 Error logged
@@ -154,18 +154,18 @@ Embedding stored in error_embedding column via powerSync.execute()
          |
 PowerSync syncs embedding to all devices via WAL
          |
-Open any session — hybrid search fires instantly
+Open any session - hybrid search fires instantly
          |
-Layer 1: Keyword scoring — token overlap against error_message in local SQLite
-Layer 2: Semantic scoring — cosine similarity against stored embeddings
+Layer 1: Keyword scoring - token overlap against error_message in local SQLite
+Layer 2: Semantic scoring - cosine similarity against stored embeddings
          |
-Top matches surfaced with confidence score — zero network, works offline
+Top matches surfaced with confidence score - zero network, works offline
 ```
 
-- **On-Device Embeddings** — `transformers.js` (Xenova/all-MiniLM-L6-v2) generates vectors entirely in the browser. No API call, no server, no cost per query
-- **SQLite Vector Store** — PowerSync keeps embeddings synced and available in local SQLite across all devices
-- **Dual Scoring** — keyword overlap catches exact matches; cosine similarity catches semantically related bugs with different wording
-- **Works Offline** — the entire retrieval layer runs on local SQLite — pattern matching is available even without internet
+- **On-Device Embeddings** - `transformers.js` (Xenova/all-MiniLM-L6-v2) generates vectors entirely in the browser. No API call, no server, no cost per query
+- **SQLite Vector Store** - PowerSync keeps embeddings synced and available in local SQLite across all devices
+- **Dual Scoring** - keyword overlap catches exact matches; cosine similarity catches semantically related bugs with different wording
+- **Works Offline** - the entire retrieval layer runs on local SQLite - pattern matching is available even without internet
 
 ---
 
@@ -174,31 +174,31 @@ Top matches surfaced with confidence score — zero network, works offline
 When you're offline and open a session without prior AI analysis, DevTrace AI doesn't just show a spinner. It synthesizes guidance from your local debugging history using a multi-layer aggregation engine.
 
 ```
-Offline — open a new session with an error message
+Offline - open a new session with an error message
          |
 useOfflineMemory extracts meaningful tokens (strips noise words)
          |
 powerSync.getAll() queries local SQLite for sessions with ai_analysis
          |
-Sessions scored by token overlap — top 5 matches retrieved
+Sessions scored by token overlap - top 5 matches retrieved
          |
 Knowledge extracted: root causes, fixes, checklist items, test cases, files
          |
 Voted synthesis: most common root cause surfaced as primary likely cause
          |
-OfflineAssistCard renders — clearly labeled as synthesized from local history
+OfflineAssistCard renders - clearly labeled as synthesized from local history
 ```
 
-- **Confidence levels** — High / Medium / Low based on match quality and count
-- **Evidence linked** — every suggestion shows which past sessions it came from
-- **Expandable fixes** — best past fixes with full code, expandable inline
-- **Never misleads** — result is clearly labeled as synthesized offline guidance, not fresh AI analysis
+- **Confidence levels** - High / Medium / Low based on match quality and count
+- **Evidence linked** - every suggestion shows which past sessions it came from
+- **Expandable fixes** - best past fixes with full code, expandable inline
+- **Never misleads** - result is clearly labeled as synthesized offline guidance, not fresh AI analysis
 
 ---
 
-## Live Collaboration — Session Level
+## Live Collaboration - Session Level
 
-DevTrace AI turns a debug session into a **shared live workspace**. All powered by PowerSync WAL sync — no WebSocket server, no Supabase Realtime subscription, no polling.
+DevTrace AI turns a debug session into a **shared live workspace**. All powered by PowerSync WAL sync - no WebSocket server, no Supabase Realtime subscription, no polling.
 
 ```
 Owner opens session
@@ -209,36 +209,36 @@ Presence row written to session_presence via powerSync.execute()
          |
 PowerSync WAL syncs instantly to owner's local SQLite
          |
-Owner sees "Teammate is debugging with you" banner — live dot pulsing
+Owner sees "Teammate is debugging with you" banner - live dot pulsing
          |
-Both can check off checklist items — syncs to all participants instantly
+Both can check off checklist items - syncs to all participants instantly
          |
-Both can send chat messages — delivered via PowerSync, zero polling
+Both can send chat messages - delivered via PowerSync, zero polling
 ```
 
-Three tables power session collaboration — all synced via PowerSync WAL:
+Three tables power session collaboration - all synced via PowerSync WAL:
 
 ```
-session_presence   — one row per user per session, last_seen_at updated every 30s
-session_checklist  — one row per checklist item, checked/unchecked state + who did it
-session_chat       — flat message log tied to the session
+session_presence   - one row per user per session, last_seen_at updated every 30s
+session_checklist  - one row per checklist item, checked/unchecked state + who did it
+session_chat       - flat message log tied to the session
 ```
 
 ```typescript
-// Presence heartbeat — fires on mount, every 30s, cleans up on unmount
+// Presence heartbeat - fires on mount, every 30s, cleans up on unmount
 await powerSync.execute(
   `INSERT INTO session_presence (id, session_id, user_id, display_name, last_seen_at, joined_at)
    VALUES (?, ?, ?, ?, ?, ?)`,
   [id, sessionId, userId, displayName, now, now]
 );
 
-// Checklist toggle — syncs to all collaborators instantly
+// Checklist toggle - syncs to all collaborators instantly
 await powerSync.execute(
   `UPDATE session_checklist SET checked = ?, checked_by_name = ? WHERE session_id = ? AND item_index = ?`,
   [1, displayName, sessionId, itemIndex]
 );
 
-// Chat message — delivered via PowerSync WAL
+// Chat message - delivered via PowerSync WAL
 await powerSync.execute(
   `INSERT INTO session_chat (id, session_id, user_id, display_name, message, created_at)
    VALUES (?, ?, ?, ?, ?, ?)`,
@@ -248,9 +248,9 @@ await powerSync.execute(
 
 ---
 
-## Live Collaboration — Project Level
+## Live Collaboration - Project Level
 
-Collaboration extends beyond individual sessions to the **entire project**. Every session mutation — create, resolve, analyze, update, delete — is automatically logged to a project activity feed and synced to all collaborators instantly.
+Collaboration extends beyond individual sessions to the **entire project**. Every session mutation - create, resolve, analyze, update, delete - is automatically logged to a project activity feed and synced to all collaborators instantly.
 
 ```
 Owner opens project
@@ -267,10 +267,10 @@ Sarah sees "Joel created Bug: Auth token expired" in activity feed instantly
          |
 Sarah resolves a session -> "Sarah resolved Bug: Auth token expired" logged
          |
-Both can chat at project level — Project Chat syncs via PowerSync
+Both can chat at project level - Project Chat syncs via PowerSync
 ```
 
-Activity logging is wired directly into `useSessions.ts` — no extra call-site code needed:
+Activity logging is wired directly into `useSessions.ts` - no extra call-site code needed:
 
 ```typescript
 // Auto-logged on session create
@@ -291,14 +291,14 @@ Supabase is the **source of truth and auth backbone** for the entire app.
 
 ### Authentication
 
-- **Email + Password** — `supabase.auth.signInWithPassword()`
-- **GitHub OAuth** — `signInWithOAuth({ provider: 'github' })`
-- **Google OAuth** — `signInWithOAuth({ provider: 'google' })`
-- **Password Reset** — `resetPasswordForEmail()` → branded magic link → `/reset-password`
-- **GitHub Linking** — `linkIdentity({ provider: 'github' })` → username saved to `profiles`
-- **Session sync** — `onAuthStateChange()` keeps Zustand `authStore` live across all tabs
+- **Email + Password** - `supabase.auth.signInWithPassword()`
+- **GitHub OAuth** - `signInWithOAuth({ provider: 'github' })`
+- **Google OAuth** - `signInWithOAuth({ provider: 'google' })`
+- **Password Reset** - `resetPasswordForEmail()` -> branded magic link -> `/reset-password`
+- **GitHub Linking** - `linkIdentity({ provider: 'github' })` -> username saved to `profiles`
+- **Session sync** - `onAuthStateChange()` keeps Zustand `authStore` live across all tabs
 
-### Database — Postgres + RLS (11 tables)
+### Database - Postgres + RLS (11 tables)
 
 Every table has Row Level Security enabled.
 
@@ -310,32 +310,32 @@ Every table has Row Level Security enabled.
 <tr><td><code>fixes</code></td><td>Fix library entries with tags and use count</td></tr>
 <tr><td><code>shares</code></td><td>Access grants between users for projects and sessions</td></tr>
 <tr><td><code>session_presence</code></td><td>Live presence per user per session, heartbeat every 30s</td></tr>
-<tr><td><code>session_checklist</code></td><td>Shared checklist state — one row per item, who checked what</td></tr>
+<tr><td><code>session_checklist</code></td><td>Shared checklist state - one row per item, who checked what</td></tr>
 <tr><td><code>session_chat</code></td><td>Team chat messages tied to a session</td></tr>
 <tr><td><code>project_presence</code></td><td>Live presence per user per project, heartbeat every 30s</td></tr>
-<tr><td><code>project_activity</code></td><td>Event log — session created/resolved/analyzed/updated/deleted</td></tr>
+<tr><td><code>project_activity</code></td><td>Event log - session created/resolved/analyzed/updated/deleted</td></tr>
 <tr><td><code>project_chat</code></td><td>Team chat messages tied to a project</td></tr>
 </table>
 
 ### Edge Functions
 
-**`analyze-bug`** — handles all Groq AI calls server-side:
-- JWT verified on every request — unauthorized calls rejected before touching Groq
+**`analyze-bug`** - handles all Groq AI calls server-side:
+- JWT verified on every request - unauthorized calls rejected before touching Groq
 - Routes four actions: `analyzeSession`, `sendFollowUp`, `analyzeLogs`, `analyzeStructure`
 - Rate limited: 20 requests per user per hour via `rate_limits` table
-- Groq API key stored in Supabase Secrets — never in the browser
+- Groq API key stored in Supabase Secrets - never in the browser
 
-**`debug-dna`** — generates your personal debugging fingerprint:
+**`debug-dna`** - generates your personal debugging fingerprint:
 - Service role key queries Postgres directly server-side
 - SQL aggregations across your full session history + Groq narrative
 
-**`mastra-agent`** — proxies calls to Mastra Cloud agents:
+**`mastra-agent`** - proxies calls to Mastra Cloud agents:
 - JWT verified before touching Mastra API key
 - Routes `debugSession` to the Session Debugger agent
 - Routes `analyzeProject` to the Project Analyzer agent
-- Forces structured JSON output — rich UI renders sections, diffs, badges
+- Forces structured JSON output - rich UI renders sections, diffs, badges
 
-### WAL Replication → PowerSync
+### WAL Replication -> PowerSync
 
 ```sql
 -- All 11 tables replicated via WAL
@@ -349,12 +349,12 @@ alter publication powersync add table
 
 ## How DevTrace AI Uses PowerSync
 
-PowerSync is the **offline engine and real-time collaboration layer** — powering both session-level and project-level collaboration with zero custom backend code.
+PowerSync is the **offline engine and real-time collaboration layer** - powering both session-level and project-level collaboration with zero custom backend code.
 
-### Read path — always instant
+### Read path - always instant
 
 ```typescript
-// All zero-network reads — local SQLite
+// All zero-network reads - local SQLite
 const { data: sessions }        = useQuery('SELECT * FROM debug_sessions WHERE user_id = ?', [uid]);
 const { data: collaborators }   = useQuery('SELECT * FROM session_presence WHERE session_id = ?', [id]);
 const { data: checklist }       = useQuery('SELECT * FROM session_checklist WHERE session_id = ?', [id]);
@@ -364,7 +364,7 @@ const { data: activityFeed }    = useQuery('SELECT * FROM project_activity WHERE
 const { data: projectMessages } = useQuery('SELECT * FROM project_chat WHERE project_id = ?', [pid]);
 ```
 
-### Write path — PowerSync mutation queue
+### Write path - PowerSync mutation queue
 
 ```typescript
 // Session collaboration
@@ -388,17 +388,17 @@ await powerSync.execute(`UPDATE debug_sessions SET error_embedding = ? ...`, [JS
 <table width="100%">
 <tr><th align="left">State</th><th align="left">What happens</th></tr>
 <tr><td>🟢 App opens online</td><td>PowerSync connects and streams latest changes from Supabase</td></tr>
-<tr><td>🟢 User reads data</td><td><code>useQuery()</code> returns from local SQLite — instant, 0ms</td></tr>
+<tr><td>🟢 User reads data</td><td><code>useQuery()</code> returns from local SQLite - instant, 0ms</td></tr>
 <tr><td>🟢 User opens a session</td><td>Hybrid RAG fires, presence heartbeat fires, all collab state loads</td></tr>
-<tr><td>🟢 Teammate joins session</td><td>Presence row syncs via WAL — owner sees banner within 1-2 seconds</td></tr>
-<tr><td>🟢 Session resolved</td><td>project_activity row logged automatically — all collaborators see it</td></tr>
-<tr><td>🟠 Internet drops</td><td>Orange banner appears — all reads still work, writes queue locally</td></tr>
+<tr><td>🟢 Teammate joins session</td><td>Presence row syncs via WAL - owner sees banner within 1-2 seconds</td></tr>
+<tr><td>🟢 Session resolved</td><td>project_activity row logged automatically - all collaborators see it</td></tr>
+<tr><td>🟠 Internet drops</td><td>Orange banner appears - all reads still work, writes queue locally</td></tr>
 <tr><td>🟠 User opens offline session</td><td>Offline Memory Assist synthesizes guidance from local SQLite history</td></tr>
 <tr><td>🟠 User creates offline</td><td><code>powerSync.execute()</code> writes to SQLite, upload queued automatically</td></tr>
 <tr><td>🟢 Internet returns</td><td>PowerSync flushes queue to Supabase, WAL syncs delta back down</td></tr>
 </table>
 
-### Sync rules — 5 bucket definitions
+### Sync rules - 5 bucket definitions
 
 ```json
 {
@@ -458,54 +458,54 @@ await powerSync.execute(`UPDATE debug_sessions SET error_embedding = ? ...`, [JS
 
 ### Debugging
 
-- **Session Tracking** — Log errors with stack trace, code snippet, expected behavior, environment, and severity
-- **AI Debug Panel** — 8-tab full breakdown via Groq + Llama 3.3 70B server-side, saved permanently as JSONB
-- **Mastra Session Debugger** — Deep analysis agent: exact broken line, diff-format fix, risk flags, verification steps
-- **Mastra Project Analyzer** — Pattern detection agent: recurring bugs, systemic issues, prioritized recommendations
-- **Hybrid RAG** — On-device transformers.js embeddings + keyword scoring against local SQLite — zero network
-- **Similar Sessions** — Finds past bugs with matching error patterns — works offline
-- **Follow-up Chat** — Context-aware AI chat inside every session
-- **Fix Library** — Save working fixes, filter by language, copy in one click, track use count
-- **Export as Markdown** — Export any session as a `.md` file
+- **Session Tracking** - Log errors with stack trace, code snippet, expected behavior, environment, and severity
+- **AI Debug Panel** - 8-tab full breakdown via Groq + Llama 3.3 70B server-side, saved permanently as JSONB
+- **Mastra Session Debugger** - Deep analysis agent: exact broken line, diff-format fix, risk flags, verification steps
+- **Mastra Project Analyzer** - Pattern detection agent: recurring bugs, systemic issues, prioritized recommendations
+- **Hybrid RAG** - On-device transformers.js embeddings + keyword scoring against local SQLite - zero network
+- **Similar Sessions** - Finds past bugs with matching error patterns - works offline
+- **Follow-up Chat** - Context-aware AI chat inside every session
+- **Fix Library** - Save working fixes, filter by language, copy in one click, track use count
+- **Export as Markdown** - Export any session as a `.md` file
 
 ### Session Collaboration
 
-- **Presence Indicators** — Live avatar stack showing who is currently in the session
-- **Shared Checklist** — AI checklist syncs live across all collaborators — shows who checked each item
-- **Session Chat** — Real-time flat message thread tied to the session
-- **Auto Chat Open** — Chat panel opens automatically when a collaborator joins
-- **Zero Backend Code** — Entirely PowerSync WAL-driven, no WebSocket, no polling
+- **Presence Indicators** - Live avatar stack showing who is currently in the session
+- **Shared Checklist** - AI checklist syncs live across all collaborators - shows who checked each item
+- **Session Chat** - Real-time flat message thread tied to the session
+- **Auto Chat Open** - Chat panel opens automatically when a collaborator joins
+- **Zero Backend Code** - Entirely PowerSync WAL-driven, no WebSocket, no polling
 
 ### Project Collaboration
 
-- **Project Presence** — Avatar stack in project header showing who is browsing right now
-- **Activity Feed** — Every session mutation logged as a live event — clickable to navigate to that session
-- **Project Chat** — Team discussion at project level, separate from session chat
-- **Auto Activity Logging** — `useSessions` logs events to `project_activity` on every mutation
+- **Project Presence** - Avatar stack in project header showing who is browsing right now
+- **Activity Feed** - Every session mutation logged as a live event - clickable to navigate to that session
+- **Project Chat** - Team discussion at project level, separate from session chat
+- **Auto Activity Logging** - `useSessions` logs events to `project_activity` on every mutation
 
 ### Debug DNA
 
-- **Personal Error Fingerprint** — Supabase Edge Function queries session history server-side
-- **AI Narrative** — Groq generates personalized profile of your debugging strengths and weaknesses
-- **Category Resolution Rates** — See which error types you crush and which ones beat you
-- **Weekly Activity Chart** — Sessions logged per week over the last 4 weeks
-- **Export DNA Report** — Download your full Debug DNA as Markdown
+- **Personal Error Fingerprint** - Supabase Edge Function queries session history server-side
+- **AI Narrative** - Groq generates personalized profile of your debugging strengths and weaknesses
+- **Category Resolution Rates** - See which error types you crush and which ones beat you
+- **Weekly Activity Chart** - Sessions logged per week over the last 4 weeks
+- **Export DNA Report** - Download your full Debug DNA as Markdown
 
 ### Offline & Sync
 
-- **Offline-First Reads** — All reads from local SQLite via PowerSync — zero network dependency
-- **Offline Writes** — `powerSync.execute()` queues mutations locally, auto-uploads on reconnect
-- **Offline Memory Assist** — Synthesizes AI guidance from local SQLite history when offline
-- **On-Device Embeddings** — transformers.js generates semantic vectors in the browser — no API call
-- **Real-Time Sync** — PowerSync streams WAL changes to local SQLite instantly
-- **Sync Status Page** — Live row counts across all 11 tables, sync health, upload queue
+- **Offline-First Reads** - All reads from local SQLite via PowerSync - zero network dependency
+- **Offline Writes** - `powerSync.execute()` queues mutations locally, auto-uploads on reconnect
+- **Offline Memory Assist** - Synthesizes AI guidance from local SQLite history when offline
+- **On-Device Embeddings** - transformers.js generates semantic vectors in the browser - no API call
+- **Real-Time Sync** - PowerSync streams WAL changes to local SQLite instantly
+- **Sync Status Page** - Live row counts across all 11 tables, sync health, upload queue
 
 ### Security
 
-- **Server-side AI** — Groq API key and Mastra API key never reach the browser
-- **JWT Verification** — Every Edge Function verifies user JWT before any external API call
-- **Rate Limiting** — 20 AI requests per user per hour, enforced in `analyze-bug` Edge Function
-- **RLS on all tables** — Every Supabase table has Row Level Security enabled
+- **Server-side AI** - Groq API key and Mastra API key never reach the browser
+- **JWT Verification** - Every Edge Function verifies user JWT before any external API call
+- **Rate Limiting** - 20 AI requests per user per hour, enforced in `analyze-bug` Edge Function
+- **RLS on all tables** - Every Supabase table has Row Level Security enabled
 
 ---
 
@@ -520,7 +520,7 @@ await powerSync.execute(`UPDATE debug_sessions SET error_embedding = ? ...`, [JS
 <tr><td>🐻</td><td><b>Zustand</b></td><td>Lightweight global state (auth, sync queue)</td></tr>
 <tr><td>🟢</td><td><b>Supabase</b></td><td>Postgres · Auth · Storage · RLS · WAL replication · Edge Functions</td></tr>
 <tr><td>⚡</td><td><b>PowerSync</b></td><td>Local SQLite sync · offline mutations · session + project collaboration · embeddings store</td></tr>
-<tr><td>🤖</td><td><b>Groq + Llama 3.3 70B</b></td><td>Server-side AI inference — debug analysis + Debug DNA</td></tr>
+<tr><td>🤖</td><td><b>Groq + Llama 3.3 70B</b></td><td>Server-side AI inference - debug analysis + Debug DNA</td></tr>
 <tr><td>🧠</td><td><b>Mastra Cloud</b></td><td>Session Debugger + Project Analyzer AI agents</td></tr>
 <tr><td>🔍</td><td><b>Xenova/transformers.js</b></td><td>On-device semantic embeddings (all-MiniLM-L6-v2)</td></tr>
 <tr><td>📊</td><td><b>Recharts</b></td><td>Analytics charts and data visualization</td></tr>
@@ -539,7 +539,7 @@ cd DevTrace-AI
 npm install
 ```
 
-For full setup instructions — Supabase, PowerSync, Mastra, environment variables — see **[CONTRIBUTING.md](CONTRIBUTING.md)**.
+For full setup instructions - Supabase, PowerSync, Mastra, environment variables - see **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
 ---
 
@@ -549,9 +549,9 @@ DevTrace AI is submitted to the **PowerSync AI Hackathon 2026**.
 
 <table width="100%">
 <tr><th align="left">Prize</th><th align="left">Why this qualifies</th></tr>
-<tr><td>🥇 <b>Core Prize</b></td><td>AI-powered team debugging platform using PowerSync as the state sync layer for humans and AI agents — session + project collaboration, Hybrid RAG, offline AI memory, Mastra agents</td></tr>
+<tr><td>🥇 <b>Core Prize</b></td><td>AI-powered team debugging platform using PowerSync as the state sync layer for humans and AI agents - session + project collaboration, Hybrid RAG, offline AI memory, Mastra agents</td></tr>
 <tr><td>🏅 <b>Best Submission Using Supabase</b></td><td>Auth (3 providers), 11 RLS tables, Storage, WAL replication, 3 Edge Functions (analyze-bug with rate limiting, debug-dna, mastra-agent)</td></tr>
-<tr><td>🏅 <b>Best Local-First App</b></td><td>All reads from local SQLite, all writes via powerSync.execute(), offline mutations, on-device embeddings stored in SQLite, offline AI memory, session + project collaboration — 11 tables, 5 sync buckets, zero custom backend</td></tr>
+<tr><td>🏅 <b>Best Local-First App</b></td><td>All reads from local SQLite, all writes via powerSync.execute(), offline mutations, on-device embeddings stored in SQLite, offline AI memory, session + project collaboration - 11 tables, 5 sync buckets, zero custom backend</td></tr>
 <tr><td>🏅 <b>Best Submission Using Mastra</b></td><td>Two specialized Mastra Cloud agents (Session Debugger + Project Analyzer) called via JWT-verified Edge Function proxy with structured JSON output and rich diff-format UI</td></tr>
 </table>
 
@@ -574,7 +574,7 @@ When you open a project, a project_presence row is written. Every session mutati
 <details>
 <summary><b>How does the Hybrid RAG work?</b></summary>
 <br/>
-When you log a session, transformers.js (Xenova/all-MiniLM-L6-v2) generates a 384-dimension embedding in the browser. This is stored in error_embedding via powerSync.execute(). When you open a session, both keyword scoring and cosine similarity run against your local SQLite history — zero network, works offline.
+When you log a session, transformers.js (Xenova/all-MiniLM-L6-v2) generates a 384-dimension embedding in the browser. This is stored in error_embedding via powerSync.execute(). When you open a session, both keyword scoring and cosine similarity run against your local SQLite history - zero network, works offline.
 </details>
 
 <details>
@@ -605,7 +605,7 @@ No. Supabase handles auth, database, storage, and Edge Functions. PowerSync hand
 
 ## License
 
-MIT — free to use, fork, and build on.
+MIT - free to use, fork, and build on.
 
 ---
 

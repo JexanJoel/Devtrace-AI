@@ -2,7 +2,7 @@
 
 <img src="https://img.shields.io/badge/🛠️-Technical_Documentation-4f46e5?style=for-the-badge&labelColor=1e1b4b&color=4f46e5" height="36"/>
 
-## DevTrace AI — Contributing & Technical Manual
+## DevTrace AI - Contributing & Technical Manual
 **Architecture, Setup, and Zero-Backend Deep Dive.**
 
 </div>
@@ -23,10 +23,10 @@ DevTrace AI maintains **no traditional Node.js/Express server**. Instead it uses
 
 ### The Four Layers
 
-1. **Storage & Auth (Supabase)** — Postgres is the source of truth. Row Level Security handles all authorization at the database level. Three Edge Functions handle server-side AI calls.
-2. **Sync & Persistence (PowerSync)** — Replicates data via WAL and manages a local SQLite database in the browser. All reads are instant and offline-capable.
-3. **AI Analysis (Supabase Edge Functions + Groq)** — All Groq calls happen in a JWT-verified Deno Edge Function. The API key never reaches the browser.
-4. **AI Agents (Mastra Cloud)** — Two specialized agents (Session Debugger, Project Analyzer) deployed to Mastra Cloud, called via a second JWT-verified Edge Function proxy.
+1. **Storage & Auth (Supabase)** - Postgres is the source of truth. Row Level Security handles all authorization at the database level. Three Edge Functions handle server-side AI calls.
+2. **Sync & Persistence (PowerSync)** - Replicates data via WAL and manages a local SQLite database in the browser. All reads are instant and offline-capable.
+3. **AI Analysis (Supabase Edge Functions + Groq)** - All Groq calls happen in a JWT-verified Deno Edge Function. The API key never reaches the browser.
+4. **AI Agents (Mastra Cloud)** - Two specialized agents (Session Debugger, Project Analyzer) deployed to Mastra Cloud, called via a second JWT-verified Edge Function proxy.
 
 ### Data Flow Lifecycle
 
@@ -45,14 +45,14 @@ DevTrace AI maintains **no traditional Node.js/Express server**. Instead it uses
 ## Prerequisites
 
 - **Node.js** v18+
-- **Supabase** account — [supabase.com](https://supabase.com), free tier works
-- **PowerSync** account — [powersync.com](https://www.powersync.com), free tier works
-- **Groq** API key — [console.groq.com](https://console.groq.com), free
-- **Mastra Cloud** account — [cloud.mastra.ai](https://cloud.mastra.ai), free tier works
+- **Supabase** account - [supabase.com](https://supabase.com), free tier works
+- **PowerSync** account - [powersync.com](https://www.powersync.com), free tier works
+- **Groq** API key - [console.groq.com](https://console.groq.com), free
+- **Mastra Cloud** account - [cloud.mastra.ai](https://cloud.mastra.ai), free tier works
 
 ---
 
-## Step 1 — Clone and Install
+## Step 1 - Clone and Install
 
 ```bash
 git clone https://github.com/JexanJoel/DevTrace-AI.git
@@ -62,14 +62,14 @@ npm install
 
 ---
 
-## Step 2 — Supabase Setup
+## Step 2 - Supabase Setup
 
 **2a.** Create a new project at [supabase.com](https://supabase.com)
 
 **2b.** Go to **SQL Editor** and run the schemas below in order:
 
 <details>
-<summary><b>📋 Schema 1 — Base (profiles, projects, sessions, fixes, shares)</b></summary>
+<summary><b>📋 Schema 1 - Base (profiles, projects, sessions, fixes, shares)</b></summary>
 
 ```sql
 -- Profiles
@@ -179,7 +179,7 @@ create publication powersync for table profiles, projects, debug_sessions, fixes
 </details>
 
 <details>
-<summary><b>👥 Schema 2 — Session Collaboration</b></summary>
+<summary><b>👥 Schema 2 - Session Collaboration</b></summary>
 
 ```sql
 create table if not exists session_presence (
@@ -249,7 +249,7 @@ alter publication powersync add table session_chat;
 </details>
 
 <details>
-<summary><b>📋 Schema 3 — Project Collaboration</b></summary>
+<summary><b>📋 Schema 3 - Project Collaboration</b></summary>
 
 ```sql
 create table if not exists project_presence (
@@ -317,7 +317,7 @@ alter publication powersync add table project_chat;
 </details>
 
 <details>
-<summary><b>🔒 Schema 4 — Rate Limiting</b></summary>
+<summary><b>🔒 Schema 4 - Rate Limiting</b></summary>
 
 ```sql
 create table if not exists rate_limits (
@@ -349,7 +349,7 @@ supabase functions deploy debug-dna
 supabase functions deploy mastra-agent
 ```
 
-**2g.** Add secrets — go to **Supabase → Settings → Edge Functions → Secrets**:
+**2g.** Add secrets - go to **Supabase → Settings → Edge Functions → Secrets**:
 ```
 GROQ_API_KEY           = your Groq API key
 SERVICE_ROLE_KEY       = your Supabase service role key
@@ -359,19 +359,19 @@ MASTRA_BASE_URL        = https://full-thousands-yottabyte.mastra.cloud
 
 ---
 
-## Step 3 — PowerSync Setup
+## Step 3 - PowerSync Setup
 
 **3a.** Create account at [powersync.com](https://www.powersync.com)
 
 **3b.** Connect to your Supabase Postgres URI
 
-**3c.** Paste the full sync rules — **5 bucket definitions** — from `POWERSYNC_SYNC_RULES.json` in the repo
+**3c.** Paste the full sync rules - **5 bucket definitions** - from `POWERSYNC_SYNC_RULES.json` in the repo
 
 **3d.** Deploy and copy your PowerSync instance URL
 
 ---
 
-## Step 4 — Mastra Setup
+## Step 4 - Mastra Setup
 
 **4a.** Create account at [cloud.mastra.ai](https://cloud.mastra.ai)
 
@@ -389,7 +389,7 @@ SUPABASE_SERVICE_ROLE_KEY = your Supabase service role key
 
 ---
 
-## Step 5 — Environment Variables
+## Step 5 - Environment Variables
 
 Create a `.env` file in the project root:
 
@@ -399,11 +399,11 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 VITE_POWERSYNC_URL=https://your-instance.powersync.journeyapps.com
 ```
 
-> No `VITE_GROQ_API_KEY`, `VITE_MASTRA_API_KEY`, or any other server key needed in the `.env` — all sensitive keys live in Supabase Edge Function Secrets.
+> No `VITE_GROQ_API_KEY`, `VITE_MASTRA_API_KEY`, or any other server key needed in the `.env` - all sensitive keys live in Supabase Edge Function Secrets.
 
 ---
 
-## Step 6 — Run
+## Step 6 - Run
 
 ```bash
 npm run dev
@@ -434,7 +434,7 @@ src/
 │   ├── useCollaboration.ts      # Session presence, shared checklist, session chat
 │   ├── useProjectCollaboration.ts  # Project presence, activity feed, project chat
 │   ├── useMastraAgent.ts        # Calls mastra-agent Edge Function
-│   ├── useEmbeddings.ts         # transformers.js — on-device semantic embeddings
+│   ├── useEmbeddings.ts         # transformers.js - on-device semantic embeddings
 │   ├── useOfflineMemory.ts      # Offline AI synthesis from local SQLite
 │   ├── useProfile.ts            # PowerSync reads + Supabase writes
 │   ├── useShares.ts             # Share creation, revocation, lookup
@@ -444,7 +444,7 @@ src/
 │
 ├── lib/
 │   ├── groqClient.ts        # Calls analyze-bug Edge Function (no client-side API key)
-│   ├── SupabaseConnector.ts # PowerSync connector — uploadData handles crud queue
+│   ├── SupabaseConnector.ts # PowerSync connector - uploadData handles crud queue
 │   ├── projectHealth.ts     # Health score formula (pure client-side)
 │   ├── supabaseClient.ts
 │   └── powersync.ts         # Schema (11 tables) + PowerSyncDatabase singleton
@@ -455,9 +455,9 @@ src/
 │       └── project-tools.ts   # searchLogsTool, readFileTool, listDirectoryTool
 │
 └── pages/
-    ├── ProjectDetailPage.tsx     # Project collab — presence, activity tab, Mastra analysis
+    ├── ProjectDetailPage.tsx     # Project collab - presence, activity tab, Mastra analysis
     ├── SharedProjectView.tsx     # Collaboration-enabled shared project view
-    ├── SessionDetailPage.tsx     # Session collab — presence, checklist, Mastra deep analysis
+    ├── SessionDetailPage.tsx     # Session collab - presence, checklist, Mastra deep analysis
     ├── SharedSessionView.tsx     # Collaboration-enabled shared session view
     └── ... (other pages)
 
@@ -472,9 +472,9 @@ supabase/
 
 ## Branching Strategy
 
-- `master` — production-ready code
-- `feature/*` — new features
-- `fix/*` — bug fixes
+- `master` - production-ready code
+- `feature/*` - new features
+- `fix/*` - bug fixes
 
 ## PR Process
 
