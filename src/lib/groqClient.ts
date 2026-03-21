@@ -28,7 +28,7 @@ const callEdgeFunction = async (action: string, payload: Record<string, unknown>
   return data.result;
 };
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Types ──────────────────────────────────────────────────────────────────
 
 export type IssueCategory =
   | 'react_state'
