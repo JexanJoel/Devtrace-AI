@@ -43,11 +43,27 @@ const useDebugDNA = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 
-      const { data, error: fnError } = await supabase.functions.invoke('debug-dna', {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
+      // Use raw fetch instead of supabase.functions.invoke so we can
+      // read the actual error body on non-2xx (invoke swallows it)
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/debug-dna`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({}),
+        }
+      );
 
-      if (fnError) throw new Error(fnError.message);
+      const data = await res.json();
+
+      if (!res.ok) {
+        // Picks up the real message e.g. "Free tier limit reached — ..."
+        throw new Error(data?.error ?? 'Generation failed');
+      }
+
       if (data?.error === 'no_sessions') throw new Error('no_sessions');
       if (data?.error) throw new Error(data.error);
 
